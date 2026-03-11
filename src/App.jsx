@@ -63,7 +63,7 @@ function AvalancheCard() {
 
   return (
     <div className="work-card" onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}
-      style={{ background:C.cream, border:`1px solid ${C.border}`, borderRadius:12, overflow:"hidden", gridColumn:"span 2", display:"grid", gridTemplateColumns:"1fr 1fr" }}>
+      style={{ background:C.cream, border:`1px solid ${C.border}`, borderRadius:12, overflow:"hidden", display:"grid", gridTemplateColumns:"1fr 1fr", height:"100%" }}>
       <div style={{ position:"relative", overflow:"hidden", minHeight:240 }}>
         <img src={photos[photoIdx]} alt="Avalanche Bangkok"
           style={{ width:"100%", height:"100%", objectFit:"cover", transition:"transform 0.6s ease", transform:hovered?"scale(1.04)":"scale(1)" }} />
@@ -247,7 +247,7 @@ export default function Shamwise() {
           RECENT WORK <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
-          <Reveal delay={0}><AvalancheCard /></Reveal>
+          <Reveal delay={0} style={{ gridColumn:"span 2" }}><AvalancheCard /></Reveal>
           {WORK_ITEMS.map((item,i) => (
             <Reveal key={item.title} delay={(i+1)*0.08}><WorkCard item={item} /></Reveal>
           ))}
