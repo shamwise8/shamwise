@@ -31,7 +31,11 @@ function useReveal() {
   const ref = useRef();
   const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.08 });
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      if (rect.top < window.innerHeight) { setVisible(true); return; }
+    }
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0 });
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
