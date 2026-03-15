@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const C = {
   bg: "#F5F0E8", bg2: "#EDE7D9", ink: "#1A1612", ink2: "#4A3F35",
@@ -18,6 +18,7 @@ const OFFERINGS = [
     tags:["Avalanche","Community","Bangkok","Bootcamps"] },
 ];
 
+/* Pricing section — kept for future use
 const PRICING = [
   { name:"Starter", price:"฿15K", period:"one-time setup", featured:false,
     features:["Single-page website","Mobile responsive design","LINE OA basic setup","Contact form + Google Maps","1 round of revisions"] },
@@ -26,6 +27,7 @@ const PRICING = [
   { name:"Pro", price:"฿65K", period:"setup + ฿9.5K/month optional", featured:false,
     features:["Full web app or mobile app","Advanced LINE bot system","Admin dashboard","Order management or booking","Priority support + SLA","Unlimited revisions"] },
 ];
+*/
 
 function useReveal() {
   const ref = useRef();
@@ -51,88 +53,40 @@ function Reveal({ children, delay=0, style={} }) {
   );
 }
 
-function AvalancheCard() {
+function CommunityCard({ item }) {
   const [photoIdx, setPhotoIdx] = useState(0);
-  const [hovered, setHovered] = useState(false);
-  const photos = ["/avalanche-group.jpg", "/avalanche-speaker.jpg"];
-
   useEffect(() => {
-    const t = setInterval(() => setPhotoIdx(i => (i+1)%2), 3500);
+    if (!item.photos || item.photos.length < 2) return;
+    const t = setInterval(() => setPhotoIdx(i => (i+1) % item.photos.length), 3500);
     return () => clearInterval(t);
-  }, []);
+  }, [item.photos]);
 
   return (
-    <div className="work-card" onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}
-      style={{ background:C.cream, border:`1px solid ${C.border}`, borderRadius:12, overflow:"hidden", display:"grid", gridTemplateColumns:"1fr 1fr", height:"100%" }}>
-      <div style={{ position:"relative", overflow:"hidden", minHeight:240 }}>
-        <img src={photos[photoIdx]} alt="Avalanche Bangkok"
-          style={{ width:"100%", height:"100%", objectFit:"cover", transition:"transform 0.6s ease", transform:hovered?"scale(1.04)":"scale(1)" }} />
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,transparent 60%,rgba(251,247,240,0.95))" }} />
-        <div style={{ position:"absolute", top:12, left:12, background:"rgba(26,22,18,0.75)", backdropFilter:"blur(8px)", borderRadius:100, padding:"4px 12px", fontSize:10, fontWeight:700, color:"#F2A65A", letterSpacing:1.5 }}>
-          AVALANCHE × BINANCE TH
-        </div>
-        <div style={{ position:"absolute", bottom:12, left:12, display:"flex", gap:4 }}>
-          {[0,1].map(i => (
-            <div key={i} style={{ width:photoIdx===i?20:6, height:6, borderRadius:3, background:photoIdx===i?"#E85D26":"rgba(255,255,255,0.4)", transition:"width 0.3s ease" }} />
-          ))}
-        </div>
+    <div className="work-card" style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden", display:"grid", gridTemplateColumns:"1fr 1fr" }}>
+      <div style={{ position:"relative", overflow:"hidden", minHeight:260 }}>
+        <img src={item.photos[photoIdx]} alt={item.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,transparent 60%,rgba(245,240,232,0.95))" }} />
+        {item.photos.length > 1 && (
+          <div style={{ position:"absolute", bottom:12, left:12, display:"flex", gap:4 }}>
+            {item.photos.map((_,i) => (
+              <div key={i} style={{ width:photoIdx===i?20:6, height:6, borderRadius:3, background:photoIdx===i?C.accent:"rgba(255,255,255,0.4)", transition:"width 0.3s ease" }} />
+            ))}
+          </div>
+        )}
       </div>
-      <div style={{ padding:"28px 24px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+      <div style={{ padding:"32px 28px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
         <div>
-          <span style={{ fontSize:10, padding:"4px 10px", borderRadius:100, fontWeight:700, background:"#F2A65A22", color:"#F2A65A", border:"1px solid #F2A65A44", display:"inline-block", marginBottom:14 }}>WEB3</span>
-          <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:22, marginBottom:10, letterSpacing:-0.5 }}>Avalanche Bangkok</h3>
-          <p style={{ fontSize:13, color:C.ink2, lineHeight:1.7, fontWeight:300, marginBottom:16 }}>
-            Organised 2 community events in Bangkok with Binance TH. Bringing the Avalanche ecosystem to Southeast Asia — builders, developers, and crypto-curious locals all in one room.
-          </p>
-          <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:16 }}>
-            {["Bangkok","Avalanche","Binance TH","Community","Web3"].map(t => (
+          <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:24, marginBottom:12, letterSpacing:-0.5 }}>{item.title}</h3>
+          <p style={{ fontSize:14, color:C.ink2, lineHeight:1.7, fontWeight:300, marginBottom:20 }}>{item.desc}</p>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+            {item.tags.map(t => (
               <span key={t} style={{ fontSize:11, padding:"4px 10px", background:C.bg2, borderRadius:100, color:C.ink2 }}>{t}</span>
             ))}
           </div>
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:C.ink3 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:C.ink3, marginTop:20 }}>
           <span style={{ width:6, height:6, borderRadius:"50%", background:C.accent, display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
-          Bootcamp starting soon
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function WorkCard({ item }) {
-  return (
-    <div className="work-card" style={{ background:C.cream, border:`1px solid ${C.border}`, borderRadius:12, overflow:"hidden", display:"flex", flexDirection:"column" }}>
-      <div style={{ height:160, background:item.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:44, position:"relative", overflow:"hidden" }}>
-        {item.photo
-          ? <img src={item.photo} alt={item.title} style={{ width:"100%", height:"100%", objectFit:"cover", opacity:0.85 }} />
-          : item.emoji
-        }
-        <span style={{ position:"absolute", top:10, right:10, fontSize:9, padding:"3px 8px", borderRadius:100, fontWeight:700, background:`${item.tagColor}22`, color:item.tagColor, border:`1px solid ${item.tagColor}44` }}>{item.tag}</span>
-      </div>
-      <div style={{ padding:"16px 18px 20px", display:"flex", flexDirection:"column", flex:1 }}>
-        <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:15, marginBottom:8, letterSpacing:-0.3 }}>{item.title}</h3>
-        <p style={{ fontSize:12, color:C.ink2, lineHeight:1.6, marginBottom:12, fontWeight:300, flex:1 }}>{item.desc}</p>
-        {item.appStore && (
-          <div style={{ display:"flex", gap:6, marginBottom:12 }}>
-            <div style={{ background:C.ink, borderRadius:6, padding:"5px 10px", display:"flex", alignItems:"center", gap:5 }}>
-              <span style={{ fontSize:11 }}>🍎</span>
-              <div>
-                <div style={{ fontSize:7, color:"#8A7D72", letterSpacing:0.5 }}>COMING TO</div>
-                <div style={{ fontSize:9, fontWeight:700, color:C.bg2, letterSpacing:0.3 }}>App Store</div>
-              </div>
-            </div>
-          </div>
-        )}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:C.ink3 }}>
-            <span style={{ width:6, height:6, borderRadius:"50%", background:C.accent, display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
-            {item.status}
-          </div>
-          {item.link && item.link !== "#" && (
-            <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, fontWeight:600, color:C.accent, textDecoration:"none", display:"flex", alignItems:"center", gap:4 }}>
-              View project <span>→</span>
-            </a>
-          )}
+          {item.status}
         </div>
       </div>
     </div>
@@ -140,9 +94,13 @@ function WorkCard({ item }) {
 }
 
 const WORK_ITEMS = [
-  { emoji:"🗺️", title:"IronMap", desc:"Equipment-aware gym training app with community accountability groups and daily habit check-ins.", tag:"APP", tagColor:"#E8FF47", bg:"linear-gradient(135deg,#080C0F,#1A2830)", status:"TestFlight — launching soon", link:"https://ironmap.vercel.app", appStore:true },
-  { emoji:"📊", title:"CoachProof", desc:"Mobile CRM for weight management coaches. Tanita body composition tracking, before/after photos, client progress.", tag:"APP", tagColor:"#10B981", bg:"linear-gradient(135deg,#0D1B0F,#1A3020)", status:"TestFlight — launching soon", link:"https://coachproof.vercel.app", appStore:true, photo:"/coachproof-icon.jpg" },
-  { emoji:"🏀", title:"EIS Chill Pai Nai", desc:"Bangkok Wednesday basketball league — live standings, box scores, player stat cards. Built from STATASTIC screenshots in one session.", tag:"WEB APP", tagColor:"#4EA8FF", bg:"linear-gradient(135deg,#050D1A,#0A1A2E)", status:"Live — updated weekly", link:"https://eis-league.vercel.app" },
+  { title:"IronMap", desc:"Equipment-aware gym training. Filters exercises to what your gym actually has, rest timer on Dynamic Island + Apple Watch, community accountability groups via join codes.", tag:"iOS APP", tagColor:"#E8FF47", hero:"/ironmap-og.png", status:"TestFlight approved", link:"https://ironmap.vercel.app", appStore:true },
+  { title:"CoachProof", desc:"Mobile CRM for weight management coaches. Tanita body composition tracking, structured before/after photos, client progress visualization, and sales pitch support.", tag:"iOS APP", tagColor:"#10B981", hero:"/coachproof-og.jpg", status:"TestFlight live — external testing", link:"https://coachproof.vercel.app", appStore:true },
+  { title:"EIS Chill Pai Nai", desc:"Bangkok Wednesday basketball league tracker. Live standings, box scores, and player stat cards — built from STATASTIC screenshots.", tag:"WEB APP", tagColor:"#4EA8FF", hero:"/eis-preview1.png", status:"Live — updated weekly", link:"https://eis-league.vercel.app" },
+];
+
+const COMMUNITY_ITEMS = [
+  { title:"Avalanche Team1 Bangkok", desc:"2 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg"], tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon" },
 ];
 
 export default function Shamwise() {
@@ -160,9 +118,7 @@ export default function Shamwise() {
         .offering-card:hover{background:${C.bg2}}
         .work-card{transition:transform 0.25s,box-shadow 0.25s;cursor:pointer}
         .work-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(26,22,18,0.12)}
-        .pricing-card{transition:transform 0.2s}
-        .pricing-card:hover{transform:translateY(-3px)}
-        .cta-btn{transition:transform 0.2s,box-shadow 0.2s;display:inline-flex;align-items:center;gap:10px}
+.cta-btn{transition:transform 0.2s,box-shadow 0.2s;display:inline-flex;align-items:center;gap:10px}
         .cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(232,93,38,0.3)}
       `}</style>
 
@@ -170,7 +126,7 @@ export default function Shamwise() {
       <nav style={{ position:"sticky", top:0, zIndex:100, padding:"18px 48px", display:"flex", alignItems:"center", justifyContent:"space-between", background:`${C.bg}ee`, backdropFilter:"blur(8px)", borderBottom:`1px solid ${C.border}` }}>
         <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:17, letterSpacing:-0.5 }}>Shamwise Studios</span>
         <div style={{ display:"flex", gap:32 }}>
-          {["offerings","portfolio","pricing","about","contact"].map(s => (
+          {["offerings","portfolio","about","contact"].map(s => (
             <a key={s} href={`#${s}`} className="nav-link" style={{ textTransform:"capitalize" }}>{s}</a>
           ))}
         </div>
@@ -246,37 +202,50 @@ export default function Shamwise() {
         <div style={{ fontSize:10, letterSpacing:4, color:C.ink3, marginBottom:48, display:"flex", alignItems:"center", gap:12 }}>
           RECENT WORK <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
-          <Reveal delay={0} style={{ gridColumn:"span 2" }}><AvalancheCard /></Reveal>
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
           {WORK_ITEMS.map((item,i) => (
-            <Reveal key={item.title} delay={(i+1)*0.08}><WorkCard item={item} /></Reveal>
+            <Reveal key={item.title} delay={i*0.08}>
+              <a href={item.link} target="_blank" rel="noopener noreferrer" className="work-card" style={{ display:"block", position:"relative", borderRadius:14, overflow:"hidden", textDecoration:"none", color:"white" }}>
+                <img src={item.hero} alt={item.title} style={{ width:"100%", aspectRatio:"2.4/1", objectFit:"cover", display:"block" }} />
+                <div style={{ position:"absolute", inset:0, background:"linear-gradient(0deg,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.3) 40%,transparent 65%)" }} />
+                <span style={{ position:"absolute", top:16, left:16, fontSize:10, padding:"4px 12px", borderRadius:100, fontWeight:700, background:`${item.tagColor}22`, color:item.tagColor, border:`1px solid ${item.tagColor}44`, backdropFilter:"blur(8px)" }}>{item.tag}</span>
+                {item.appStore && (
+                  <div style={{ position:"absolute", top:14, right:16, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", borderRadius:8, padding:"5px 12px", display:"flex", alignItems:"center", gap:6 }}>
+                    <span style={{ fontSize:13 }}>🍎</span>
+                    <div>
+                      <div style={{ fontSize:7, color:"#8A7D72", letterSpacing:0.5 }}>FREE ON</div>
+                      <div style={{ fontSize:10, fontWeight:700, color:"#ddd", letterSpacing:0.3 }}>App Store</div>
+                    </div>
+                  </div>
+                )}
+                <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"24px 24px 20px" }}>
+                  <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:22, marginBottom:6, letterSpacing:-0.5 }}>{item.title}</h3>
+                  <p style={{ fontSize:13, color:"rgba(255,255,255,0.7)", lineHeight:1.6, marginBottom:14, fontWeight:300, maxWidth:600 }}>{item.desc}</p>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"rgba(255,255,255,0.5)" }}>
+                      <span style={{ width:6, height:6, borderRadius:"50%", background:C.accent, display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
+                      {item.status}
+                    </div>
+                    <span style={{ fontSize:11, fontWeight:600, color:C.accent, display:"flex", alignItems:"center", gap:4 }}>
+                      View project <span>→</span>
+                    </span>
+                  </div>
+                </div>
+              </a>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      {/* PRICING */}
-      <section id="pricing" style={{ padding:"80px 48px", background:C.cream }}>
+      {/* COMMUNITY */}
+      <section style={{ padding:"80px 48px", background:C.cream }}>
         <div style={{ fontSize:10, letterSpacing:4, color:C.ink3, marginBottom:48, display:"flex", alignItems:"center", gap:12 }}>
-          PRICING <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
+          COMMUNITY <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, alignItems:"start" }}>
-          {PRICING.map((p,i) => (
-            <Reveal key={p.name} delay={i*0.1}>
-              <div className="pricing-card" style={{ background:p.featured?C.ink:C.bg, border:`1px solid ${p.featured?C.ink:C.border}`, borderRadius:14, padding:"32px 28px", position:"relative", color:p.featured?C.bg:C.ink }}>
-                {p.featured && <div style={{ position:"absolute", top:-12, left:"50%", transform:"translateX(-50%)", background:C.accent, color:"white", fontSize:10, fontWeight:700, letterSpacing:1.5, padding:"5px 16px", borderRadius:100, whiteSpace:"nowrap" }}>MOST POPULAR</div>}
-                <div style={{ fontSize:11, fontWeight:700, letterSpacing:2, color:p.featured?C.accent2:C.ink3, marginBottom:12, fontFamily:"monospace" }}>{p.name.toUpperCase()}</div>
-                <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:900, fontSize:40, letterSpacing:-2, lineHeight:1, marginBottom:4 }}>{p.price}</div>
-                <div style={{ fontSize:12, color:p.featured?"#6B5040":C.ink3, marginBottom:24 }}>{p.period}</div>
-                <div style={{ height:1, background:p.featured?"#2D2620":C.border, marginBottom:20 }} />
-                <ul style={{ listStyle:"none", display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
-                  {p.features.map(f => (
-                    <li key={f} style={{ fontSize:13, color:p.featured?"#B0A090":C.ink2, display:"flex", gap:8, alignItems:"flex-start", fontWeight:300 }}>
-                      <span style={{ color:C.accent, fontWeight:700, flexShrink:0 }}>✓</span> {f}
-                    </li>
-                  ))}
-                </ul>
-                <a href="#contact" style={{ display:"block", width:"100%", padding:13, borderRadius:10, textAlign:"center", fontSize:13, fontWeight:600, textDecoration:"none", background:p.featured?C.accent:"transparent", color:p.featured?"white":C.ink, border:p.featured?"none":`1px solid ${C.border}` }}>Get started</a>
-              </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+          {COMMUNITY_ITEMS.map((item,i) => (
+            <Reveal key={item.title} delay={i*0.08}>
+              <CommunityCard item={item} />
             </Reveal>
           ))}
         </div>
@@ -313,7 +282,7 @@ export default function Shamwise() {
               {[
                 { icon:"📱", title:"I build things I'd actually use", body:"IronMap and CoachProof came from real problems I saw in the fitness world. That's the filter I apply to every project." },
                 { icon:"🇹🇭", title:"Deep in the Bangkok ecosystem", body:"LINE, local payment flows, Thai business culture — I build for the market, not against it." },
-                { icon:"⛓️", title:"Web3 projects welcome", body:"Running Avalanche events in Bangkok with Binance TH means I'm plugged into the regional crypto scene." },
+                { icon:"⛓️", title:"Web3 projects welcome", body:"Running Avalanche events in Bangkok with Avalanche Team1 means I'm plugged into the regional crypto scene." },
               ].map(card => (
                 <div key={card.title} style={{ background:"#0D0A08", border:"1px solid #2D2620", borderRadius:12, padding:"20px 22px", transition:"border-color 0.2s" }}
                   onMouseEnter={e=>e.currentTarget.style.borderColor="#4A3F35"}
