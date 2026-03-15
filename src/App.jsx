@@ -224,7 +224,7 @@ export default function Shamwise() {
         <div style={{ fontSize:10, letterSpacing:4, color:C.ink3, marginBottom:48, display:"flex", alignItems:"center", gap:12 }}>
           RECENT WORK <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
         </div>
-        <div style={{ display:"flex", flexDirection:"column", gap:20, maxWidth:720, margin:"0 auto" }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:20, maxWidth:1200, margin:"0 auto" }}>
           {WORK_ITEMS.map((item,i) => (
             <Reveal key={item.title} delay={i*0.08}>
               <a href={item.link} target="_blank" rel="noopener noreferrer" className="work-card" style={{ display:"block", borderRadius:14, overflow:"hidden", textDecoration:"none", color:"white", background:"#1A1612", border:"1px solid #2D2620" }}>
