@@ -66,6 +66,11 @@ function CommunityCard({ item }) {
       <div style={{ position:"relative", overflow:"hidden", minHeight:260 }}>
         <img src={item.photos[photoIdx]} alt={item.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,transparent 60%,rgba(245,240,232,0.95))" }} />
+        {item.badge && (
+          <div style={{ position:"absolute", top:12, left:12, background:"rgba(26,22,18,0.75)", backdropFilter:"blur(8px)", borderRadius:100, padding:"4px 12px", fontSize:10, fontWeight:700, color:"#F2A65A", letterSpacing:1.5 }}>
+            {item.badge}
+          </div>
+        )}
         {item.photos.length > 1 && (
           <div style={{ position:"absolute", bottom:12, left:12, display:"flex", gap:4 }}>
             {item.photos.map((_,i) => (
@@ -100,7 +105,7 @@ const WORK_ITEMS = [
 ];
 
 const COMMUNITY_ITEMS = [
-  { title:"Avalanche Team1 Bangkok", desc:"2 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg"], tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon" },
+  { title:"Avalanche Team1 Bangkok", desc:"2 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg"], badge:"AVALANCHE × BINANCE TH", tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon" },
 ];
 
 export default function Shamwise() {
