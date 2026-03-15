@@ -62,7 +62,7 @@ function CommunityCard({ item }) {
   }, [item.photos]);
 
   return (
-    <div className="work-card" style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden", display:"grid", gridTemplateColumns:"1fr 1fr" }}>
+    <div className="work-card community-card-grid" style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden", display:"grid", gridTemplateColumns:"1fr 1fr" }}>
       <div style={{ position:"relative", overflow:"hidden", minHeight:260 }}>
         <img src={item.photos[photoIdx]} alt={item.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,transparent 60%,rgba(245,240,232,0.95))" }} />
@@ -123,29 +123,46 @@ export default function Shamwise() {
         .offering-card:hover{background:${C.bg2}}
         .work-card{transition:transform 0.25s,box-shadow 0.25s;cursor:pointer}
         .work-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(26,22,18,0.12)}
-.cta-btn{transition:transform 0.2s,box-shadow 0.2s;display:inline-flex;align-items:center;gap:10px}
+        .cta-btn{transition:transform 0.2s,box-shadow 0.2s;display:inline-flex;align-items:center;gap:10px}
         .cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(232,93,38,0.3)}
+        @media(max-width:768px){
+          .hero-grid{grid-template-columns:1fr !important}
+          .hero-right{display:none !important}
+          .nav-links{display:none !important}
+          .nav-badge{display:none !important}
+          .offerings-grid{grid-template-columns:1fr !important}
+          .about-grid{grid-template-columns:1fr !important;gap:40px !important}
+          .community-card-grid{grid-template-columns:1fr !important}
+          .contact-btns{flex-direction:column !important;align-items:center}
+          .footer-inner{flex-direction:column !important;gap:16px !important;text-align:center}
+          .footer-links{flex-direction:column !important;align-items:center !important;gap:8px !important}
+          .section-pad{padding-left:20px !important;padding-right:20px !important}
+          .nav-bar{padding-left:20px !important;padding-right:20px !important}
+        }
+        @media(max-width:480px){
+          .hero-heading{font-size:42px !important}
+        }
       `}</style>
 
       {/* NAV */}
-      <nav style={{ position:"sticky", top:0, zIndex:100, padding:"18px 48px", display:"flex", alignItems:"center", justifyContent:"space-between", background:`${C.bg}ee`, backdropFilter:"blur(8px)", borderBottom:`1px solid ${C.border}` }}>
+      <nav className="nav-bar" style={{ position:"sticky", top:0, zIndex:100, padding:"18px 48px", display:"flex", alignItems:"center", justifyContent:"space-between", background:`${C.bg}ee`, backdropFilter:"blur(8px)", borderBottom:`1px solid ${C.border}` }}>
         <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:17, letterSpacing:-0.5 }}>Shamwise Studios</span>
-        <div style={{ display:"flex", gap:32 }}>
+        <div className="nav-links" style={{ display:"flex", gap:32 }}>
           {["offerings","portfolio","about","contact"].map(s => (
             <a key={s} href={`#${s}`} className="nav-link" style={{ textTransform:"capitalize" }}>{s}</a>
           ))}
         </div>
-        <div style={{ background:C.ink, color:C.bg, padding:"8px 18px", borderRadius:100, fontSize:12, fontWeight:600 }}>Available for projects</div>
+        <div className="nav-badge" style={{ background:C.ink, color:C.bg, padding:"8px 18px", borderRadius:100, fontSize:12, fontWeight:600 }}>Available for projects</div>
       </nav>
 
       {/* HERO */}
-      <section style={{ padding:"80px 48px 72px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:48, alignItems:"end", background:C.bg, position:"relative", overflow:"hidden" }}>
+      <section className="section-pad hero-grid" style={{ padding:"80px 48px 72px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:48, alignItems:"end", background:C.bg, position:"relative", overflow:"hidden" }}>
         <div style={{ position:"absolute", top:-80, right:-80, width:400, height:400, borderRadius:"50%", background:`radial-gradient(circle,${C.accent2}30 0%,transparent 70%)`, pointerEvents:"none" }} />
         <div style={{ position:"relative" }}>
           <div style={{ fontSize:11, letterSpacing:3, color:C.accent, textTransform:"uppercase", marginBottom:20, display:"flex", alignItems:"center", gap:10, animation:"fadeUp 0.8s ease 0.2s both" }}>
             <span style={{ width:24, height:1, background:C.accent, display:"inline-block" }} /> Bangkok, Thailand
           </div>
-          <h1 style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:"clamp(48px,5.5vw,80px)", lineHeight:0.95, letterSpacing:-3, marginBottom:28, animation:"fadeUp 0.8s ease 0.35s both" }}>
+          <h1 className="hero-heading" style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:"clamp(48px,5.5vw,80px)", lineHeight:0.95, letterSpacing:-3, marginBottom:28, animation:"fadeUp 0.8s ease 0.35s both" }}>
             Build<br />
             <span style={{ fontFamily:"'Instrument Serif',serif", fontStyle:"italic", fontWeight:400, color:C.accent, letterSpacing:-2 }}>things</span><br />
             that work.
@@ -157,7 +174,7 @@ export default function Shamwise() {
             Start a project <span style={{ fontSize:18 }}>→</span>
           </a>
         </div>
-        <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:20, animation:"fadeUp 0.8s ease 0.6s both" }}>
+        <div className="hero-right" style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:20, animation:"fadeUp 0.8s ease 0.6s both" }}>
           <div style={{ fontFamily:"'Instrument Serif',serif", fontStyle:"italic", fontSize:56, color:C.ink3, textAlign:"right", lineHeight:1 }}>Bangkok<br />based.</div>
           <div style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent:"flex-end" }}>
             {["2 Apps in TestFlight","2 Avalanche Events","Bootcamp Incoming"].map(t => (
@@ -181,11 +198,11 @@ export default function Shamwise() {
       </div>
 
       {/* OFFERINGS */}
-      <section id="offerings" style={{ padding:"80px 48px", background:C.cream }}>
+      <section id="offerings" className="section-pad" style={{ padding:"80px 48px", background:C.cream }}>
         <div style={{ fontSize:10, letterSpacing:4, color:C.ink3, marginBottom:48, display:"flex", alignItems:"center", gap:12 }}>
           WHAT I DO <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2, background:C.border, border:`1px solid ${C.border}`, borderRadius:16, overflow:"hidden" }}>
+        <div className="offerings-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2, background:C.border, border:`1px solid ${C.border}`, borderRadius:16, overflow:"hidden" }}>
           {OFFERINGS.map((o,i) => (
             <Reveal key={o.num} delay={i*0.1}>
               <div className="offering-card" style={{ padding:"36px 32px", height:"100%" }}>
@@ -203,31 +220,33 @@ export default function Shamwise() {
       </section>
 
       {/* PORTFOLIO */}
-      <section id="portfolio" style={{ padding:"80px 48px", background:C.bg }}>
+      <section id="portfolio" className="section-pad" style={{ padding:"80px 48px", background:C.bg }}>
         <div style={{ fontSize:10, letterSpacing:4, color:C.ink3, marginBottom:48, display:"flex", alignItems:"center", gap:12 }}>
           RECENT WORK <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
         </div>
-        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:20, maxWidth:720, margin:"0 auto" }}>
           {WORK_ITEMS.map((item,i) => (
             <Reveal key={item.title} delay={i*0.08}>
-              <a href={item.link} target="_blank" rel="noopener noreferrer" className="work-card" style={{ display:"block", position:"relative", borderRadius:14, overflow:"hidden", textDecoration:"none", color:"white" }}>
-                <img src={item.hero} alt={item.title} style={{ width:"100%", aspectRatio:"2.4/1", objectFit:"cover", display:"block" }} />
-                <div style={{ position:"absolute", inset:0, background:"linear-gradient(0deg,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.3) 40%,transparent 65%)" }} />
-                <span style={{ position:"absolute", top:16, left:16, fontSize:10, padding:"4px 12px", borderRadius:100, fontWeight:700, background:`${item.tagColor}22`, color:item.tagColor, border:`1px solid ${item.tagColor}44`, backdropFilter:"blur(8px)" }}>{item.tag}</span>
-                {item.appStore && (
-                  <div style={{ position:"absolute", top:14, right:16, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", borderRadius:8, padding:"5px 12px", display:"flex", alignItems:"center", gap:6 }}>
-                    <span style={{ fontSize:13 }}>🍎</span>
-                    <div>
-                      <div style={{ fontSize:7, color:"#8A7D72", letterSpacing:0.5 }}>FREE ON</div>
-                      <div style={{ fontSize:10, fontWeight:700, color:"#ddd", letterSpacing:0.3 }}>App Store</div>
+              <a href={item.link} target="_blank" rel="noopener noreferrer" className="work-card" style={{ display:"block", borderRadius:14, overflow:"hidden", textDecoration:"none", color:"white", background:"#1A1612", border:"1px solid #2D2620" }}>
+                <div style={{ overflow:"hidden", background:"#0D0A08" }}>
+                  <img src={item.hero} alt={item.title} style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block" }} />
+                </div>
+                <div style={{ padding:"20px 24px 18px" }}>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <span style={{ fontSize:10, padding:"3px 10px", borderRadius:100, fontWeight:700, background:`${item.tagColor}18`, color:item.tagColor, border:`1px solid ${item.tagColor}33` }}>{item.tag}</span>
+                      <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:18, letterSpacing:-0.5 }}>{item.title}</h3>
                     </div>
+                    {item.appStore && (
+                      <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                        <span style={{ fontSize:12 }}>🍎</span>
+                        <span style={{ fontSize:9, color:"#8A7D72", fontWeight:600 }}>App Store</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"24px 24px 20px" }}>
-                  <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:22, marginBottom:6, letterSpacing:-0.5 }}>{item.title}</h3>
-                  <p style={{ fontSize:13, color:"rgba(255,255,255,0.7)", lineHeight:1.6, marginBottom:14, fontWeight:300, maxWidth:600 }}>{item.desc}</p>
+                  <p style={{ fontSize:13, color:"rgba(255,255,255,0.55)", lineHeight:1.6, marginBottom:14, fontWeight:300 }}>{item.desc}</p>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"rgba(255,255,255,0.5)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"rgba(255,255,255,0.4)" }}>
                       <span style={{ width:6, height:6, borderRadius:"50%", background:C.accent, display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
                       {item.status}
                     </div>
@@ -243,7 +262,7 @@ export default function Shamwise() {
       </section>
 
       {/* COMMUNITY */}
-      <section style={{ padding:"80px 48px", background:C.cream }}>
+      <section className="section-pad" style={{ padding:"80px 48px", background:C.cream }}>
         <div style={{ fontSize:10, letterSpacing:4, color:C.ink3, marginBottom:48, display:"flex", alignItems:"center", gap:12 }}>
           COMMUNITY <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
         </div>
@@ -257,8 +276,8 @@ export default function Shamwise() {
       </section>
 
       {/* ABOUT */}
-      <section id="about" style={{ padding:"80px 48px", background:C.ink, color:C.bg }}>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center" }}>
+      <section id="about" className="section-pad" style={{ padding:"80px 48px", background:C.ink, color:C.bg }}>
+        <div className="about-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center" }}>
           <div>
             <div style={{ fontSize:10, letterSpacing:4, color:"#4A3F35", marginBottom:32, display:"flex", alignItems:"center", gap:12 }}>
               ABOUT <span style={{ width:60, height:1, background:"#2D2620", display:"inline-block" }} />
@@ -303,7 +322,7 @@ export default function Shamwise() {
       </section>
 
       {/* CONTACT */}
-      <section id="contact" style={{ padding:"80px 48px", background:C.bg, textAlign:"center" }}>
+      <section id="contact" className="section-pad" style={{ padding:"80px 48px", background:C.bg, textAlign:"center" }}>
         <div style={{ fontSize:10, letterSpacing:4, color:C.ink3, marginBottom:32, display:"flex", alignItems:"center", justifyContent:"center", gap:12 }}>
           LET'S WORK <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
         </div>
@@ -314,7 +333,7 @@ export default function Shamwise() {
         <p style={{ fontSize:15, color:C.ink2, maxWidth:420, margin:"0 auto 36px", lineHeight:1.7, fontWeight:300 }}>
           No long forms. Just send a message and we'll figure out if we're a good fit.
         </p>
-        <div style={{ display:"flex", justifyContent:"center", gap:12, flexWrap:"wrap" }}>
+        <div className="contact-btns" style={{ display:"flex", justifyContent:"center", gap:12, flexWrap:"wrap" }}>
           {[
             { label:"💬 LINE: shamfaad",   href:"https://line.me/ti/p/~shamfaad",       s:{ background:C.ink, color:C.bg } },
             { label:"✉️ Email",            href:"mailto:shamwise8@gmail.com",            s:{ background:"transparent", border:`1px solid ${C.border}`, color:C.ink2 } },
@@ -327,13 +346,15 @@ export default function Shamwise() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ background:C.ink, padding:"24px 48px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <footer className="section-pad" style={{ background:C.ink, padding:"24px 48px" }}>
+        <div className="footer-inner" style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:15, color:C.bg2 }}>Shamwise Studios</span>
         <span style={{ fontSize:12, color:"#2D2620" }}>© 2026 — All rights reserved</span>
-        <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+        <div className="footer-links" style={{ display:"flex", alignItems:"center", gap:16 }}>
           <a href="https://x.com/shamwise8" target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:C.bg2, textDecoration:"none", transition:"color 0.2s" }}>𝕏 @shamwise8</a>
           <a href="https://t.me/shamwise8" target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:C.bg2, textDecoration:"none", transition:"color 0.2s" }}>✈️ Telegram</a>
           <span style={{ fontFamily:"'Instrument Serif',serif", fontStyle:"italic", fontSize:14, color:C.ink3 }}>Bangkok, Thailand</span>
+        </div>
         </div>
       </footer>
     </div>
