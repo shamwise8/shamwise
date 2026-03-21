@@ -89,9 +89,12 @@ function CommunityCard({ item }) {
             ))}
           </div>
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:C.ink3, marginTop:20 }}>
-          <span style={{ width:6, height:6, borderRadius:"50%", background:C.accent, display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
-          {item.status}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:11, color:C.ink3, marginTop:20 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <span style={{ width:6, height:6, borderRadius:"50%", background:C.accent, display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
+            {item.status}
+          </div>
+          {item.link && <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ color:C.accent, fontWeight:600, textDecoration:"none", fontSize:12 }}>View events →</a>}
         </div>
       </div>
     </div>
@@ -105,7 +108,7 @@ const WORK_ITEMS = [
 ];
 
 const COMMUNITY_ITEMS = [
-  { title:"Avalanche Team1 Bangkok", desc:"2 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg"], badge:"AVALANCHE × BINANCE TH", tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon" },
+  { title:"Avalanche Team1 Bangkok", desc:"2 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg"], badge:"AVALANCHE × BINANCE TH", tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon", link:"https://luma.com/avaxbuilders" },
 ];
 
 export default function Shamwise() {
@@ -228,10 +231,10 @@ export default function Shamwise() {
           {WORK_ITEMS.map((item,i) => (
             <Reveal key={item.title} delay={i*0.08}>
               <a href={item.link} target="_blank" rel="noopener noreferrer" className="work-card" style={{ display:"block", borderRadius:14, overflow:"hidden", textDecoration:"none", color:"white", background:"#1A1612", border:"1px solid #2D2620" }}>
-                <div style={{ overflow:"hidden", background:"#0D0A08" }}>
-                  <img src={item.hero} alt={item.title} style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block" }} />
+                <div style={{ overflow:"hidden", background:"#0D0A08", padding:"16px 16px 0" }}>
+                  <img src={item.hero} alt={item.title} style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block", borderRadius:"8px 8px 0 0" }} />
                 </div>
-                <div style={{ padding:"20px 24px 18px" }}>
+                <div style={{ padding:"20px 28px 18px" }}>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                       <span style={{ fontSize:10, padding:"3px 10px", borderRadius:100, fontWeight:700, background:`${item.tagColor}18`, color:item.tagColor, border:`1px solid ${item.tagColor}33` }}>{item.tag}</span>
