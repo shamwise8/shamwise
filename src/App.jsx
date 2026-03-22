@@ -89,9 +89,12 @@ function CommunityCard({ item }) {
             ))}
           </div>
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:C.ink3, marginTop:20 }}>
-          <span style={{ width:6, height:6, borderRadius:"50%", background:C.accent, display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
-          {item.status}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:11, color:C.ink3, marginTop:20 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <span style={{ width:6, height:6, borderRadius:"50%", background:C.accent, display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
+            {item.status}
+          </div>
+          {item.link && <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ color:C.accent, fontWeight:600, textDecoration:"none", fontSize:12 }}>View events →</a>}
         </div>
       </div>
     </div>
@@ -99,13 +102,13 @@ function CommunityCard({ item }) {
 }
 
 const WORK_ITEMS = [
-  { title:"IronMap", desc:"Equipment-aware gym training. Filters exercises to what your gym actually has, rest timer on Dynamic Island + Apple Watch, community accountability groups via join codes.", tag:"iOS APP", tagColor:"#E8FF47", hero:"/ironmap-og.png", status:"TestFlight approved", link:"https://ironmap.vercel.app", appStore:true },
+  { title:"IronMap", desc:"Equipment-aware gym training. Filters exercises to what your gym actually has, rest timer on Dynamic Island + Apple Watch, community accountability groups via join codes.", tag:"iOS + ANDROID", tagColor:"#E8FF47", hero:"/ironmap-og.png", status:"TestFlight approved", link:"https://ironmap.vercel.app", appStore:true },
   { title:"CoachProof", desc:"Mobile CRM for weight management coaches. Tanita body composition tracking, structured before/after photos, client progress visualization, and sales pitch support.", tag:"iOS APP", tagColor:"#10B981", hero:"/coachproof-og.jpg", status:"TestFlight live — external testing", link:"https://coachproof.vercel.app", appStore:true },
   { title:"EIS Chill Pai Nai", desc:"Bangkok Wednesday basketball league tracker. Live standings, box scores, and player stat cards — built from STATASTIC screenshots.", tag:"WEB APP", tagColor:"#4EA8FF", hero:"/eis-preview1.png", status:"Live — updated weekly", link:"https://eis-league.vercel.app" },
 ];
 
 const COMMUNITY_ITEMS = [
-  { title:"Avalanche Team1 Bangkok", desc:"2 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg"], badge:"AVALANCHE × BINANCE TH", tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon" },
+  { title:"Avalanche Team1 Bangkok", desc:"2 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg"], badge:"AVALANCHE × BINANCE TH", tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon", link:"https://luma.com/avaxbuilders" },
 ];
 
 export default function Shamwise() {
@@ -228,19 +231,19 @@ export default function Shamwise() {
           {WORK_ITEMS.map((item,i) => (
             <Reveal key={item.title} delay={i*0.08}>
               <a href={item.link} target="_blank" rel="noopener noreferrer" className="work-card" style={{ display:"block", borderRadius:14, overflow:"hidden", textDecoration:"none", color:"white", background:"#1A1612", border:"1px solid #2D2620" }}>
-                <div style={{ overflow:"hidden", background:"#0D0A08" }}>
-                  <img src={item.hero} alt={item.title} style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block" }} />
+                <div style={{ overflow:"hidden", background:"#0D0A08", padding:"16px 24px 0" }}>
+                  <img src={item.hero} alt={item.title} style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block", borderRadius:"8px 8px 0 0" }} />
                 </div>
-                <div style={{ padding:"20px 24px 18px" }}>
+                <div style={{ padding:"20px 28px 18px" }}>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                       <span style={{ fontSize:10, padding:"3px 10px", borderRadius:100, fontWeight:700, background:`${item.tagColor}18`, color:item.tagColor, border:`1px solid ${item.tagColor}33` }}>{item.tag}</span>
                       <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:18, letterSpacing:-0.5 }}>{item.title}</h3>
                     </div>
                     {item.appStore && (
-                      <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                        <span style={{ fontSize:12 }}>🍎</span>
-                        <span style={{ fontSize:9, color:"#8A7D72", fontWeight:600 }}>App Store</span>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <span style={{ fontSize:9, color:"#8A7D72", fontWeight:600 }}>🍎 App Store</span>
+                        {item.tag.includes("ANDROID") && <span style={{ fontSize:9, color:"#8A7D72", fontWeight:600 }}>🤖 Play Store</span>}
                       </div>
                     )}
                   </div>
@@ -273,6 +276,33 @@ export default function Shamwise() {
             </Reveal>
           ))}
         </div>
+      </section>
+
+      {/* COMING SOON */}
+      <section className="section-pad" style={{ padding:"80px 48px", background:C.bg }}>
+        <div style={{ fontSize:10, letterSpacing:4, color:C.ink3, marginBottom:48, display:"flex", alignItems:"center", gap:12 }}>
+          COMING SOON <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
+        </div>
+        <Reveal>
+          <div style={{ background:C.ink, borderRadius:14, overflow:"hidden", padding:"48px 40px", display:"flex", alignItems:"center", gap:40, border:`1px solid #2D2620` }}>
+            <div style={{ width:100, height:100, borderRadius:"50%", background:"radial-gradient(circle at 38% 35%, #A8F0B8CC, #5BC98A66 50%, #7EE8A233)", boxShadow:"0 0 60px rgba(126,232,162,0.15)", flexShrink:0 }} />
+            <div style={{ flex:1 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
+                <span style={{ fontSize:10, padding:"3px 10px", borderRadius:100, fontWeight:700, background:"rgba(126,232,162,0.12)", color:"#7EE8A2", border:"1px solid rgba(126,232,162,0.25)" }}>watchOS + iOS</span>
+                <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:24, letterSpacing:-0.5, color:"#E8F5EC" }}>Santi</h3>
+              </div>
+              <p style={{ fontSize:14, color:"rgba(255,255,255,0.55)", lineHeight:1.7, fontWeight:300, marginBottom:12 }}>
+                A nervous system coach on your wrist. Haptic-guided breathing, real-time heart rate proof, emotional check-ins mapped to planets. Apple Watch first — your body knows the way.
+              </p>
+              <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#8A7D72" }}>
+                  <span style={{ width:6, height:6, borderRadius:"50%", background:"#7EE8A2", display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
+                  Beta coming soon
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
       </section>
 
       {/* ABOUT */}
