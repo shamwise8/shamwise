@@ -102,7 +102,7 @@ function CommunityCard({ item }) {
 }
 
 const WORK_ITEMS = [
-  { title:"IronMap", desc:"Equipment-aware gym training. Filters exercises to what your gym actually has, rest timer on Dynamic Island + Apple Watch, community accountability groups via join codes.", tag:"iOS APP", tagColor:"#E8FF47", hero:"/ironmap-og.png", status:"TestFlight approved", link:"https://ironmap.vercel.app", appStore:true },
+  { title:"IronMap", desc:"Equipment-aware gym training. Filters exercises to what your gym actually has, rest timer on Dynamic Island + Apple Watch, community accountability groups via join codes.", tag:"iOS + ANDROID", tagColor:"#E8FF47", hero:"/ironmap-og.png", status:"TestFlight approved", link:"https://ironmap.vercel.app", appStore:true },
   { title:"CoachProof", desc:"Mobile CRM for weight management coaches. Tanita body composition tracking, structured before/after photos, client progress visualization, and sales pitch support.", tag:"iOS APP", tagColor:"#10B981", hero:"/coachproof-og.jpg", status:"TestFlight live — external testing", link:"https://coachproof.vercel.app", appStore:true },
   { title:"EIS Chill Pai Nai", desc:"Bangkok Wednesday basketball league tracker. Live standings, box scores, and player stat cards — built from STATASTIC screenshots.", tag:"WEB APP", tagColor:"#4EA8FF", hero:"/eis-preview1.png", status:"Live — updated weekly", link:"https://eis-league.vercel.app" },
 ];
@@ -241,9 +241,9 @@ export default function Shamwise() {
                       <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:18, letterSpacing:-0.5 }}>{item.title}</h3>
                     </div>
                     {item.appStore && (
-                      <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                        <span style={{ fontSize:12 }}>🍎</span>
-                        <span style={{ fontSize:9, color:"#8A7D72", fontWeight:600 }}>App Store</span>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <span style={{ fontSize:9, color:"#8A7D72", fontWeight:600 }}>🍎 App Store</span>
+                        {item.tag.includes("ANDROID") && <span style={{ fontSize:9, color:"#8A7D72", fontWeight:600 }}>🤖 Play Store</span>}
                       </div>
                     )}
                   </div>
