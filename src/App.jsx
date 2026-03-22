@@ -231,7 +231,7 @@ export default function Shamwise() {
           {WORK_ITEMS.map((item,i) => (
             <Reveal key={item.title} delay={i*0.08}>
               <a href={item.link} target="_blank" rel="noopener noreferrer" className="work-card" style={{ display:"block", borderRadius:14, overflow:"hidden", textDecoration:"none", color:"white", background:"#1A1612", border:"1px solid #2D2620" }}>
-                <div style={{ overflow:"hidden", background:"#0D0A08", padding:"16px 16px 0" }}>
+                <div style={{ overflow:"hidden", background:"#0D0A08", padding:"16px 24px 0" }}>
                   <img src={item.hero} alt={item.title} style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block", borderRadius:"8px 8px 0 0" }} />
                 </div>
                 <div style={{ padding:"20px 28px 18px" }}>
@@ -276,6 +276,33 @@ export default function Shamwise() {
             </Reveal>
           ))}
         </div>
+      </section>
+
+      {/* COMING SOON */}
+      <section className="section-pad" style={{ padding:"80px 48px", background:C.bg }}>
+        <div style={{ fontSize:10, letterSpacing:4, color:C.ink3, marginBottom:48, display:"flex", alignItems:"center", gap:12 }}>
+          COMING SOON <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
+        </div>
+        <Reveal>
+          <div style={{ background:C.ink, borderRadius:14, overflow:"hidden", padding:"48px 40px", display:"flex", alignItems:"center", gap:40, border:`1px solid #2D2620` }}>
+            <div style={{ width:100, height:100, borderRadius:"50%", background:"radial-gradient(circle at 38% 35%, #A8F0B8CC, #5BC98A66 50%, #7EE8A233)", boxShadow:"0 0 60px rgba(126,232,162,0.15)", flexShrink:0 }} />
+            <div style={{ flex:1 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
+                <span style={{ fontSize:10, padding:"3px 10px", borderRadius:100, fontWeight:700, background:"rgba(126,232,162,0.12)", color:"#7EE8A2", border:"1px solid rgba(126,232,162,0.25)" }}>watchOS + iOS</span>
+                <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:24, letterSpacing:-0.5, color:"#E8F5EC" }}>Santi</h3>
+              </div>
+              <p style={{ fontSize:14, color:"rgba(255,255,255,0.55)", lineHeight:1.7, fontWeight:300, marginBottom:12 }}>
+                A nervous system coach on your wrist. Haptic-guided breathing, real-time heart rate proof, emotional check-ins mapped to planets. Apple Watch first — your body knows the way.
+              </p>
+              <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#8A7D72" }}>
+                  <span style={{ width:6, height:6, borderRadius:"50%", background:"#7EE8A2", display:"inline-block", animation:"blink 2s ease-in-out infinite" }} />
+                  Beta coming soon
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
       </section>
 
       {/* ABOUT */}
