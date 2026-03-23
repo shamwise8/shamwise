@@ -305,6 +305,31 @@ export default function Shamwise() {
             </div>
           </div>
         </Reveal>
+
+        <Reveal delay={0.1}>
+          <div style={{ background:C.ink, borderRadius:14, overflow:"hidden", border:`1px solid #2D2620`, marginTop:20 }}>
+            <div style={{ padding:"32px 40px 20px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <span style={{ fontSize:10, padding:"3px 10px", borderRadius:100, fontWeight:700, background:"rgba(196,89,42,0.15)", color:"#C4592A", border:"1px solid rgba(196,89,42,0.3)" }}>WEB APP</span>
+                <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:24, letterSpacing:-0.5, color:"#F8F5EE" }}>Recall</h3>
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#8A7D72" }}>
+                <span style={{ width:6, height:6, borderRadius:"50%", background:"#C4592A", display:"inline-block" }} />
+                Live
+              </div>
+            </div>
+            <p style={{ padding:"0 40px 16px", fontSize:14, color:"rgba(255,255,255,0.55)", lineHeight:1.7, fontWeight:300 }}>
+              Spanish vocabulary trainer with spaced repetition. Type the translation, get instant feedback, repeat at the right intervals.
+            </p>
+            <div style={{ borderTop:"1px solid #2D2620", background:"#F8F5EE", borderRadius:"0 0 14px 14px" }}>
+              <iframe
+                src="https://playrecall.vercel.app"
+                title="Recall — Spanish vocabulary trainer"
+                style={{ width:"100%", height:500, border:"none", borderRadius:"0 0 14px 14px" }}
+              />
+            </div>
+          </div>
+        </Reveal>
       </section>
 
       {/* ABOUT */}
