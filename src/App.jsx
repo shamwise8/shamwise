@@ -321,11 +321,11 @@ export default function Shamwise() {
             <p style={{ padding:"0 40px 16px", fontSize:14, color:"rgba(255,255,255,0.55)", lineHeight:1.7, fontWeight:300 }}>
               Spanish vocabulary trainer with spaced repetition. Type the translation, get instant feedback, repeat at the right intervals.
             </p>
-            <div style={{ borderTop:"1px solid #2D2620", background:"#F8F5EE", borderRadius:"0 0 14px 14px" }}>
+            <div style={{ borderTop:"1px solid #2D2620", background:"#F8F5EE", borderRadius:"0 0 14px 14px", display:"flex", justifyContent:"center", padding:"24px 0" }}>
               <iframe
                 src="https://playrecall.vercel.app"
                 title="Recall — Spanish vocabulary trainer"
-                style={{ width:"100%", height:500, border:"none", borderRadius:"0 0 14px 14px" }}
+                style={{ width:"100%", maxWidth:420, height:600, border:"1px solid #E0DBD2", borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,0.08)" }}
               />
             </div>
           </div>
