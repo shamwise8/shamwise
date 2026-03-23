@@ -181,7 +181,7 @@ export default function Shamwise() {
         <div className="hero-right" style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:20, animation:"fadeUp 0.8s ease 0.6s both" }}>
           <div style={{ fontFamily:"'Instrument Serif',serif", fontStyle:"italic", fontSize:56, color:C.ink3, textAlign:"right", lineHeight:1 }}>Bangkok<br />based.</div>
           <div style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent:"flex-end" }}>
-            {["2 Apps in TestFlight","2 Avalanche Events","Bootcamp Incoming"].map(t => (
+            {["3 Apps in TestFlight","5+ Events Run","All Independent"].map(t => (
               <span key={t} style={{ background:C.ink, color:C.bg2, padding:"6px 14px", borderRadius:100, fontSize:11, fontWeight:500 }}>{t}</span>
             ))}
           </div>
@@ -319,13 +319,13 @@ export default function Shamwise() {
               </div>
             </div>
             <p style={{ padding:"0 40px 16px", fontSize:14, color:"rgba(255,255,255,0.55)", lineHeight:1.7, fontWeight:300 }}>
-              Spanish vocabulary trainer with spaced repetition. Type the translation, get instant feedback, repeat at the right intervals.
+              Spanish and Thai vocabulary trainer with spaced repetition. Type the translation, get instant feedback, repeat at the right intervals.
             </p>
-            <div style={{ borderTop:"1px solid #2D2620", background:"#F8F5EE", borderRadius:"0 0 14px 14px" }}>
+            <div style={{ borderTop:"1px solid #2D2620", background:"#F8F5EE", borderRadius:"0 0 14px 14px", display:"flex", justifyContent:"center", padding:"24px 0" }}>
               <iframe
                 src="https://playrecall.vercel.app"
                 title="Recall — Spanish vocabulary trainer"
-                style={{ width:"100%", height:500, border:"none", borderRadius:"0 0 14px 14px" }}
+                style={{ width:"100%", maxWidth:420, height:600, border:"1px solid #E0DBD2", borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,0.08)" }}
               />
             </div>
           </div>
@@ -347,10 +347,10 @@ export default function Shamwise() {
               I'm Sam — the person behind Shamwise Studios. I build apps, websites, and run Web3 events out of Bangkok. I don't have a big team or a fancy office. What I have is the ability to take an idea and make it real, fast.
             </p>
             <p style={{ fontSize:15, lineHeight:1.8, color:"#8A7D72", marginBottom:32, fontWeight:300 }}>
-              While building IronMap and CoachProof (both in TestFlight), I realised I could help local businesses get the same quality of digital presence. So I started doing that too.
+              While building IronMap, CoachProof, and Santi (all in TestFlight), I realised I could help local businesses get the same quality of digital presence. So I started doing that too.
             </p>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, padding:24, background:"#0D0A08", borderRadius:12, border:"1px solid #2D2620" }}>
-              {[["2","Apps in TestFlight"],["2+","Events run"],["BKK","Based in Bangkok"]].map(([num,label]) => (
+              {[["3","Apps in TestFlight"],["5+","Events run"],["BKK","Based in Bangkok"]].map(([num,label]) => (
                 <div key={label}>
                   <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:900, fontSize:30, color:C.accent2, lineHeight:1, letterSpacing:-1, marginBottom:4 }}>{num}</div>
                   <div style={{ fontSize:11, color:"#4A3F35", letterSpacing:0.5, lineHeight:1.4 }}>{label}</div>
