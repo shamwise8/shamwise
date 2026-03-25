@@ -233,7 +233,7 @@ export default function Shamwise() {
             <Reveal key={item.title} delay={i*0.08}>
               <a href={item.link} target="_blank" rel="noopener noreferrer" className="work-card" style={{ display:"block", borderRadius:14, overflow:"hidden", textDecoration:"none", color:"white", background:"#1A1612", border:"1px solid #2D2620" }}>
                 <div style={{ overflow:"hidden", background:"#0D0A08", padding:"16px 24px 0" }}>
-                  <img src={item.hero} alt={item.title} style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block", borderRadius:"8px 8px 0 0" }} />
+                  <img src={item.hero} alt={item.title} style={{ width:"100%", display:"block", borderRadius:"8px 8px 0 0" }} />
                 </div>
                 <div style={{ padding:"20px 28px 18px" }}>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
