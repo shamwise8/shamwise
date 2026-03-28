@@ -306,7 +306,6 @@ export default function Shamwise() {
           </div>
         </Reveal>
 
-        <Reveal delay={0.1}>
           <div style={{ background:C.ink, borderRadius:14, overflow:"hidden", border:`1px solid #2D2620`, marginTop:20 }}>
             <div style={{ padding:"32px 40px 20px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
               <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -321,7 +320,7 @@ export default function Shamwise() {
             <p style={{ padding:"0 40px 16px", fontSize:14, color:"rgba(255,255,255,0.55)", lineHeight:1.7, fontWeight:300 }}>
               Spanish and Thai vocabulary trainer with spaced repetition. Type the translation, get instant feedback, repeat at the right intervals.
             </p>
-            <div style={{ borderTop:"1px solid #2D2620", background:"#F8F5EE", borderRadius:"0 0 14px 14px", display:"flex", justifyContent:"center", padding:"24px 0" }}>
+            <div style={{ borderTop:"1px solid #2D2620", background:"#F8F5EE", borderRadius:"0 0 14px 14px", display:"flex", justifyContent:"center", padding:"24px 0", overscrollBehavior:"contain" }}>
               <iframe
                 src="https://playrecall.vercel.app"
                 title="Recall — Spanish vocabulary trainer"
@@ -329,7 +328,6 @@ export default function Shamwise() {
               />
             </div>
           </div>
-        </Reveal>
       </section>
 
       {/* ABOUT */}
