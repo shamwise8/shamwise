@@ -109,7 +109,7 @@ const WORK_ITEMS = [
 
 const COMMUNITY_ITEMS = [
   { title:"Hmong Cyber", desc:"Co-founded a youth development platform for Hmong hill tribe communities in Phitsanulok. 3 seasons of coding, media production, culinary arts, and hospitality training — 100+ students, 50+ volunteer teachers, 300+ hours taught. Ran the Hmong Cyber Festival celebrating culture and new skills.", photos:["/hmong-coding.jpg","/hmong-festival.jpg","/hmong-teaching.jpg","/hmong-tiedye.jpg","/hmong-booth1.jpg","/hmong-booth2.jpg","/hmong-booth3.jpg"], badge:"CO-FOUNDER", tags:["Phitsanulok","Youth Dev","Education","Social Impact","Blockchain Thailand"], status:"Active" },
-  { title:"Avalanche Team1 Bangkok", desc:"2 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg","/avalanche-bootcamp.jpg"], badge:"AVALANCHE × BINANCE TH", tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon", link:"https://luma.com/avaxbuilders2" },
+  { title:"Avalanche Team1 Bangkok", desc:"5 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg","/avalanche-bootcamp.jpg"], badge:"AVALANCHE × BINANCE TH", tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon", link:"https://luma.com/avaxbuilders2" },
 ];
 
 export default function Shamwise() {
