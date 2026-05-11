@@ -1,0 +1,62 @@
+<svg viewBox="0 0 80 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pudgy padel mark">
+  <defs>
+    <clipPath id="head">
+      <ellipse cx="40" cy="38" rx="29" ry="33"/>
+    </clipPath>
+  </defs>
+
+  <!-- Handle base -->
+  <rect x="32" y="78" width="16" height="26" rx="2.5" fill="#00142D"/>
+  <!-- Grip stripes -->
+  <rect x="32" y="82" width="16" height="2.2" fill="#80ABFF"/>
+  <rect x="32" y="87" width="16" height="2.2" fill="#80ABFF"/>
+  <rect x="32" y="92" width="16" height="2.2" fill="#80ABFF"/>
+  <rect x="32" y="97" width="16" height="2.2" fill="#80ABFF"/>
+  <!-- Wrist strap loop -->
+  <rect x="36" y="100" width="8" height="6" rx="2" fill="none" stroke="#00142D" stroke-width="2"/>
+
+  <!-- Throat V -->
+  <path d="M 30 78 L 21 67 L 59 67 L 50 78 Z" fill="#00142D"/>
+
+  <!-- Head fill (Blizzard Blue base) -->
+  <ellipse cx="40" cy="38" rx="29" ry="33" fill="#F5FDFF"/>
+
+  <!-- Igloo tile pattern on the face -->
+  <g clip-path="url(#head)" fill="#80ABFF">
+    <!-- offset brick rows -->
+    <rect x="22" y="6"  width="11" height="9"/>
+    <rect x="46" y="6"  width="11" height="9"/>
+
+    <rect x="10" y="16" width="11" height="9"/>
+    <rect x="34" y="16" width="11" height="9"/>
+    <rect x="58" y="16" width="11" height="9"/>
+
+    <rect x="22" y="26" width="11" height="9"/>
+    <rect x="46" y="26" width="11" height="9"/>
+
+    <rect x="10" y="36" width="11" height="9"/>
+    <rect x="34" y="36" width="11" height="9"/>
+    <rect x="58" y="36" width="11" height="9"/>
+
+    <rect x="22" y="46" width="11" height="9"/>
+    <rect x="46" y="46" width="11" height="9"/>
+
+    <rect x="10" y="56" width="11" height="9"/>
+    <rect x="34" y="56" width="11" height="9"/>
+    <rect x="58" y="56" width="11" height="9"/>
+  </g>
+
+  <!-- Head outline (drawn on top so it stays sharp) -->
+  <ellipse cx="40" cy="38" rx="29" ry="33" fill="none" stroke="#00142D" stroke-width="3"/>
+
+  <!-- Perforation dots (padel-face holes) -->
+  <g fill="#00142D">
+    <circle cx="40" cy="20" r="1.4"/>
+    <circle cx="28" cy="32" r="1.4"/>
+    <circle cx="40" cy="32" r="1.4"/>
+    <circle cx="52" cy="32" r="1.4"/>
+    <circle cx="40" cy="44" r="1.4"/>
+    <circle cx="28" cy="56" r="1.4"/>
+    <circle cx="52" cy="56" r="1.4"/>
+  </g>
+</svg>
