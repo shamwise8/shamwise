@@ -23,7 +23,7 @@
 <meta name="twitter:image" content="https://shamwise.com/seabw/assets/sterling_lounge.jpeg">
 <link rel="canonical" href="https://shamwise.com/seabw/">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Londrina+Solid:wght@400;900&display=swap');
 
 :root {
   --red: #FF394A;
@@ -675,6 +675,159 @@ footer {
 .foot-meta a { color: rgba(245,245,249,0.85); }
 .foot-meta a:hover { color: var(--red); }
 
+/* ============== PUDGY BRAND ELEMENTS ============== */
+
+/* Hero co-host: official PUDGY logo inline */
+.hero-co .pudgy-logo {
+  height: 38px;
+  width: auto;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
+/* Hero top-nav: official PUDGY logo inline */
+.hero-mark .pudgy-logo-nav {
+  height: 22px;
+  width: auto;
+  vertical-align: middle;
+  margin: 0 2px;
+}
+
+/* Dedicated Pudgy co-host band — between concept and audience */
+.pudgy-band {
+  background: var(--pudgy-ice);
+  color: var(--pudgy-ink);
+  padding: clamp(56px, 7vw, 96px) 0;
+  position: relative;
+  overflow: hidden;
+}
+.pudgy-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('assets/pudgy/brick-layer.svg') repeat;
+  background-size: clamp(600px, 70vw, 1100px) auto;
+  opacity: 0.55;
+  pointer-events: none;
+}
+.pudgy-band .wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 22px;
+}
+.pudgy-band .pax-hero {
+  width: clamp(240px, 32vw, 380px);
+  aspect-ratio: 837 / 606;
+  background: url('assets/pudgy/paxpolly-mirror.svg') no-repeat center / contain;
+}
+.pudgy-band .pudgy-lockup-img {
+  width: clamp(180px, 22vw, 280px);
+  height: auto;
+  display: block;
+}
+.pudgy-band .pudgy-tag {
+  font-size: clamp(12px, 1vw, 14px);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--pudgy-ink);
+  opacity: 0.55;
+  font-weight: 600;
+}
+
+/* Audience cell: small character mark on the SEABW + Pudgy cell */
+.aud-cell { position: relative; }
+.aud-cell.is-pudgy::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 44px;
+  aspect-ratio: 601 / 482;
+  background: url('assets/pudgy/pengu-polly-walk.svg') no-repeat center / contain;
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+
+/* Footer Pudgy logo */
+.foot-mark .pudgy-logo-sm {
+  height: 22px;
+  width: auto;
+  vertical-align: middle;
+  margin: 0 2px;
+}
+
+/* Audience: huddle illustration right of heading, close to text */
+.audience-head {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.2vw, 18px);
+}
+.audience-head > div { flex: 0 1 auto; min-width: 0; }
+.audience-huddle {
+  width: clamp(260px, 34vw, 480px);
+  height: auto;
+  flex-shrink: 0;
+}
+@media (max-width: 880px) {
+  .audience-head { flex-direction: column; align-items: flex-start; gap: 24px; }
+  .audience-huddle { width: clamp(220px, 60vw, 340px); align-self: center; }
+}
+
+/* Venue: pp-takeover next to section title */
+.venue-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(16px, 3vw, 40px);
+}
+.venue-takeover {
+  width: clamp(140px, 18vw, 220px);
+  height: auto;
+  flex-shrink: 0;
+}
+@media (max-width: 720px) {
+  .venue-head { flex-direction: column; align-items: flex-start; }
+  .venue-takeover { width: 140px; }
+}
+
+/* Sponsor: group illustration above the Contact CTA */
+.sponsor-illo {
+  width: clamp(180px, 22vw, 280px);
+  height: auto;
+  display: block;
+  margin: 0 auto 8px;
+}
+
+/* Hosts: Polly to the right of "Pat" — absolutely positioned so name baselines align with Sam */
+.host.has-polly .host-name {
+  position: relative;
+  display: inline-block;
+}
+.host.has-polly .host-polly {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 72px;
+  width: auto;
+  margin-left: 14px;
+  pointer-events: none;
+}
+
+/* Footer co-host wordmark */
+.foot-co-pudgy {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--pudgy);
+}
+.foot-co-pudgy .pudgy-word {
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
 /* ============== RESPONSIVE ============== */
 @media (max-width: 880px) {
   .glance-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -706,7 +859,7 @@ footer {
   <div class="hero-nav">
     <div class="hero-mark">
       <img class="mark" src="assets/Team1_Symbol_Main.svg" alt="">
-      Team1 × Pudgy <span>· Padel Night</span>
+      Team1 × <img class="pudgy-logo-nav" src="assets/pudgy/pudgy-logo.svg" alt="Pudgy Penguins"> <span>· Padel Night</span>
     </div>
     <a class="hero-nav-cta" href="#sponsor">Sponsorship →</a>
   </div>
@@ -726,7 +879,7 @@ footer {
       <a class="hero-cta" href="#sponsor">Become a sponsor <span>→</span></a>
       <div class="hero-co">
         <img class="mark" src="assets/Team1_Symbol_Main.svg" alt="">
-        Team1 <span class="x">×</span> Pudgy Penguins
+        Team1 <span class="x">×</span> <img class="pudgy-logo" src="assets/pudgy/pudgy-logo.svg" alt="Pudgy Penguins">
       </div>
     </div>
   </div>
@@ -776,12 +929,26 @@ footer {
   </div>
 </section>
 
+<!-- ====== PUDGY CO-HOST BAND ====== -->
+<section class="pudgy-band">
+  <div class="wrap">
+    <div class="pax-hero" aria-hidden="true"></div>
+    <img class="pudgy-lockup-img" src="assets/pudgy/pudgy-logo.svg" alt="Pudgy Penguins">
+    <div class="pudgy-tag">Official Co-Host · Bangkok 2026</div>
+  </div>
+</section>
+
 <!-- ====== AUDIENCE ====== -->
 <section class="audience-bg">
   <div class="wrap">
-    <div class="s-eyebrow">Who's in the room</div>
-    <h2 class="s-title">Curated for <em>amplification.</em></h2>
-    <p class="s-lead">50 invited guests across four tiers — chosen for the audiences they reach, not the conferences they attend.</p>
+    <div class="audience-head">
+      <div>
+        <div class="s-eyebrow">Who's in the room</div>
+        <h2 class="s-title">Curated for <em>amplification.</em></h2>
+        <p class="s-lead">50 invited guests across four tiers — chosen for the audiences they reach, not the conferences they attend.</p>
+      </div>
+      <img class="audience-huddle" src="assets/pudgy/huddle-1.svg" alt="">
+    </div>
 
     <div class="audience-grid">
       <div class="aud-cell">
@@ -815,9 +982,12 @@ footer {
 
 <!-- ====== VENUE ====== -->
 <section class="venue-section">
-  <div class="wrap">
-    <div class="s-eyebrow">The Venue</div>
-    <h2 class="s-title">Sterling<br><em>Sport and Wellness.</em></h2>
+  <div class="wrap venue-head">
+    <div>
+      <div class="s-eyebrow">The Venue</div>
+      <h2 class="s-title">Sterling<br><em>Sport and Wellness.</em></h2>
+    </div>
+    <img class="venue-takeover" src="assets/pudgy/pp-takeover.svg" alt="Pudgy Penguins takeover">
   </div>
   <div class="wrap">
     <div class="carousel-wrap">
@@ -924,6 +1094,7 @@ footer {
     <p class="tier-disclaim">Maximum 2 sponsors total. Custom packages available for partners interested in deeper integration.</p>
 
     <div class="sponsor-cta-wrap">
+      <img class="sponsor-illo" src="assets/pudgy/group.svg" alt="">
       <a href="https://t.me/shamwise8" target="_blank" rel="noopener" class="sponsor-cta">
         Interested in sponsoring? Contact Shamwise <span>→</span>
       </a>
@@ -945,9 +1116,9 @@ footer {
         <p class="host-bio">Independent operator running Team1 Thailand chapter activations. Network spans Thai creator community, Bangkok nomad operators, and crypto-native builders. 10+ years across media, wellness, sports, and tech sectors.</p>
         <span class="host-handle">@shamwise8</span>
       </div>
-      <div class="host">
+      <div class="host has-polly">
         <span class="host-role">Pudgy Penguins APAC</span>
-        <h3 class="host-name">Pat</h3>
+        <h3 class="host-name">Pat<img class="host-polly" src="assets/pudgy/polly-proud.svg" alt=""></h3>
         <p class="host-bio">APAC Events Lead at Pudgy Penguins. Brings Pudgy's regional network reach, design production capacity, and brand activation infrastructure.</p>
       </div>
     </div>
@@ -957,7 +1128,7 @@ footer {
 <!-- ====== FOOTER ====== -->
 <footer>
   <div class="wrap foot-row">
-    <span class="foot-mark"><img class="mark" src="assets/Team1_Symbol_Main.svg" alt="">Team1 × Pudgy · Padel Night</span>
+    <span class="foot-mark"><img class="mark" src="assets/Team1_Symbol_Main.svg" alt="">Team1 × <img class="pudgy-logo-sm" src="assets/pudgy/pudgy-logo.svg" alt="Pudgy"> · Padel Night</span>
     <div class="foot-meta">
       <a href="https://t.me/shamwise8" target="_blank" rel="noopener">@shamwise8</a>
       <span>·</span>
