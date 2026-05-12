@@ -823,7 +823,7 @@ footer {
   margin: 0 auto 8px;
 }
 
-/* Hosts: Polly to the right of "Pat" — absolutely positioned so name baselines align with Sam */
+/* Hosts: Polly to the right of "Pat" — absolutely positioned so name baselines align with Sam (desktop) */
 .host.has-polly .host-name {
   position: relative;
   display: inline-block;
@@ -835,8 +835,23 @@ footer {
   transform: translateY(-50%);
   height: 72px;
   width: auto;
-  margin-left: 14px;
+  margin-left: 8px;
   pointer-events: none;
+}
+@media (max-width: 880px) {
+  .host.has-polly .host-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .host.has-polly .host-polly {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    margin-left: 0;
+    height: 56px;
+  }
 }
 
 /* Footer co-host wordmark */
@@ -864,6 +879,21 @@ footer {
   .aud-cell { border-right: none; }
   .hero h1 { letter-spacing: -2px; }
   .hero-co { font-size: 11px; }
+
+  /* Hero nav: hide trailing "Padel Night" subtitle (H1 already says it) and shrink Pudgy logo */
+  .hero-mark span { display: none; }
+  .hero-mark .pudgy-logo-nav { height: 18px; }
+  .hero-mark { font-size: 11px; gap: 6px; }
+  .hero-nav { padding: 16px 18px; }
+  .hero-nav-cta { font-size: 10px; padding: 7px 12px; }
+
+  /* Footer: stack meta below, smaller logos, allow wrapping */
+  .foot-row { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .foot-mark { flex-wrap: wrap; row-gap: 6px; font-size: 12px; }
+  .foot-mark .mark { height: 22px; }
+  .foot-mark .pudgy-logo-sm { height: 18px; }
+  .foot-mark .foot-seabw-logo { height: 14px; }
+  .foot-meta { flex-wrap: wrap; row-gap: 6px; }
 }
 </style>
 </head>
