@@ -826,6 +826,17 @@ footer {
   margin: 0 auto 8px;
 }
 
+/* Hosts: clickable team1 logo next to Sam name */
+.host-team1-link {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: -0.15em;
+  margin-left: 8px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.host-team1-link:hover { opacity: 0.7; transform: translateY(-1px); }
+.host-team1 { height: 1em; width: auto; display: block; }
+
 /* Hosts: Polly to the right of "Pat" — absolutely positioned so name baselines align with Sam (desktop) */
 .host.has-polly .host-name {
   position: relative;
@@ -1169,7 +1180,7 @@ footer {
     <div class="hosts-grid">
       <div class="host">
         <span class="host-role">team1 Thailand</span>
-        <h3 class="host-name">Sam (Shamwise)</h3>
+        <h3 class="host-name">Sam (Shamwise) <a class="host-team1-link" href="https://x.com/AvaxTeam1" target="_blank" rel="noopener" aria-label="team1 on X"><img class="host-team1" src="assets/Team1_Symbol_Main.svg" alt="team1"></a></h3>
         <p class="host-bio">Independent operator running team1 Thailand chapter activations. Network spans Thai creator community, Bangkok nomad operators, and crypto-native builders. 10+ years across media, wellness, sports, and tech sectors.</p>
         <span class="host-handle">@shamwise8</span>
       </div>
