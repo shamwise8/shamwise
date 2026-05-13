@@ -200,6 +200,20 @@ p, .s-lead, .concept-pull, .host-bio { text-wrap: pretty; }
   transition: all 0.2s;
 }
 .hero-cta:hover { background: var(--light); color: var(--dark); transform: translateY(-1px); }
+.hero-cta-secondary {
+  background: transparent;
+  color: var(--light);
+  border: 1px solid rgba(245,245,249,0.55);
+  font-family: 'Kanit', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  padding: 15px 24px;
+  border-radius: 100px;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: all 0.2s;
+}
+.hero-cta-secondary:hover { background: var(--light); color: var(--dark); border-color: var(--light); transform: translateY(-1px); }
 .hero-co {
   display: flex; align-items: center; gap: 14px;
   color: var(--light);
@@ -942,6 +956,7 @@ footer {
     </p>
     <div class="hero-row">
       <a class="hero-cta" href="#sponsor">Become a sponsor <span>→</span></a>
+      <a class="hero-cta-secondary" href="https://luma.com/team1pudgy" target="_blank" rel="noopener">RSVP on Luma <span>↗</span></a>
       <div class="hero-co">
         <img class="team1-text" src="assets/Team1_Text_Main.svg" alt="team1">
         <span class="x">×</span>
