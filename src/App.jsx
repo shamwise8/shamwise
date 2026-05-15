@@ -108,6 +108,7 @@ const WORK_ITEMS = [
 ];
 
 const COMMUNITY_ITEMS = [
+  { title:"Team1 × Pudgy Padel Night", desc:"Curated creator gathering at Bangkok's premium indoor padel venue. 40 invited guests — Thai blue-tick creators, cross-chain KOLs, Pudgy community, and Bangkok operators. SEABW week, May 24.", photos:["/sterling_court.jpeg","/sterling_lounge.jpeg"], badge:"TEAM1 × PUDGY PENGUINS", tags:["Bangkok","SEABW","Padel","Pudgy","Team1"], status:"May 24 · Sponsorships open", link:"https://shamwise.com/seabw" },
   { title:"Hmong Cyber", desc:"Co-founded a youth development platform for Hmong hill tribe communities in Phitsanulok. 3 seasons of coding, media production, culinary arts, and hospitality training — 100+ students, 50+ volunteer teachers, 300+ hours taught. Ran the Hmong Cyber Festival celebrating culture and new skills.", photos:["/hmong-coding.jpg","/hmong-festival.jpg","/hmong-teaching.jpg","/hmong-tiedye.jpg","/hmong-booth1.jpg","/hmong-booth2.jpg","/hmong-booth3.jpg"], badge:"CO-FOUNDER", tags:["Phitsanulok","Youth Dev","Education","Social Impact","Blockchain Thailand"], status:"Active" },
   { title:"Avalanche Team1 Bangkok", desc:"5 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg","/avalanche-bootcamp.jpg"], badge:"AVALANCHE × BINANCE TH", tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon", link:"https://luma.com/avaxbuilders2" },
 ];
@@ -152,7 +153,7 @@ export default function Shamwise() {
       <nav className="nav-bar" style={{ position:"sticky", top:0, zIndex:100, padding:"18px 48px", display:"flex", alignItems:"center", justifyContent:"space-between", background:`${C.bg}ee`, backdropFilter:"blur(8px)", borderBottom:`1px solid ${C.border}` }}>
         <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:17, letterSpacing:-0.5 }}>Shamwise Studios</span>
         <div className="nav-links" style={{ display:"flex", gap:32 }}>
-          {["offerings","portfolio","about","contact"].map(s => (
+          {["offerings","portfolio","community","about","contact"].map(s => (
             <a key={s} href={`#${s}`} className="nav-link" style={{ textTransform:"capitalize" }}>{s}</a>
           ))}
         </div>
@@ -266,7 +267,7 @@ export default function Shamwise() {
       </section>
 
       {/* COMMUNITY */}
-      <section className="section-pad" style={{ padding:"80px 48px", background:C.cream }}>
+      <section id="community" className="section-pad" style={{ padding:"80px 48px", background:C.cream }}>
         <div style={{ fontSize:10, letterSpacing:4, color:C.ink3, marginBottom:48, display:"flex", alignItems:"center", gap:12 }}>
           COMMUNITY <span style={{ width:60, height:1, background:C.border, display:"inline-block" }} />
         </div>
@@ -401,15 +402,18 @@ export default function Shamwise() {
       </section>
 
       {/* FOOTER */}
-      <footer className="section-pad" style={{ background:C.ink, padding:"24px 48px" }}>
+      <footer className="section-pad" style={{ background:C.ink, padding:"28px 48px", borderTop:"1px solid #2D2620" }}>
         <div className="footer-inner" style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:15, color:C.bg2 }}>Shamwise Studios</span>
-        <span style={{ fontSize:12, color:"#2D2620" }}>© 2026 — All rights reserved</span>
-        <div className="footer-links" style={{ display:"flex", alignItems:"center", gap:16 }}>
-          <a href="https://x.com/shamwise8" target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:C.bg2, textDecoration:"none", transition:"color 0.2s" }}>𝕏 @shamwise8</a>
-          <a href="https://t.me/shamwise8" target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:C.bg2, textDecoration:"none", transition:"color 0.2s" }}>✈️ Telegram</a>
-          <span style={{ fontFamily:"'Instrument Serif',serif", fontStyle:"italic", fontSize:14, color:C.ink3 }}>Bangkok, Thailand</span>
-        </div>
+          <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:15, color:C.bg2 }}>Shamwise Studios</span>
+          <span style={{ fontSize:12, color:"#6B5D50" }}>© 2026 Shamwise Studios · Bangkok, Thailand</span>
+          <div className="footer-links" style={{ display:"flex", alignItems:"center", gap:20 }}>
+            <a href="https://x.com/shamwise8" target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:"#6B5D50", textDecoration:"none", transition:"color 0.2s" }}
+              onMouseEnter={e=>e.currentTarget.style.color=C.bg2} onMouseLeave={e=>e.currentTarget.style.color="#6B5D50"}>𝕏 @shamwise8</a>
+            <a href="https://t.me/shamwise8" target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:"#6B5D50", textDecoration:"none", transition:"color 0.2s" }}
+              onMouseEnter={e=>e.currentTarget.style.color=C.bg2} onMouseLeave={e=>e.currentTarget.style.color="#6B5D50"}>Telegram</a>
+            <a href="#" onClick={e=>{e.preventDefault();window.scrollTo({top:0,behavior:"smooth"})}} style={{ fontSize:12, color:"#6B5D50", textDecoration:"none", transition:"color 0.2s", display:"flex", alignItems:"center", gap:4 }}
+              onMouseEnter={e=>e.currentTarget.style.color=C.bg2} onMouseLeave={e=>e.currentTarget.style.color="#6B5D50"}>↑ Back to top</a>
+          </div>
         </div>
       </footer>
     </div>
