@@ -558,7 +558,14 @@ section { padding: clamp(64px, 9vw, 120px) 0; position: relative; }
   background: rgba(255,57,74,0.07);
   border-color: rgba(255,57,74,0.4);
 }
+.tier.sold-out {
+  opacity: 0.55;
+  pointer-events: none;
+}
+.tier.sold-out .tier-price { text-decoration: line-through; text-decoration-color: rgba(245,245,249,0.4); }
 .tier:hover { border-color: var(--red); }
+.tier.sold-out:hover { border-color: rgba(245,245,249,0.12); }
+.tier-flag-soldout { background: var(--dark-3) !important; color: rgba(245,245,249,0.85) !important; }
 .tier-flag {
   position: absolute; top: -12px; right: 24px;
   background: var(--red); color: #fff;
@@ -985,7 +992,7 @@ footer {
       </div>
       <div class="glance-cell">
         <span class="glance-label">Format</span>
-        <span class="glance-value">3-hour curated event</span>
+        <span class="glance-value">4 courts · 3 hours</span>
         <span class="glance-sub">50 attendees · invite-only</span>
       </div>
     </div>
@@ -1003,7 +1010,7 @@ footer {
         <p>This is both — at the venue setting the city's premium standard, with a guest list built for amplification.</p>
       </div>
       <div class="concept-pull">
-        We're hosting 50 carefully selected creators, builders, and operators. Three padel courts. One Center Court Sports Bar. The kind of night that produces content people actually want to make.
+        We're hosting 50 carefully selected creators, builders, and operators. Four padel courts. One Center Court Sports Bar. The kind of night that produces content people actually want to make.
       </div>
     </div>
   </div>
@@ -1144,9 +1151,10 @@ footer {
     <p class="s-lead">Premium brand exposure to a curated room of high-amplification guests. Maximum two sponsors total.</p>
 
     <div class="tier-grid">
-      <div class="tier">
+      <div class="tier featured">
+        <span class="tier-flag">One Spot Left</span>
         <span class="tier-name">Lounge Partner</span>
-        <div class="tier-price"><span class="usd">$</span>400</div>
+        <div class="tier-price"><span class="usd">$</span>500</div>
         <span class="tier-tag">Quiet presence at the lounge.</span>
         <ul class="tier-list">
           <li>Logo on event graphic and on-site signage</li>
@@ -1156,8 +1164,8 @@ footer {
           <li>Mention in post-event recap</li>
         </ul>
       </div>
-      <div class="tier featured">
-        <span class="tier-flag">Recommended</span>
+      <div class="tier sold-out">
+        <span class="tier-flag tier-flag-soldout">Sold Out</span>
         <span class="tier-name">Court Partner</span>
         <div class="tier-price"><span class="usd">$</span>600</div>
         <span class="tier-tag">A court of your own.</span>
