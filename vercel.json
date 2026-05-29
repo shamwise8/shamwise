@@ -4,6 +4,9 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/links", "destination": "/links.html" },
-    { "source": "/linkx", "destination": "/linkx.html" }
+    { "source": "/linkx", "destination": "/linkx.html" },
+    { "source": "/team1kickoff", "destination": "/Team1KickOff/index.html" },
+    { "source": "/team1kickoff/", "destination": "/Team1KickOff/index.html" },
+    { "source": "/Team1Kickoff", "destination": "/Team1KickOff/index.html" }
   ]
 }
