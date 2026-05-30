@@ -326,6 +326,9 @@ section { padding: clamp(56px, 8vw, 104px) 0; position: relative; }
 .community-photo figcaption span { font-weight: 300; color: rgba(245,245,249,0.6); }
 
 /* ============== WHY THIS MATTERS ============== */
+.vibe-bg { background: var(--light-2); }
+.tweet-embed { display: flex; justify-content: center; margin-top: clamp(28px, 4vw, 44px); }
+.tweet-embed .twitter-tweet { margin: 0 !important; }
 .why-bg { background: var(--warm); }
 .why-list { margin-top: clamp(32px, 4vw, 48px); display: flex; flex-direction: column; gap: 0; }
 .why-item {
@@ -570,6 +573,20 @@ footer { background: var(--dark); color: var(--light); padding: 0 0 clamp(36px, 
   </div>
 </section>
 
+<!-- ====== VIBE / VIDEO ====== -->
+<section class="vibe-bg">
+  <div class="wrap">
+    <div class="s-eyebrow">The Vibe</div>
+    <h2 class="s-title">See it in <em>action.</em></h2>
+    <p class="s-th" lang="th">บรรยากาศงานจริง</p>
+    <div class="tweet-embed">
+      <blockquote class="twitter-tweet" data-media-max-width="560" data-align="center" data-dnt="true">
+        <a href="https://twitter.com/AvaxTeam1/status/2060338714371412181"></a>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
 <!-- ====== SPEAKERS ====== -->
 <section class="speakers-bg">
   <div class="wrap">
@@ -778,6 +795,8 @@ footer { background: var(--dark); color: var(--light); padding: 0 0 clamp(36px, 
     </div>
   </div>
 </footer>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 </body>
 </html>
