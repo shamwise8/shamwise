@@ -8,8 +8,8 @@
     { "source": "/team1kickoff", "destination": "/Team1KickOff/index.html" },
     { "source": "/team1kickoff/", "destination": "/Team1KickOff/index.html" },
     { "source": "/Team1Kickoff", "destination": "/Team1KickOff/index.html" },
-    { "source": "/tu", "destination": "/TU/index.html" },
-    { "source": "/tu/", "destination": "/TU/index.html" },
-    { "source": "/Tu", "destination": "/TU/index.html" }
+    { "source": "/team1tubc", "destination": "/Team1TUBC/index.html" },
+    { "source": "/team1tubc/", "destination": "/Team1TUBC/index.html" },
+    { "source": "/Team1TUBC", "destination": "/Team1TUBC/index.html" }
   ]
 }
