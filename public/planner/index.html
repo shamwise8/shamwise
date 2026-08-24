@@ -1012,7 +1012,7 @@ function renderCalendar() {
     const k = dkey(day);
     const other = day.getMonth() !== calMonth.getMonth();
     html += `<div class="cal-cell ${other ? "other" : ""} ${k === todayK ? "today" : ""}" data-date="${k}">
-      <div class="dn">${day.getDate()}</div>${(byDay[k] || []).map(chipHtml).join("")}</div>`;
+      <div class="dn">${day.getDate() === 1 ? day.toLocaleString(undefined, { month: "short" }) + " 1" : day.getDate()}</div>${(byDay[k] || []).map(chipHtml).join("")}</div>`;
   }
   $("calGrid").innerHTML = html;
 }
