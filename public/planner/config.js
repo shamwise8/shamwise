@@ -12,6 +12,7 @@
 // Handing this to another Team1 chapter? See planner/README.md — they only edit this file.
 window.PLANNER_CONFIG = {
   chapterName: "team1 thailand",   // shown in the header — e.g. "team1 vietnam"
+  workspace: "team1th",            // workspace slug inside the Supabase project (see schema.sql)
   supabaseUrl: "",
   supabaseAnonKey: "",
 };

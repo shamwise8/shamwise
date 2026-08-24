@@ -213,6 +213,7 @@ const fmtWhen = (iso) => iso ? new Date(iso).toLocaleString(undefined, { month: 
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
 
 const chapter = cfg.chapterName || "team1";
+const WS = cfg.workspace || "default";
 $("chapterName").textContent = chapter;
 $("loginTitle").innerHTML = esc(chapter) + ' planner<span style="color:var(--accent)">.</span>';
 document.title = "Planner — " + chapter;
@@ -361,7 +362,7 @@ async function supabaseStore() {
           if (!session) { show("login"); return; }
           if (me === session.user.email) return;
           const email = session.user.email;
-          const { data, error } = await sb.from("members").select("email,name").eq("email", email).maybeSingle();
+          const { data, error } = await sb.from("members").select("email,name").eq("workspace_id", WS).eq("email", email).maybeSingle();
           if (error || !data) { $("deniedEmail").textContent = email; show("denied"); return; }
           me = email;
           resolve({ me, name: data.name || email.split("@")[0] });
@@ -378,12 +379,12 @@ async function supabaseStore() {
       });
     },
     async listDrafts() {
-      const { data, error } = await sb.from("drafts").select("*").order("updated_at", { ascending: false });
+      const { data, error } = await sb.from("drafts").select("*").eq("workspace_id", WS).order("updated_at", { ascending: false });
       if (error) throw error;
       return data;
     },
     async createDraft() {
-      const { data, error } = await sb.from("drafts").insert({ author: me, updated_by: me }).select().single();
+      const { data, error } = await sb.from("drafts").insert({ workspace_id: WS, author: me, updated_by: me }).select().single();
       if (error) throw error;
       return data;
     },
@@ -403,13 +404,13 @@ async function supabaseStore() {
       return data;
     },
     async addComment(draftId, body) {
-      const { error } = await sb.from("comments").insert({ draft_id: draftId, author: me, body });
+      const { error } = await sb.from("comments").insert({ workspace_id: WS, draft_id: draftId, author: me, body });
       if (error) throw error;
     },
     onChange(cb) {
       sb.channel("planner")
-        .on("postgres_changes", { event: "*", schema: "public", table: "drafts" }, cb)
-        .on("postgres_changes", { event: "*", schema: "public", table: "comments" }, cb)
+        .on("postgres_changes", { event: "*", schema: "public", table: "drafts", filter: `workspace_id=eq.${WS}` }, cb)
+        .on("postgres_changes", { event: "*", schema: "public", table: "comments", filter: `workspace_id=eq.${WS}` }, cb)
         .subscribe();
     },
     async signOut() { await sb.auth.signOut(); },
@@ -426,6 +427,7 @@ async function maybeImportLocal(store) {
   }
   for (const d of local) {
     await store.sb.from("drafts").insert({
+      workspace_id: WS,
       title: d.title, content: d.content, status: d.status, planned_at: d.planned_at,
       author: d.author === "you" ? "" : d.author, updated_by: "",
     });
