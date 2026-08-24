@@ -239,6 +239,18 @@
     <div style="text-align:right; margin-top:14px"><button class="small ghost" id="teamClose">Close</button></div>
   </div>
 </div>
+<div id="importPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:40; align-items:center; justify-content:center; padding:20px">
+  <div class="card" style="max-width:640px">
+    <h1 style="font-size:17px; margin-bottom:4px">Import long text</h1>
+    <p style="font-size:13px">Paste LLM output or any long text — it gets split into a thread automatically. Handles ---, "Tweet 1:", "1/" markers, or plain paragraphs.</p>
+    <textarea id="impText" rows="10" style="width:100%; resize:vertical; margin-bottom:8px" placeholder="Paste here…"></textarea>
+    <div style="display:flex; align-items:center; gap:10px">
+      <span id="impInfo" style="color:var(--muted); font-size:13px; flex:1"></span>
+      <button class="small ghost" id="impCancel">Cancel</button>
+      <button class="primary" id="impCreate">Create draft</button>
+    </div>
+  </div>
+</div>
 <input type="file" id="mediaFile" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime" multiple style="display:none" />
 <div class="toast" id="toast"></div>
 
@@ -355,7 +367,7 @@ Follow them → [HANDLE]
 [CITY]’s got talent. More spotlights coming 👀` },
 ];
 
-$("templateMenu").innerHTML = TEMPLATES.map((t, i) =>
+$("templateMenu").innerHTML = `<button type="button" data-import="1">📥 Import long text<small>Paste LLM output — auto-split into a thread</small></button>` + TEMPLATES.map((t, i) =>
   `<button type="button" data-t="${i}">${esc(t.name)}<small>${esc(t.desc)}</small></button>`).join("");
 
 // ======================================================================
@@ -655,9 +667,64 @@ async function createDraft(prefill) {
 }
 $("newDraft").addEventListener("click", () => createDraft());
 $("templateMenu").addEventListener("click", (e) => {
+  const imp = e.target.closest("[data-import]");
+  if (imp) { $("tmenu").removeAttribute("open"); $("importPanel").style.display = "flex"; $("impText").focus(); updateImpInfo(); return; }
   const b = e.target.closest("[data-t]"); if (!b) return;
   $("tmenu").removeAttribute("open");
   createDraft(TEMPLATES[+b.dataset.t]);
+});
+
+// ---------- smart import ----------
+function parseImport(raw) {
+  let t = raw.replace(/\r\n/g, "\n").trim();
+  if (!t) return [];
+  let segs;
+  const SEP = /\n\s*(?:-{3,}|\*{3,}|—{3,}|={3,})\s*\n/;
+  const NUM = /(?:^|\n)(?=\s*(?:\(?\d{1,2}\/\d{0,2}\)?|(?:tweet|post)\s*\d{1,2})\s*[:.\)\-–—]?\s)/i;
+  if (SEP.test(t)) segs = t.split(SEP);
+  else if ((t.match(NUM) || []).length >= 1 && t.split(NUM).filter((x) => x.trim()).length > 1) segs = t.split(NUM);
+  else {
+    // paragraphs → pack greedily under 275 chars, split long paragraphs on sentences
+    const paras = t.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+    const units = [];
+    for (const p of paras) {
+      if (tweetLen(p) <= 275) { units.push(p); continue; }
+      let buf = "";
+      for (const sent of p.split(/(?<=[.!?…])\s+/)) {
+        if (buf && tweetLen(buf + " " + sent) > 275) { units.push(buf); buf = sent; }
+        else buf = buf ? buf + " " + sent : sent;
+      }
+      if (buf) units.push(buf);
+    }
+    segs = [];
+    let buf = "";
+    for (const u of units) {
+      if (buf && tweetLen(buf + "\n\n" + u) > 275) { segs.push(buf); buf = u; }
+      else buf = buf ? buf + "\n\n" + u : u;
+    }
+    if (buf) segs.push(buf);
+  }
+  return segs
+    .map((x) => x.trim().replace(/^\(?\d{1,2}\/\d{0,2}\)?\s*[:.\)\-–—]?\s+/, "").replace(/^(?:tweet|post)\s*\d{1,2}\s*[:.\)\-–—]?\s+/i, "").trim())
+    .filter(Boolean);
+}
+function updateImpInfo() {
+  const segs = parseImport($("impText").value);
+  const over = segs.filter((x) => tweetLen(x) > 280).length;
+  $("impInfo").textContent = segs.length
+    ? `→ ${segs.length} tweet${segs.length > 1 ? "s" : ""}${over ? ` · ${over} over 280 (fix after import)` : ""}`
+    : "";
+}
+$("impText").addEventListener("input", updateImpInfo);
+$("impCancel").addEventListener("click", () => { $("importPanel").style.display = "none"; });
+$("importPanel").addEventListener("click", (e) => { if (e.target === $("importPanel")) $("importPanel").style.display = "none"; });
+$("impCreate").addEventListener("click", async () => {
+  const segs = parseImport($("impText").value);
+  if (!segs.length) { toast("Nothing to import"); return; }
+  const title = (segs[0].split("\n")[0] || "Imported thread").slice(0, 60);
+  $("importPanel").style.display = "none";
+  $("impText").value = "";
+  await createDraft({ title, content: segs.join("\n---\n") });
 });
 document.addEventListener("click", (e) => { if (!e.target.closest("#tmenu")) $("tmenu").removeAttribute("open"); });
 
@@ -753,7 +820,7 @@ function renderPreview() {
         : `<img src="${m.url}" alt="" loading="lazy" />`}
         <button class="rm" data-rmmedia="${esc(m.id)}" title="Remove">✕</button>
       </span>`).join("");
-    return `<div class="tweet ${over ? "over" : ""}">${esc(s)}
+    return `<div class="tweet ${over ? "over" : ""}" draggable="true" data-seg="${i}">${esc(s)}
       ${thumbs ? `<div class="thumbs">${thumbs}</div>` : ""}
       <div class="foot">
         <span>${segs.length > 1 ? (i + 1) + "/" + segs.length : ""}</span>
@@ -783,6 +850,46 @@ $("tweets").addEventListener("click", async (e) => {
   const segs = segments($("content").value);
   navigator.clipboard.writeText(segs[+b.dataset.copy] || "");
   toast("Tweet copied");
+});
+
+// drag to reorder tweets — media follows its tweet
+let dragFrom = null;
+$("tweets").addEventListener("dragstart", (e) => {
+  const card = e.target.closest(".tweet"); if (!card) return;
+  dragFrom = +card.dataset.seg;
+  e.dataTransfer.effectAllowed = "move";
+});
+$("tweets").addEventListener("dragover", (e) => {
+  if (dragFrom === null) return;
+  e.preventDefault();
+  const card = e.target.closest(".tweet");
+  for (const c of $("tweets").children) c.style.outline = "";
+  if (card) card.style.outline = "2px dashed var(--accent)";
+});
+$("tweets").addEventListener("dragleave", () => {});
+$("tweets").addEventListener("drop", async (e) => {
+  e.preventDefault();
+  for (const c of $("tweets").children) c.style.outline = "";
+  const card = e.target.closest(".tweet");
+  if (dragFrom === null || !card || !current) { dragFrom = null; return; }
+  const to = +card.dataset.seg, from = dragFrom; dragFrom = null;
+  if (from === to) return;
+  const segs = segments($("content").value);
+  const order = segs.map((_, i) => i);
+  order.splice(to, 0, order.splice(from, 1)[0]);
+  const newSegs = order.map((i) => segs[i]);
+  const newIndex = {}; order.forEach((oldI, newI) => { newIndex[oldI] = newI; });
+  current.media = (current.media || []).map((m) => ({ ...m, seg: m.seg in newIndex ? newIndex[m.seg] : m.seg }));
+  const newContent = newSegs.join("\n---\n");
+  $("content").value = newContent;
+  current.content = newContent;
+  await save();
+  renderPreview();
+  toast(`Moved tweet ${from + 1} → ${to + 1}`);
+});
+$("tweets").addEventListener("dragend", () => {
+  dragFrom = null;
+  for (const c of $("tweets").children) c.style.outline = "";
 });
 
 let pendingSeg = 0;
