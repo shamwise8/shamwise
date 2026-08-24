@@ -11,7 +11,8 @@
 //
 // Handing this to another Team1 chapter? See planner/README.md — they only edit this file.
 window.PLANNER_CONFIG = {
-  chapterName: "team1 thailand",   // shown in the header — e.g. "team1 vietnam"
+  networkName: "team1",            // shown on the shared sign-in screen (chapter-neutral)
+  chapterName: "team1 thailand",   // fallback header name (normally the workspace name from the DB is used)
   workspace: "team1th",            // workspace slug inside the Supabase project (see schema.sql)
   supabaseUrl: "https://sepomduzcpuwmarjvqth.supabase.co",
   supabaseAnonKey: "sb_publishable_4KO7yLJE3bX-CisShQbokw_3Ny0cS5a",

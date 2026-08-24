@@ -231,7 +231,7 @@ const chapter = cfg.chapterName || "team1";
 let WS = cfg.workspace || "default";
 let myRole = "member";
 $("chapterName").textContent = chapter;
-$("loginTitle").innerHTML = esc(chapter) + ' planner<span style="color:var(--accent)">.</span>';
+$("loginTitle").innerHTML = esc(cfg.networkName || "team1") + ' planner<span style="color:var(--accent)">.</span>';
 document.title = "Planner — " + chapter;
 
 // ======================================================================
