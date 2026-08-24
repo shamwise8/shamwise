@@ -134,10 +134,15 @@
 <div id="createws" class="screen" style="display:none">
   <div class="card">
     <h1>Create your chapter</h1>
-    <p>You're signed in with a team1.network address (<b id="cwEmail"></b>) but don't belong to a workspace yet. Name your chapter to create one — you'll be its admin and can add your team right after.</p>
+    <p>You're signed in with a team1.network address (<b id="cwEmail"></b>) but don't belong to a workspace yet. Claim your chapter — you'll be its admin and can add your team right after.</p>
+    <form id="cwClaim" style="margin-bottom:10px">
+      <select id="cwList" style="flex:1"></select>
+      <button class="primary" type="submit">Claim</button>
+    </form>
+    <p style="font-size:12.5px; color:var(--dim); margin-bottom:6px">Chapter not in the list? Create it:</p>
     <form id="cwForm">
-      <input type="text" id="cwName" placeholder="e.g. team1 vietnam" required maxlength="40" />
-      <button class="primary" type="submit">Create</button>
+      <input type="text" id="cwName" placeholder="e.g. team1 philippines" required maxlength="40" />
+      <button type="submit">Create</button>
     </form>
     <p id="cwMsg" style="margin:12px 0 0"></p>
     <p style="margin:10px 0 0; font-size:12.5px; color:var(--dim)">Expecting to join an existing chapter instead? Ask its lead to add this email in their Team panel, then reload.</p>
@@ -457,8 +462,23 @@ async function supabaseStore() {
 function openCreateWs(sb, email) {
   show("createws");
   $("cwEmail").textContent = email;
+  sb.rpc("claimable_workspaces").then(({ data }) => {
+    const rows = data || [];
+    $("cwClaim").style.display = rows.length ? "flex" : "none";
+    $("cwList").innerHTML = rows.map((w) => `<option value="${esc(w.id)}">${esc(w.name)}</option>`).join("");
+  });
   if (openCreateWs.wired) return;
   openCreateWs.wired = true;
+  $("cwClaim").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const slug = $("cwList").value;
+    if (!slug) return;
+    $("cwMsg").textContent = "Claiming…";
+    const { error } = await sb.from("members").insert({ workspace_id: slug, email, name: email.split("@")[0], role: "admin" });
+    if (error) { $("cwMsg").textContent = "Could not claim: " + error.message; return; }
+    localStorage.setItem("planner.ws", slug);
+    location.reload();
+  });
   $("cwForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = $("cwName").value.trim();
