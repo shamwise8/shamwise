@@ -14,7 +14,7 @@ const OFFERINGS = [
     desc:"Business websites and LINE bot systems built for the Thai market. Fast, professional, and actually drives customers.",
     tags:["Landing Pages","LINE OA","Web Apps","Thai Market"] },
   { num:"03", icon:"⛓️", title:"Web3 Events Bangkok",
-    desc:"Your go-to for crypto and blockchain events in Bangkok. Two Avalanche events done, 6-week bootcamp incoming.",
+    desc:"Your go-to for crypto and blockchain events in Bangkok. 16 events hosted in the past year as Avalanche Team1 Thailand Lead.",
     tags:["Avalanche","Community","Bangkok","Bootcamps"] },
 ];
 
@@ -102,14 +102,14 @@ function CommunityCard({ item }) {
 }
 
 const WORK_ITEMS = [
-  { title:"IronMap", desc:"Equipment-aware gym training. Filters exercises to what your gym actually has, rest timer on Dynamic Island + Apple Watch, community accountability groups via join codes.", tag:"iOS + ANDROID", tagColor:"#E8FF47", hero:"/ironmap-og.png", status:"TestFlight approved", link:"https://ironmap.vercel.app", appStore:true },
+  { title:"IronMap", desc:"Equipment-aware gym training. Filters exercises to what your gym actually has, rest timer on Dynamic Island + Apple Watch, community accountability groups via join codes.", tag:"iOS + ANDROID", tagColor:"#E8FF47", hero:"/ironmap-og.png", status:"Live — App Store, Google Play & Solana", link:"https://ironmap.vercel.app", appStore:true },
   { title:"CoachProof", desc:"Mobile CRM for weight management coaches. Tanita body composition tracking, structured before/after photos, client progress visualization, and sales pitch support.", tag:"iOS APP", tagColor:"#10B981", hero:"/coachproof-og.jpg", status:"TestFlight live — external testing", link:"https://coachproof.vercel.app", appStore:true },
   { title:"EIS Chill Pai Nai", desc:"Bangkok Wednesday basketball league tracker. Live standings, box scores, and player stat cards — built from STATASTIC screenshots.", tag:"WEB APP", tagColor:"#4EA8FF", hero:"/eis-preview1.png", status:"Live — updated weekly", link:"https://eis-league.vercel.app" },
 ];
 
 const COMMUNITY_ITEMS = [
   { title:"Hmong Cyber", desc:"Co-founded a youth development platform for Hmong hill tribe communities in Phitsanulok. 3 seasons of coding, media production, culinary arts, and hospitality training — 100+ students, 50+ volunteer teachers, 300+ hours taught. Ran the Hmong Cyber Festival celebrating culture and new skills.", photos:["/hmong-coding.jpg","/hmong-festival.jpg","/hmong-teaching.jpg","/hmong-tiedye.jpg","/hmong-booth1.jpg","/hmong-booth2.jpg","/hmong-booth3.jpg"], badge:"CO-FOUNDER", tags:["Phitsanulok","Youth Dev","Education","Social Impact","Blockchain Thailand"], status:"Active" },
-  { title:"Avalanche Team1 Bangkok", desc:"2 community crypto events in Bangkok with Avalanche Team1. 6-week bootcamp incoming — part of the Avalanche Southeast Asia ecosystem push.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg","/avalanche-bootcamp.jpg"], badge:"AVALANCHE × BINANCE TH", tags:["Bangkok","Avalanche","Team1","Web3"], status:"Bootcamp starting soon", link:"https://luma.com/avaxbuilders2" },
+  { title:"Team1 Thailand", desc:"Avalanche's builder network in Thailand — 16 events in 12 months as Team1 Thailand Lead: builder bootcamps, a 140+ Money 20/20 side event, the 200+ Padel Rave, and more. Ratings 4.86–4.91/5.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg","/avalanche-bootcamp.jpg"], badge:"TEAM1 THAILAND LEAD", tags:["Bangkok","Avalanche","Team1","Web3"], status:"16 events hosted", link:"https://www.shamwise.com/mediakit" },
 ];
 
 export default function Shamwise() {
@@ -181,7 +181,7 @@ export default function Shamwise() {
         <div className="hero-right" style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:20, animation:"fadeUp 0.8s ease 0.6s both" }}>
           <div style={{ fontFamily:"'Instrument Serif',serif", fontStyle:"italic", fontSize:56, color:C.ink3, textAlign:"right", lineHeight:1 }}>Bangkok<br />based.</div>
           <div style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent:"flex-end" }}>
-            {["3 Apps in TestFlight","5+ Events Run","All Independent"].map(t => (
+            {["IronMap on 3 App Stores","16 Events Run","Team1 Thailand Lead"].map(t => (
               <span key={t} style={{ background:C.ink, color:C.bg2, padding:"6px 14px", borderRadius:100, fontSize:11, fontWeight:500 }}>{t}</span>
             ))}
           </div>
@@ -345,7 +345,7 @@ export default function Shamwise() {
               I'm Sam — the person behind Shamwise Studios. I build apps, websites, and run Web3 events out of Bangkok. I don't have a big team or a fancy office. What I have is the ability to take an idea and make it real, fast.
             </p>
             <p style={{ fontSize:15, lineHeight:1.8, color:"#8A7D72", marginBottom:32, fontWeight:300 }}>
-              While building IronMap, CoachProof, and Santi (all in TestFlight), I realised I could help local businesses get the same quality of digital presence. So I started doing that too.
+              While building IronMap (now live on the App Store, Google Play and Solana dApp Store), CoachProof, and Santi, I realised I could help local businesses get the same quality of digital presence. So I started doing that too.
             </p>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, padding:24, background:"#0D0A08", borderRadius:12, border:"1px solid #2D2620" }}>
               {[["3","Apps in TestFlight"],["5+","Events run"],["BKK","Based in Bangkok"]].map(([num,label]) => (
