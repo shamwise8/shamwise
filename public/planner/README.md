@@ -9,9 +9,16 @@ Built by Sam (@shamwise8) for team1 Thailand. Any chapter is welcome to run thei
 ## Try it as a chapter (no setup at all)
 
 The hosted planner at **shamwise.com/planner** supports many chapters on one link —
-each chapter is a workspace. To get one: send Sam (@shamwise8) your chapter name and
-your lead's email. The lead signs in and adds their own team from the **Team** panel
-in the header. Done — no deployment, no Supabase, no config.
+each chapter is a workspace.
+
+- **Chapter leads:** sign in with your **@team1.network** email → you'll be offered a
+  "Create your chapter" screen → name it and you're in as admin. Add your team from
+  the **Team** panel in the header (any email works for members).
+- **No team1.network email?** Send Sam (@shamwise8) your chapter name + lead email and
+  he'll set it up.
+
+No deployment, no Supabase, no config. Joining an existing chapter is always
+invite-only — leads add members; nobody can browse into another chapter.
 
 ## Run your chapter's own copy (optional, for your own domain)
 

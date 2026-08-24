@@ -126,8 +126,21 @@
 <div id="denied" class="screen" style="display:none">
   <div class="card">
     <h1>Not on the team list</h1>
-    <p>You’re signed in as <b id="deniedEmail"></b>, but that email isn’t in the <code>members</code> table. Ask your chapter lead to add you, then reload.</p>
+    <p>You’re signed in as <b id="deniedEmail"></b>, but that email isn’t on any chapter’s member list. Ask your chapter lead to add you (Team panel), then reload. Chapter leads: sign in with your @team1.network address to create your chapter.</p>
     <button id="deniedSignOut">Sign out</button>
+  </div>
+</div>
+
+<div id="createws" class="screen" style="display:none">
+  <div class="card">
+    <h1>Create your chapter</h1>
+    <p>You're signed in with a team1.network address (<b id="cwEmail"></b>) but don't belong to a workspace yet. Name your chapter to create one — you'll be its admin and can add your team right after.</p>
+    <form id="cwForm">
+      <input type="text" id="cwName" placeholder="e.g. team1 vietnam" required maxlength="40" />
+      <button class="primary" type="submit">Create</button>
+    </form>
+    <p id="cwMsg" style="margin:12px 0 0"></p>
+    <p style="margin:10px 0 0; font-size:12.5px; color:var(--dim)">Expecting to join an existing chapter instead? Ask its lead to add this email in their Team panel, then reload.</p>
   </div>
 </div>
 
@@ -383,7 +396,10 @@ async function supabaseStore() {
           if (me === session.user.email) return;
           const email = session.user.email;
           const { data: mems, error } = await sb.from("members").select("workspace_id,name,role,workspaces(name)").eq("email", email);
-          if (error || !mems || !mems.length) { $("deniedEmail").textContent = email; show("denied"); return; }
+          if (error || !mems || !mems.length) {
+            if (!error && email.toLowerCase().endsWith("@team1.network")) { openCreateWs(sb, email); return; }
+            $("deniedEmail").textContent = email; show("denied"); return;
+          }
           me = email;
           resolve({ me, memberships: mems });
         };
@@ -437,6 +453,32 @@ async function supabaseStore() {
   };
 }
 
+// self-serve chapter creation for @team1.network leads with no workspace yet
+function openCreateWs(sb, email) {
+  show("createws");
+  $("cwEmail").textContent = email;
+  if (openCreateWs.wired) return;
+  openCreateWs.wired = true;
+  $("cwForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = $("cwName").value.trim();
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 24);
+    if (!slug) { $("cwMsg").textContent = "Please use some letters or numbers in the name."; return; }
+    $("cwMsg").textContent = "Creating…";
+    let { error } = await sb.from("workspaces").insert({ id: slug, name });
+    if (error) {
+      $("cwMsg").textContent = error.code === "23505"
+        ? "A chapter with that name already exists — try another name, or ask its lead to add you."
+        : "Could not create: " + error.message;
+      return;
+    }
+    ({ error } = await sb.from("members").insert({ workspace_id: slug, email, name: email.split("@")[0], role: "admin" }));
+    if (error) { $("cwMsg").textContent = "Could not join: " + error.message; return; }
+    localStorage.setItem("planner.ws", slug);
+    location.reload();
+  });
+}
+
 // one-time migration: local drafts → shared workspace after first team sign-in
 async function maybeImportLocal(store) {
   const local = JSON.parse(localStorage.getItem(LS_DRAFTS) || "[]");
@@ -461,7 +503,7 @@ async function maybeImportLocal(store) {
 // APP
 // ======================================================================
 const show = (id) => {
-  for (const s of ["login", "denied", "app"]) $(s).style.display = "none";
+  for (const s of ["login", "denied", "createws", "app"]) $(s).style.display = "none";
   $(id).style.display = "flex";
 };
 
