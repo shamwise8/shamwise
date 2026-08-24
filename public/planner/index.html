@@ -242,6 +242,8 @@ const fmtWhen = (iso) => iso ? new Date(iso).toLocaleString(undefined, { month: 
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
 
 const chapter = cfg.chapterName || "team1";
+const FLAGS = { team1th:"🇹🇭", team1br:"🇧🇷", team1in:"🇮🇳", team1kr:"🇰🇷", team1latam:"🌎", team1tr:"🇹🇷", team1us:"🇺🇸", team1vn:"🇻🇳", team1jp:"🇯🇵", team1fr:"🇫🇷", team1africa:"🌍", team1za:"🇿🇦", team1uk:"🇬🇧", team1oceania:"🌏", team1cn:"🇨🇳", team1global:"🌐" };
+const flagOf = (id) => FLAGS[id] || "🔺";
 let WS = cfg.workspace || "default";
 let myRole = "member";
 $("chapterName").textContent = chapter;
@@ -461,7 +463,7 @@ function openCreateWs(sb, email) {
   sb.rpc("claimable_workspaces").then(({ data }) => {
     const rows = data || [];
     $("cwClaim").style.display = rows.length ? "flex" : "none";
-    $("cwList").innerHTML = rows.map((w) => `<option value="${esc(w.id)}">${esc(w.name)}</option>`).join("");
+    $("cwList").innerHTML = rows.map((w) => `<option value="${esc(w.id)}">${flagOf(w.id)} ${esc(w.name)}</option>`).join("");
     if (!rows.length) $("cwMsg").textContent = "All chapters already have leads. Ask your chapter's admin to add you from their Team panel, or message @shamwise8 on Telegram.";
   });
   if (openCreateWs.wired) return;
@@ -520,12 +522,12 @@ if (store.mode === "local") {
   myRole = my.role || "member";
   $("whoami").textContent = my.name || identity.me;
   const wsName = (my.workspaces && my.workspaces.name) || WS;
-  $("chapterName").textContent = wsName;
-  document.title = "Planner — " + wsName;
+  $("chapterName").textContent = flagOf(WS) + " " + wsName;
+  document.title = flagOf(WS) + " Planner — " + wsName;
   if (mems.length > 1) {
     $("wsPicker").style.display = "";
     $("wsPicker").innerHTML = mems.map((m) =>
-      `<option value="${esc(m.workspace_id)}" ${m.workspace_id === WS ? "selected" : ""}>${esc((m.workspaces && m.workspaces.name) || m.workspace_id)}</option>`).join("");
+      `<option value="${esc(m.workspace_id)}" ${m.workspace_id === WS ? "selected" : ""}>${flagOf(m.workspace_id)} ${esc((m.workspaces && m.workspaces.name) || m.workspace_id)}</option>`).join("");
     $("wsPicker").addEventListener("change", () => {
       localStorage.setItem("planner.ws", $("wsPicker").value);
       location.reload();
