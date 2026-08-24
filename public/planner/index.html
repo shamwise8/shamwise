@@ -462,6 +462,7 @@ function openCreateWs(sb, email) {
     const rows = data || [];
     $("cwClaim").style.display = rows.length ? "flex" : "none";
     $("cwList").innerHTML = rows.map((w) => `<option value="${esc(w.id)}">${esc(w.name)}</option>`).join("");
+    if (!rows.length) $("cwMsg").textContent = "All chapters already have leads. Ask your chapter's admin to add you from their Team panel, or message @shamwise8 on Telegram.";
   });
   if (openCreateWs.wired) return;
   openCreateWs.wired = true;
