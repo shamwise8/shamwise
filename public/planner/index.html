@@ -91,6 +91,10 @@
   .tweet .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: var(--dim); }
   .tweet .count.over { color: var(--bad); font-weight: 700; }
   .tweet.over { border-color: var(--bad); }
+  .thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .thumb { position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+  .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb .rm { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,.7); border: 0; color: #fff; border-radius: 5px; font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; }
 
   /* comments */
   .comments { border-top: 1px solid var(--line); background: var(--panel); max-height: 30%; display: flex; flex-direction: column; }
@@ -235,6 +239,7 @@
     <div style="text-align:right; margin-top:14px"><button class="small ghost" id="teamClose">Close</button></div>
   </div>
 </div>
+<input type="file" id="mediaFile" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime" multiple style="display:none" />
 <div class="toast" id="toast"></div>
 
 <script src="/planner/config.js?v=3"></script>
@@ -659,6 +664,7 @@ document.addEventListener("click", (e) => { if (!e.target.closest("#tmenu")) $("
 // ---------- editor ----------
 function openDraft(d, keepScroll = false) {
   current = { ...d };
+  current.media = Array.isArray(d.media) ? d.media : [];
   dirty = false;
   $("empty").style.display = "none";
   $("editor").style.display = "flex";
@@ -702,6 +708,7 @@ async function save() {
   try {
     data = await store.updateDraft(current.id, {
       title: current.title, content: current.content, status: current.status, planned_at: current.planned_at,
+      media: current.media || [],
     });
   } catch (e) { $("saveState").textContent = "⚠︎"; toast("Save failed: " + e.message); return; }
   current.updated_at = data.updated_at;
@@ -736,23 +743,70 @@ const segments = (text) => text.split(/\n\s*---\s*\n/).map((s) => s.trim()).filt
 function renderPreview() {
   const segs = segments($("content").value);
   $("threadInfo").textContent = segs.length > 1 ? segs.length + " tweets" : "";
+  const media = (current && current.media) || [];
+  const segMedia = (i) => media.filter((m) => Math.min(m.seg, segs.length - 1) === i);
   $("tweets").innerHTML = segs.map((s, i) => {
     const n = tweetLen(s), over = n > 280;
+    const thumbs = segMedia(i).map((m) => `
+      <span class="thumb">${m.type === "video"
+        ? `<video src="${m.url}" muted></video>`
+        : `<img src="${m.url}" alt="" loading="lazy" />`}
+        <button class="rm" data-rmmedia="${esc(m.id)}" title="Remove">✕</button>
+      </span>`).join("");
     return `<div class="tweet ${over ? "over" : ""}">${esc(s)}
+      ${thumbs ? `<div class="thumbs">${thumbs}</div>` : ""}
       <div class="foot">
         <span>${segs.length > 1 ? (i + 1) + "/" + segs.length : ""}</span>
         <span style="display:flex;gap:10px;align-items:center">
           <span class="count ${over ? "over" : ""}">${n}/280</span>
+          ${TEAM_MODE ? `<button class="small ghost" data-attach="${i}" title="Attach image or video">📎</button>` : ""}
           <button class="small ghost" data-copy="${i}">copy</button>
         </span>
       </div></div>`;
   }).join("") || `<div style="color:var(--dim)">Start typing to preview.</div>`;
 }
-$("tweets").addEventListener("click", (e) => {
+$("tweets").addEventListener("click", async (e) => {
+  const rm = e.target.closest("[data-rmmedia]");
+  if (rm && current) {
+    const id = rm.dataset.rmmedia;
+    current.media = (current.media || []).filter((m) => m.id !== id);
+    if (TEAM_MODE) store.sb.storage.from("postbox-media").remove([id]).catch(() => {});
+    await save(); renderPreview(); return;
+  }
+  const at = e.target.closest("[data-attach]");
+  if (at && current) {
+    pendingSeg = +at.dataset.attach;
+    $("mediaFile").click();
+    return;
+  }
   const b = e.target.closest("[data-copy]"); if (!b) return;
   const segs = segments($("content").value);
   navigator.clipboard.writeText(segs[+b.dataset.copy] || "");
   toast("Tweet copied");
+});
+
+let pendingSeg = 0;
+$("mediaFile").addEventListener("change", async () => {
+  const files = [...$("mediaFile").files];
+  $("mediaFile").value = "";
+  if (!files.length || !current || !TEAM_MODE) return;
+  const seg = pendingSeg;
+  const existing = (current.media || []).filter((m) => m.seg === seg);
+  for (const f of files) {
+    const isVideo = f.type.startsWith("video/");
+    const segNow = (current.media || []).filter((m) => m.seg === seg);
+    if (isVideo && (segNow.length > 0)) { toast("A post can have 1 video OR up to 4 images"); break; }
+    if (!isVideo && (segNow.some((m) => m.type === "video") || segNow.length >= 4)) { toast("A post can have up to 4 images (or 1 video)"); break; }
+    if (isVideo && f.size > 50 * 1024 * 1024) { toast(f.name + " is over 50MB — compress it first"); continue; }
+    if (!isVideo && f.size > 10 * 1024 * 1024) { toast(f.name + " is over 10MB — compress it first"); continue; }
+    const path = `${WS}/${current.id}/${uuid()}-${f.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+    toast("Uploading " + f.name + "…");
+    const { error } = await store.sb.storage.from("postbox-media").upload(path, f, { cacheControl: "31536000" });
+    if (error) { toast("Upload failed: " + error.message); continue; }
+    const { data } = store.sb.storage.from("postbox-media").getPublicUrl(path);
+    current.media = [...(current.media || []), { id: path, url: data.publicUrl, seg, type: isVideo ? "video" : "image" }];
+  }
+  await save(); renderPreview();
 });
 $("copyAll").addEventListener("click", () => {
   navigator.clipboard.writeText(segments($("content").value).join("\n\n"));
