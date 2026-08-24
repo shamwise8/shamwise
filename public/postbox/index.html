@@ -137,6 +137,26 @@
     .write { border-right: 0; border-bottom: 1px solid var(--line); }
     .preview { width: 100%; min-width: 0; }
   }
+  .m-only { display: none; }
+  @media (max-width: 720px) {
+    header.bar { flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
+    header.bar .logo { display: none; }
+    header.bar .who { margin-left: auto; gap: 6px; }
+    #whoami { display: none; }
+    .badge.local { display: none; }
+    #wsPicker { max-width: 42vw; font-size: 12.5px; }
+    header.bar button.small { padding: 6px 9px; font-size: 12.5px; }
+    .m-only { display: inline-flex !important; }
+    .main { flex-direction: column; }
+    aside { width: 100% !important; border-right: 0; border-bottom: 1px solid var(--line); }
+    #editor, #calendar { width: 100%; }
+    #app.m-list #editor, #app.m-list #calendar, #app.m-list #empty { display: none !important; }
+    #app.m-editor aside, #app.m-editor #calendar, #app.m-editor #empty { display: none !important; }
+    #app.m-editor #editor { display: flex !important; }
+    #app.m-calendar aside, #app.m-calendar #editor, #app.m-calendar #empty { display: none !important; }
+    #app.m-calendar #calendar { display: flex !important; }
+    .cal-grid { min-width: 620px; }
+  }
 </style>
 </head>
 <body>
@@ -217,6 +237,7 @@
 
     <div id="editor" style="display:none">
       <div class="ed-bar">
+        <button class="small ghost m-only" id="edBack" title="Back to drafts">‹ Drafts</button>
         <input type="text" id="title" placeholder="Untitled draft" />
         <select id="status">
           <option value="idea">💡 Idea</option>
@@ -803,6 +824,7 @@ function openDraft(d, keepScroll = false) {
   renderList();
   loadComments();
   if (!keepScroll) $("content").scrollTop = 0;
+  if (isMobile()) setPane("editor");
 }
 const toLocalInput = (iso) => {
   const d = new Date(iso);
@@ -998,6 +1020,13 @@ $("commentForm").addEventListener("submit", async (e) => {
   loadComments();
 });
 
+// ---------- mobile single-pane ----------
+const mMq = window.matchMedia("(max-width: 720px)");
+const isMobile = () => mMq.matches;
+function setPane(p) { $("app").classList.remove("m-list","m-editor","m-calendar"); $("app").classList.add("m-" + p); }
+setPane("list");
+$("edBack").addEventListener("click", () => setPane("list"));
+
 // ---------- calendar ----------
 let calOn = false;
 let calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -1010,7 +1039,7 @@ function updateViews() {
   $("calBtn").textContent = calOn ? "📝 Drafts" : "📅 Calendar";
   if (calOn) renderCalendar();
 }
-$("calBtn").addEventListener("click", () => { calOn = !calOn; updateViews(); });
+$("calBtn").addEventListener("click", () => { calOn = !calOn; updateViews(); if (isMobile()) setPane(calOn ? "calendar" : "list"); });
 $("calPrev").addEventListener("click", () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderCalendar(); });
 $("calNext").addEventListener("click", () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderCalendar(); });
 $("calToday").addEventListener("click", () => { calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1); renderCalendar(); });
