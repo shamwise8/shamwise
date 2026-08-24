@@ -8,7 +8,7 @@
 --
 -- Then seed your workspace + members (edit and run):
 --   insert into postbox.workspaces (id, name) values ('team1th', 'team1 thailand');
---   insert into postbox.members (workspace_id, email, name) values ('team1th', 'shamwise8@gmail.com', 'Sam');
+--   insert into postbox.members (workspace_id, email, name, role) values ('team1th', 'shamwise8@gmail.com', 'Sam', 'admin');
 
 create schema if not exists postbox;
 grant usage on schema postbox to anon, authenticated, service_role;
@@ -28,6 +28,7 @@ create table postbox.members (
   workspace_id text not null references postbox.workspaces(id) on delete cascade,
   email        text not null,
   name         text not null default '',
+  role         text not null default 'member' check (role in ('member','admin')),
   primary key (workspace_id, email)
 );
 
@@ -69,8 +70,15 @@ create or replace function postbox.is_member(ws text) returns boolean
 language sql stable security definer set search_path = postbox as
 $$ select exists (select 1 from members where workspace_id = ws and email = (auth.jwt() ->> 'email')) $$;
 
+create or replace function postbox.is_admin(ws text) returns boolean
+language sql stable security definer set search_path = postbox as
+$$ select exists (select 1 from members where workspace_id = ws and email = (auth.jwt() ->> 'email') and role = 'admin') $$;
+
 create policy workspaces_read on postbox.workspaces for select to authenticated using (postbox.is_member(id));
 create policy members_read    on postbox.members    for select to authenticated using (postbox.is_member(workspace_id));
+create policy members_admin_insert on postbox.members for insert to authenticated with check (postbox.is_admin(workspace_id));
+create policy members_admin_update on postbox.members for update to authenticated using (postbox.is_admin(workspace_id)) with check (postbox.is_admin(workspace_id));
+create policy members_admin_delete on postbox.members for delete to authenticated using (postbox.is_admin(workspace_id) and email <> (auth.jwt() ->> 'email'));
 create policy drafts_all      on postbox.drafts     for all    to authenticated
   using (postbox.is_member(workspace_id)) with check (postbox.is_member(workspace_id));
 create policy comments_all    on postbox.comments   for all    to authenticated

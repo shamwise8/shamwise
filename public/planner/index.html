@@ -135,7 +135,8 @@
   <header class="bar">
     <div class="logo"><span id="chapterName">team1</span> planner<span>.</span></div>
     <span class="badge local" id="localBadge" style="display:none" title="Drafts are saved in this browser only. Set up Supabase (see planner/README.md) to share with your team.">local mode — this browser only</span>
-    <div class="who"><span id="whoami"></span><button class="small ghost" id="signOut" style="display:none">Sign out</button></div>
+    <select id="wsPicker" style="display:none; max-width:180px" title="Switch workspace"></select>
+    <div class="who"><button class="small ghost" id="teamBtn" style="display:none">Team</button><span id="whoami"></span><button class="small ghost" id="signOut" style="display:none">Sign out</button></div>
   </header>
   <div class="main">
     <aside>
@@ -195,6 +196,20 @@
   </div>
 </div>
 
+<div id="teamPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:40; align-items:center; justify-content:center; padding:20px">
+  <div class="card" style="max-width:520px">
+    <h1 style="font-size:17px; margin-bottom:4px">Team</h1>
+    <p style="font-size:13px">People with access to this workspace. Admins can add and remove members.</p>
+    <div id="teamList" style="max-height:40vh; overflow-y:auto; margin-bottom:14px"></div>
+    <form id="teamAdd" style="display:flex; gap:8px; flex-wrap:wrap">
+      <input type="email" id="tEmail" placeholder="email" required style="flex:2; min-width:150px" />
+      <input type="text" id="tName" placeholder="name" style="flex:1; min-width:90px" />
+      <label style="display:flex; align-items:center; gap:5px; color:var(--muted); font-size:13px"><input type="checkbox" id="tAdmin" />admin</label>
+      <button class="primary" type="submit">Add</button>
+    </form>
+    <div style="text-align:right; margin-top:14px"><button class="small ghost" id="teamClose">Close</button></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="/planner/config.js?v=3"></script>
@@ -213,7 +228,8 @@ const fmtWhen = (iso) => iso ? new Date(iso).toLocaleString(undefined, { month: 
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
 
 const chapter = cfg.chapterName || "team1";
-const WS = cfg.workspace || "default";
+let WS = cfg.workspace || "default";
+let myRole = "member";
 $("chapterName").textContent = chapter;
 $("loginTitle").innerHTML = esc(chapter) + ' planner<span style="color:var(--accent)">.</span>';
 document.title = "Planner — " + chapter;
@@ -366,10 +382,10 @@ async function supabaseStore() {
           if (!session) { show("login"); return; }
           if (me === session.user.email) return;
           const email = session.user.email;
-          const { data, error } = await sb.from("members").select("email,name").eq("workspace_id", WS).eq("email", email).maybeSingle();
-          if (error || !data) { $("deniedEmail").textContent = email; show("denied"); return; }
+          const { data: mems, error } = await sb.from("members").select("workspace_id,name,role,workspaces(name)").eq("email", email);
+          if (error || !mems || !mems.length) { $("deniedEmail").textContent = email; show("denied"); return; }
           me = email;
-          resolve({ me, name: data.name || email.split("@")[0] });
+          resolve({ me, memberships: mems });
         };
         sb.auth.onAuthStateChange((_e, session) => { if (!session) { me = null; show("login"); } else tryBoot(session); });
         sb.auth.getSession().then(({ data }) => tryBoot(data.session));
@@ -451,14 +467,71 @@ const show = (id) => {
 
 const store = TEAM_MODE ? await supabaseStore() : localStore();
 const identity = await store.init();
-$("whoami").textContent = identity.name;
-if (store.mode === "local") $("localBadge").style.display = "";
-else {
+if (store.mode === "local") {
+  $("whoami").textContent = identity.name;
+  $("localBadge").style.display = "";
+} else {
+  const mems = identity.memberships;
+  const ids = mems.map((m) => m.workspace_id);
+  const saved = localStorage.getItem("planner.ws");
+  WS = ids.includes(saved) ? saved : (ids.includes(cfg.workspace) ? cfg.workspace : ids[0]);
+  const my = mems.find((m) => m.workspace_id === WS);
+  myRole = my.role || "member";
+  $("whoami").textContent = my.name || identity.me;
+  const wsName = (my.workspaces && my.workspaces.name) || WS;
+  $("chapterName").textContent = wsName;
+  document.title = "Planner — " + wsName;
+  if (mems.length > 1) {
+    $("wsPicker").style.display = "";
+    $("wsPicker").innerHTML = mems.map((m) =>
+      `<option value="${esc(m.workspace_id)}" ${m.workspace_id === WS ? "selected" : ""}>${esc((m.workspaces && m.workspaces.name) || m.workspace_id)}</option>`).join("");
+    $("wsPicker").addEventListener("change", () => {
+      localStorage.setItem("planner.ws", $("wsPicker").value);
+      location.reload();
+    });
+  }
+  if (myRole === "admin") $("teamBtn").style.display = "";
   $("signOut").style.display = "";
   $("signOut").addEventListener("click", () => store.signOut());
 }
 show("app");
 if (store.mode === "team") await maybeImportLocal(store);
+
+// ---------- team panel (admins, team mode only) ----------
+async function loadTeam() {
+  const { data, error } = await store.sb.from("members").select("email,name,role").eq("workspace_id", WS).order("name");
+  if (error) { toast("Load failed: " + error.message); return; }
+  $("teamList").innerHTML = data.map((m) => `
+    <div style="display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--line); font-size:13.5px">
+      <span>${esc(m.name || m.email.split("@")[0])}</span>
+      <span style="color:var(--dim)">${esc(m.email)}</span>
+      ${m.role === "admin" ? '<span class="badge">admin</span>' : ""}
+      ${m.email !== identity.me ? `<button class="small ghost" style="margin-left:auto" data-rm="${esc(m.email)}">remove</button>` : '<span style="margin-left:auto; color:var(--dim); font-size:12px">you</span>'}
+    </div>`).join("");
+}
+if (TEAM_MODE) {
+  $("teamBtn").addEventListener("click", () => { $("teamPanel").style.display = "flex"; loadTeam(); });
+  $("teamClose").addEventListener("click", () => { $("teamPanel").style.display = "none"; });
+  $("teamPanel").addEventListener("click", (e) => { if (e.target === $("teamPanel")) $("teamPanel").style.display = "none"; });
+  $("teamAdd").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("tEmail").value.trim().toLowerCase();
+    const name = $("tName").value.trim();
+    const role = $("tAdmin").checked ? "admin" : "member";
+    const { error } = await store.sb.from("members").insert({ workspace_id: WS, email, name, role });
+    if (error) { toast("Add failed: " + error.message); return; }
+    $("tEmail").value = ""; $("tName").value = ""; $("tAdmin").checked = false;
+    toast(email + " added — they can sign in now");
+    loadTeam();
+  });
+  $("teamList").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-rm]"); if (!b) return;
+    if (!confirm("Remove " + b.dataset.rm + " from this workspace?")) return;
+    const { error } = await store.sb.from("members").delete().eq("workspace_id", WS).eq("email", b.dataset.rm);
+    if (error) { toast("Remove failed: " + error.message); return; }
+    loadTeam();
+  });
+}
 
 let drafts = [];
 let current = null;
