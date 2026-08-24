@@ -1081,7 +1081,7 @@ function openReschedPop(d, x, y) {
     <input type="date" id="rpDate" value="${cur}" />
     <div class="rrow">
       <button class="small" data-rp="+7">+1 wk</button>
-      <button class="small" data-rp="+30">+1 mo</button>
+      <button class="small" data-rp="mo">+1 mo</button>
     </div>
     <div class="rrow">
       <button class="small ghost" data-rp="open" style="flex:2">Open</button>
@@ -1104,9 +1104,9 @@ $("reschedPop").addEventListener("click", async (e) => {
   const act = b.dataset.rp, d = popDraft;
   if (act === "open") { closePop(); calOn = false; updateViews(); openDraft(d); return; }
   if (act === "clear") { closePop(); await applyReschedule(d, null); return; }
-  const days = parseInt(act.slice(1), 10);
   const base = d.planned_at ? new Date(d.planned_at) : new Date();
-  base.setDate(base.getDate() + days);
+  if (act === "mo") base.setMonth(base.getMonth() + 1);
+  else base.setDate(base.getDate() + parseInt(act.slice(1), 10));
   closePop(); await applyReschedule(d, base.toISOString());
 });
 const calOpen = (e) => {
