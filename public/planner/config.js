@@ -13,6 +13,6 @@
 window.PLANNER_CONFIG = {
   chapterName: "team1 thailand",   // shown in the header — e.g. "team1 vietnam"
   workspace: "team1th",            // workspace slug inside the Supabase project (see schema.sql)
-  supabaseUrl: "",
-  supabaseAnonKey: "",
+  supabaseUrl: "https://sepomduzcpuwmarjvqth.supabase.co",
+  supabaseAnonKey: "sb_publishable_4KO7yLJE3bX-CisShQbokw_3Ny0cS5a",
 };
