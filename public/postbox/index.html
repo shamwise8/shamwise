@@ -194,15 +194,14 @@
 
 <div id="createws" class="screen" style="display:none">
   <div class="card">
-    <h1>Create your chapter</h1>
-    <p>You're signed in with a team1.network address (<b id="cwEmail"></b>) but don't belong to a workspace yet. Claim your chapter — you'll be its admin and can add your team right after.</p>
+    <h1>Join a chapter</h1>
+    <p>You're signed in as <b id="cwEmail"></b>. Pick the chapter you're part of to join it. (Leading a new chapter? Choose an unclaimed one and you'll be set up as its admin.)</p>
     <form id="cwClaim" style="margin-bottom:10px">
       <select id="cwList" style="flex:1"></select>
-      <button class="primary" type="submit">Claim</button>
+      <button class="primary" type="submit">Join</button>
     </form>
-    <p style="font-size:12.5px; color:var(--dim); margin-bottom:6px">Chapter not in the list? Message @shamwise8 on Telegram and it'll be added.</p>
     <p id="cwMsg" style="margin:12px 0 0"></p>
-    <p style="margin:10px 0 0; font-size:12.5px; color:var(--dim)">Expecting to join an existing chapter instead? Ask its lead to add this email in their Team panel, then reload.</p>
+    <p style="margin:10px 0 0; font-size:12.5px; color:var(--dim)">Wrong chapter? You can switch or join others later. Questions → @shamwise8 on Telegram.</p>
   </div>
 </div>
 
@@ -211,7 +210,7 @@
     <div class="logo"><span id="chapterName">team1</span> · postbox<span>.</span></div>
     <span class="badge local" id="localBadge" style="display:none" title="Drafts are saved in this browser only. Set up Supabase (see postbox/README.md) to share with your team.">local mode — this browser only</span>
     <select id="wsPicker" style="display:none; max-width:180px" title="Switch workspace"></select>
-    <div class="who"><button class="small ghost" id="calBtn">📅 Calendar</button><button class="small ghost" id="teamBtn" style="display:none">Team</button><span id="whoami"></span><button class="small ghost" id="signOut" style="display:none">Sign out</button></div>
+    <div class="who"><button class="small ghost" id="calBtn">📅 Calendar</button><button class="small ghost" id="joinBtn" style="display:none" title="Join another chapter">＋ Chapter</button><button class="small ghost" id="teamBtn" style="display:none">Team</button><span id="whoami"></span><button class="small ghost" id="signOut" style="display:none">Sign out</button></div>
   </header>
   <div class="main">
     <aside>
@@ -284,6 +283,18 @@
   </div>
 </div>
 
+<div id="joinPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:40; align-items:center; justify-content:center; padding:20px">
+  <div class="card" style="max-width:460px">
+    <h1 style="font-size:17px; margin-bottom:4px">Join another chapter</h1>
+    <p style="font-size:13px">Pick a chapter to join. You'll be added as a member and can switch between your chapters from the header.</p>
+    <form id="jpForm" style="display:flex; gap:8px; flex-wrap:wrap">
+      <select id="jpList" style="flex:1; min-width:180px"></select>
+      <button class="primary" type="submit">Join</button>
+    </form>
+    <p id="jpMsg" style="margin:10px 0 0; font-size:13px; color:var(--muted)"></p>
+    <div style="text-align:right; margin-top:14px"><button class="small ghost" id="jpClose">Close</button></div>
+  </div>
+</div>
 <div id="teamPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:40; align-items:center; justify-content:center; padding:20px">
   <div class="card" style="max-width:520px">
     <h1 style="font-size:17px; margin-bottom:4px">Team</h1>
@@ -490,7 +501,7 @@ async function supabaseStore() {
           const email = session.user.email;
           const { data: mems, error } = await sb.from("members").select("workspace_id,name,role,workspaces(name)").eq("email", email);
           if (error || !mems || !mems.length) {
-            if (!error && email.toLowerCase().endsWith("@team1.network")) { openCreateWs(sb, email); return; }
+            if (!error) { openCreateWs(sb, email); return; }
             $("deniedEmail").textContent = email; show("denied"); return;
           }
           me = email;
@@ -562,24 +573,28 @@ async function supabaseStore() {
 }
 
 // self-serve chapter creation for @team1.network leads with no workspace yet
-function openCreateWs(sb, email) {
+async function joinAs(sb, email, slug, claimable) {
+  const role = (claimable.has(slug) && email.toLowerCase().endsWith("@team1.network")) ? "admin" : "member";
+  return (await sb.from("members").insert({ workspace_id: slug, email, name: email.split("@")[0], role })).error;
+}
+async function openCreateWs(sb, email) {
+  const [{ data: joinable }, { data: claimData }] = await Promise.all([
+    sb.rpc("joinable_workspaces"), sb.rpc("claimable_workspaces"),
+  ]);
+  const rows = joinable || [];
+  if (!rows.length) { $("deniedEmail").textContent = email; show("denied"); return; }
+  const claimable = new Set((claimData || []).map((w) => w.id));
   show("createws");
   $("cwEmail").textContent = email;
-  sb.rpc("claimable_workspaces").then(({ data }) => {
-    const rows = data || [];
-    $("cwClaim").style.display = rows.length ? "flex" : "none";
-    $("cwList").innerHTML = rows.map((w) => `<option value="${esc(w.id)}">${flagOf(w.id)} ${esc(w.name)}</option>`).join("");
-    if (!rows.length) $("cwMsg").textContent = "All chapters already have leads. Ask your chapter's admin to add you from their Team panel, or message @shamwise8 on Telegram.";
-  });
+  $("cwList").innerHTML = rows.map((w) => `<option value="${esc(w.id)}">${flagOf(w.id)} ${esc(w.name)}</option>`).join("");
   if (openCreateWs.wired) return;
   openCreateWs.wired = true;
   $("cwClaim").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const slug = $("cwList").value;
-    if (!slug) return;
-    $("cwMsg").textContent = "Claiming…";
-    const { error } = await sb.from("members").insert({ workspace_id: slug, email, name: email.split("@")[0], role: "admin" });
-    if (error) { $("cwMsg").textContent = "Could not claim: " + error.message; return; }
+    const slug = $("cwList").value; if (!slug) return;
+    $("cwMsg").textContent = "Joining…";
+    const err = await joinAs(sb, email, slug, claimable);
+    if (err) { $("cwMsg").textContent = "Could not join: " + err.message; return; }
     localStorage.setItem("planner.ws", slug);
     location.reload();
   });
@@ -641,6 +656,28 @@ if (store.mode === "local") {
   if (myRole === "admin") $("teamBtn").style.display = "";
   $("signOut").style.display = "";
   $("signOut").addEventListener("click", () => store.signOut());
+
+  // eligible users (team1.network or roster) can join more chapters in-app
+  store.sb.rpc("joinable_workspaces").then(({ data }) => {
+    const rows = data || [];
+    if (!rows.length) return;
+    const claimable = new Set();
+    store.sb.rpc("claimable_workspaces").then(({ data: cd }) => (cd || []).forEach((w) => claimable.add(w.id)));
+    $("joinBtn").style.display = "";
+    $("jpList").innerHTML = rows.map((w) => `<option value="${esc(w.id)}">${flagOf(w.id)} ${esc(w.name)}</option>`).join("");
+    $("joinBtn").addEventListener("click", () => { $("joinPanel").style.display = "flex"; });
+    $("jpClose").addEventListener("click", () => { $("joinPanel").style.display = "none"; });
+    $("joinPanel").addEventListener("click", (e) => { if (e.target === $("joinPanel")) $("joinPanel").style.display = "none"; });
+    $("jpForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const slug = $("jpList").value; if (!slug) return;
+      $("jpMsg").textContent = "Joining…";
+      const err = await joinAs(store.sb, identity.me, slug, claimable);
+      if (err) { $("jpMsg").textContent = "Could not join: " + err.message; return; }
+      localStorage.setItem("planner.ws", slug);
+      location.reload();
+    });
+  });
 }
 show("app");
 if (store.mode === "team") await maybeImportLocal(store);
