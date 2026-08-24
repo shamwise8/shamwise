@@ -22,19 +22,25 @@ One Supabase project ("postbox") can host many brands — each brand/team is a
 security. team1 thailand, your personal brand, another chapter: same project,
 different `workspace` slug in `config.js`.
 
-1. Create a free project at [supabase.com](https://supabase.com/dashboard) — name it
-   anything (e.g. `postbox`; the name is only a dashboard label).
-2. SQL editor → paste and run `schema.sql` (fresh install — it drops previous planner tables).
-3. Still in the SQL editor, seed your workspace and members:
+The planner lives in its own `postbox` Postgres schema, so it can share a Supabase
+project with an existing app without touching that app's tables or auth.
+
+1. Use any Supabase project — an existing one is fine (the project name is only a
+   dashboard label).
+2. SQL editor → paste and run `schema.sql` (it only creates/replaces the `postbox`
+   schema — nothing outside it is touched).
+3. Project Settings → API → **Exposed schemas** → add `postbox` (required).
+4. Still in the SQL editor, seed your workspace and members:
    ```sql
-   insert into workspaces (id, name) values ('team1th', 'team1 thailand');
-   insert into members (workspace_id, email, name) values ('team1th', 'you@email.com', 'You');
+   insert into postbox.workspaces (id, name) values ('team1th', 'team1 thailand');
+   insert into postbox.members (workspace_id, email, name) values ('team1th', 'you@email.com', 'You');
    ```
    The members list is the access control — nobody else can sign in or read anything.
-4. Project Settings → API → copy the Project URL and anon public key into `config.js`,
+5. Project Settings → API → copy the Project URL and anon public key into `config.js`,
    and set `workspace` to your slug (e.g. `'team1th'`).
-5. Authentication → URL Configuration → set the Site URL to your planner's URL
-   (e.g. `https://yoursite.com/planner/`) so magic-link emails redirect back correctly.
+6. Authentication → URL Configuration → **add** your planner URL
+   (e.g. `https://yoursite.com/planner/`) to the Redirect URLs allowlist. If the
+   project is shared with an app, leave the Site URL as the app has it.
 
 Adding a second brand later = one `insert into workspaces`, its members, and a copy
 of this folder with its own `config.js` (same URL/key, different `workspace`).

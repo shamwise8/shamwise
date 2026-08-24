@@ -349,7 +349,7 @@ function localStore() {
 
 async function supabaseStore() {
   const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
-  const sb = createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+  const sb = createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { db: { schema: "postbox" } });
   let me = null;
   return {
     mode: "team",
@@ -409,8 +409,8 @@ async function supabaseStore() {
     },
     onChange(cb) {
       sb.channel("planner")
-        .on("postgres_changes", { event: "*", schema: "public", table: "drafts", filter: `workspace_id=eq.${WS}` }, cb)
-        .on("postgres_changes", { event: "*", schema: "public", table: "comments", filter: `workspace_id=eq.${WS}` }, cb)
+        .on("postgres_changes", { event: "*", schema: "postbox", table: "drafts", filter: `workspace_id=eq.${WS}` }, cb)
+        .on("postgres_changes", { event: "*", schema: "postbox", table: "comments", filter: `workspace_id=eq.${WS}` }, cb)
         .subscribe();
     },
     async signOut() { await sb.auth.signOut(); },
