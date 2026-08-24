@@ -4,7 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex" />
-<title>Planner — team1</title>
+<title>Planner — plan social content together</title>
+<meta name="description" content="Shared drafts, threads with live character counts, review statuses and comments — one workspace for your team's social content." />
+<meta property="og:title" content="Planner — plan social content together" />
+<meta property="og:description" content="Write posts and threads, review with statuses and comments, and keep the whole team in one shared workspace. Copy ready threads straight to X." />
+<meta name="twitter:card" content="summary" />
 <link rel="icon" href="/favicon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
@@ -114,12 +118,19 @@
 <div id="login" class="screen" style="display:none">
   <div class="card">
     <h1 id="loginTitle">planner<span style="color:var(--accent)">.</span></h1>
-    <p>Internal social drafts. Sign in with your team email — we’ll send a magic link.</p>
+    <p style="margin-bottom:10px">Plan social content together — one shared workspace for your team.</p>
+    <div style="color:var(--muted); font-size:13.5px; line-height:1.7; margin-bottom:16px">
+      ✍️ Write posts &amp; threads with live character counts<br />
+      👀 Review flow — idea → draft → review → approved<br />
+      💬 Comments and live sync between teammates<br />
+      📋 Copy finished threads straight to X
+    </div>
     <form id="loginForm">
       <input type="email" id="loginEmail" placeholder="you@email.com" required />
-      <button class="primary" type="submit">Send link</button>
+      <button class="primary" type="submit">Sign in</button>
     </form>
-    <p id="loginMsg" style="margin-top:12px; margin-bottom:0"></p>
+    <p style="margin:10px 0 0; font-size:12.5px; color:var(--dim)">No password — we’ll email you a one-time sign-in link.</p>
+    <p id="loginMsg" style="margin-top:10px; margin-bottom:0"></p>
   </div>
 </div>
 
@@ -247,7 +258,7 @@ const flagOf = (id) => FLAGS[id] || "🔺";
 let WS = cfg.workspace || "default";
 let myRole = "member";
 $("chapterName").textContent = chapter;
-$("loginTitle").innerHTML = esc(cfg.networkName || "team1") + ' planner<span style="color:var(--accent)">.</span>';
+
 document.title = "Planner — " + chapter;
 
 // ======================================================================
