@@ -222,7 +222,7 @@ document.title = "Planner — " + chapter;
 // TEMPLATES — Team1-flavored starting points. [BRACKETS] are placeholders.
 // ======================================================================
 const TEMPLATES = [
-  { name: "Event announcement", desc: "3-tweet thread: date, agenda, partners",
+  { name: "Event announcement", desc: "Thread: image+details → RSVP link → extras",
     title: "[EVENT NAME] announcement",
     content:
 `[EVENT NAME] is coming to [CITY] 🔺
@@ -233,9 +233,13 @@ const TEMPLATES = [
 
 [One line on why this event matters.]
 
-RSVP → [LUMA LINK]
+[← ATTACH EVENT GRAPHIC — details + visual first, no link in this post]
 ---
-What’s happening:
+RSVP → [LUMA LINK]
+
+Spots are limited — approvals go out daily.
+---
+[OPTIONAL] What’s happening:
 
 · [AGENDA ITEM 1]
 · [AGENDA ITEM 2]
@@ -243,7 +247,7 @@ What’s happening:
 
 Food & drinks covered by Team1 🤝
 ---
-Big thanks to our partners: [PARTNER 1] · [PARTNER 2]
+[OPTIONAL] Big thanks to our partners: [PARTNER 1] · [PARTNER 2]
 
 See you there 🔺` },
   { name: "Event recap", desc: "3-tweet thread: numbers, moment, thanks",
