@@ -139,11 +139,7 @@
       <select id="cwList" style="flex:1"></select>
       <button class="primary" type="submit">Claim</button>
     </form>
-    <p style="font-size:12.5px; color:var(--dim); margin-bottom:6px">Chapter not in the list? Create it:</p>
-    <form id="cwForm">
-      <input type="text" id="cwName" placeholder="e.g. team1 philippines" required maxlength="40" />
-      <button type="submit">Create</button>
-    </form>
+    <p style="font-size:12.5px; color:var(--dim); margin-bottom:6px">Chapter not in the list? Message @shamwise8 on Telegram and it'll be added.</p>
     <p id="cwMsg" style="margin:12px 0 0"></p>
     <p style="margin:10px 0 0; font-size:12.5px; color:var(--dim)">Expecting to join an existing chapter instead? Ask its lead to add this email in their Team panel, then reload.</p>
   </div>
@@ -476,24 +472,6 @@ function openCreateWs(sb, email) {
     $("cwMsg").textContent = "Claiming…";
     const { error } = await sb.from("members").insert({ workspace_id: slug, email, name: email.split("@")[0], role: "admin" });
     if (error) { $("cwMsg").textContent = "Could not claim: " + error.message; return; }
-    localStorage.setItem("planner.ws", slug);
-    location.reload();
-  });
-  $("cwForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = $("cwName").value.trim();
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 24);
-    if (!slug) { $("cwMsg").textContent = "Please use some letters or numbers in the name."; return; }
-    $("cwMsg").textContent = "Creating…";
-    let { error } = await sb.from("workspaces").insert({ id: slug, name });
-    if (error) {
-      $("cwMsg").textContent = error.code === "23505"
-        ? "A chapter with that name already exists — try another name, or ask its lead to add you."
-        : "Could not create: " + error.message;
-      return;
-    }
-    ({ error } = await sb.from("members").insert({ workspace_id: slug, email, name: email.split("@")[0], role: "admin" }));
-    if (error) { $("cwMsg").textContent = "Could not join: " + error.message; return; }
     localStorage.setItem("planner.ws", slug);
     location.reload();
   });
