@@ -454,7 +454,7 @@ function localStore() {
 
 async function supabaseStore() {
   const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
-  const sb = createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { db: { schema: "postbox" } });
+  const sb = createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { db: { schema: "postbox" }, auth: { flowType: "implicit", detectSessionInUrl: true, persistSession: true, autoRefreshToken: true } });
   let me = null;
   return {
     mode: "team",
@@ -482,7 +482,7 @@ async function supabaseStore() {
           e.preventDefault();
           otpEmail = $("loginEmail").value.trim().toLowerCase();
           $("loginMsg").textContent = "Sending…";
-          const { error } = await sb.auth.signInWithOtp({ email: otpEmail, options: { emailRedirectTo: location.href, shouldCreateUser: true } });
+          const { error } = await sb.auth.signInWithOtp({ email: otpEmail, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: true } });
           if (error) { $("loginMsg").textContent = "Error: " + error.message; return; }
           $("loginMsg").textContent = "We emailed a 6-digit code to " + otpEmail + ". Enter it below 👇";
           $("codeForm").style.display = "flex";
