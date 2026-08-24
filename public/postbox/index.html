@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex" />
-<title>Planner — plan social content together</title>
+<title>Postbox — plan social content together</title>
 <meta name="description" content="Shared drafts, threads with live character counts, review statuses and comments — one workspace for your team's social content." />
-<meta property="og:title" content="Planner — plan social content together" />
+<meta property="og:title" content="Postbox — plan social content together" />
 <meta property="og:description" content="Write posts and threads, review with statuses and comments, and keep the whole team in one shared workspace. Copy ready threads straight to X." />
 <meta name="twitter:card" content="summary" />
 <link rel="icon" href="/favicon.svg" />
@@ -122,6 +122,12 @@
   .chip.c-review { border-left-color: var(--review); } .chip.c-approved { border-left-color: var(--approved); }
   .chip.c-posted { border-left-color: var(--posted); }
   #empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--dim); text-align: center; padding: 20px; line-height: 1.7; }
+  .rpop { position: fixed; z-index: 46; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; box-shadow: 0 14px 44px rgba(0,0,0,.6); width: 236px; }
+  .rpop .rt { font-weight: 500; font-size: 13.5px; margin-bottom: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rpop input[type="date"] { width: 100%; margin-bottom: 8px; }
+  .rpop .rrow { display: flex; gap: 6px; }
+  .rpop .rrow button { flex: 1; }
+  .rpop .rrow + .rrow { margin-top: 6px; }
   .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel2); border: 1px solid var(--line); padding: 9px 16px; border-radius: 10px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 50; }
   .toast.show { opacity: 1; }
 
@@ -137,7 +143,7 @@
 
 <div id="login" class="screen" style="display:none">
   <div class="card">
-    <h1 id="loginTitle">planner<span style="color:var(--accent)">.</span></h1>
+    <h1 id="loginTitle">postbox<span style="color:var(--accent)">.</span></h1>
     <p style="margin-bottom:10px">Plan social content together — one shared workspace for your team.</p>
     <div style="color:var(--muted); font-size:13.5px; line-height:1.7; margin-bottom:16px">
       <span style="margin-right:7px">✍️</span>Write posts &amp; threads with live character counts<br />
@@ -178,8 +184,8 @@
 
 <div id="app">
   <header class="bar">
-    <div class="logo"><span id="chapterName">team1</span> planner<span>.</span></div>
-    <span class="badge local" id="localBadge" style="display:none" title="Drafts are saved in this browser only. Set up Supabase (see planner/README.md) to share with your team.">local mode — this browser only</span>
+    <div class="logo"><span id="chapterName">team1</span> · postbox<span>.</span></div>
+    <span class="badge local" id="localBadge" style="display:none" title="Drafts are saved in this browser only. Set up Supabase (see postbox/README.md) to share with your team.">local mode — this browser only</span>
     <select id="wsPicker" style="display:none; max-width:180px" title="Switch workspace"></select>
     <div class="who"><button class="small ghost" id="calBtn">📅 Calendar</button><button class="small ghost" id="teamBtn" style="display:none">Team</button><span id="whoami"></span><button class="small ghost" id="signOut" style="display:none">Sign out</button></div>
   </header>
@@ -280,9 +286,10 @@
   </div>
 </div>
 <input type="file" id="mediaFile" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime" multiple style="display:none" />
+<div id="reschedPop" class="rpop" style="display:none"></div>
 <div class="toast" id="toast"></div>
 
-<script src="/planner/config.js?v=3"></script>
+<script src="/postbox/config.js?v=4"></script>
 <script type="module">
 window.addEventListener("error", (e) => { try { toast("Error: " + e.message) } catch (_) {} });
 window.addEventListener("unhandledrejection", (e) => { try { toast("Error: " + (e.reason && e.reason.message || e.reason)) } catch (_) {} });
@@ -306,7 +313,7 @@ let WS = cfg.workspace || "default";
 let myRole = "member";
 $("chapterName").textContent = chapter;
 
-document.title = "Planner — " + chapter;
+document.title = "Postbox — " + chapter;
 
 // ======================================================================
 // TEMPLATES — Team1-flavored starting points. [BRACKETS] are placeholders.
@@ -505,7 +512,7 @@ async function supabaseStore() {
       if (error) throw error;
     },
     onChange(cb) {
-      sb.channel("planner")
+      sb.channel("postbox")
         .on("postgres_changes", { event: "*", schema: "postbox", table: "drafts", filter: `workspace_id=eq.${WS}` }, cb)
         .on("postgres_changes", { event: "*", schema: "postbox", table: "comments", filter: `workspace_id=eq.${WS}` }, cb)
         .subscribe();
@@ -581,7 +588,7 @@ if (store.mode === "local") {
   $("whoami").textContent = my.name || identity.me;
   const wsName = (my.workspaces && my.workspaces.name) || WS;
   $("chapterName").textContent = flagOf(WS) + " " + wsName;
-  document.title = flagOf(WS) + " Planner — " + wsName;
+  document.title = flagOf(WS) + " Postbox — " + wsName;
   if (mems.length > 1) {
     $("wsPicker").style.display = "";
     $("wsPicker").innerHTML = mems.map((m) =>
@@ -1054,19 +1061,69 @@ for (const zone of ["calGrid", "calUnsched"]) {
   });
   $(zone).addEventListener("dragend", () => { calDragId = null; for (const el of document.querySelectorAll(".cal-cell.dropover")) el.classList.remove("dropover"); });
 }
+async function applyReschedule(d, planned_at) {
+  try {
+    const data = await store.updateDraft(d.id, { planned_at });
+    const i = drafts.findIndex((x) => x.id === d.id); if (i > -1) drafts[i] = { ...drafts[i], ...data };
+    if (current && current.id === d.id) { current.planned_at = planned_at; $("plannedAt").value = planned_at ? toLocalInput(planned_at) : ""; }
+  } catch (err) { toast("Reschedule failed: " + err.message); return; }
+  renderCalendar(); renderList();
+  toast(planned_at ? "Scheduled for " + fmtWhen(planned_at) : "Unscheduled");
+}
+let popDraft = null;
+function closePop() { $("reschedPop").style.display = "none"; popDraft = null; }
+function openReschedPop(d, x, y) {
+  popDraft = d;
+  const cur = d.planned_at ? toLocalInput(d.planned_at).slice(0, 10) : "";
+  const pop = $("reschedPop");
+  pop.innerHTML = `
+    <div class="rt">${esc(d.title || firstLine(d.content) || "Untitled")}</div>
+    <input type="date" id="rpDate" value="${cur}" />
+    <div class="rrow">
+      <button class="small" data-rp="+7">+1 wk</button>
+      <button class="small" data-rp="+30">+1 mo</button>
+    </div>
+    <div class="rrow">
+      <button class="small ghost" data-rp="open" style="flex:2">Open</button>
+      <button class="small ghost" data-rp="clear">Unschedule</button>
+    </div>`;
+  pop.style.display = "block";
+  const w = 236, h = pop.offsetHeight || 160;
+  pop.style.left = Math.max(8, Math.min(x, window.innerWidth - w - 10)) + "px";
+  pop.style.top = Math.max(8, Math.min(y, window.innerHeight - h - 10)) + "px";
+  $("rpDate").addEventListener("change", async () => {
+    const v = $("rpDate").value; if (!v) return;
+    const [y2, m2, d2] = v.split("-").map(Number);
+    const prev = popDraft.planned_at ? new Date(popDraft.planned_at) : null;
+    const iso = new Date(y2, m2 - 1, d2, prev ? prev.getHours() : 12, prev ? prev.getMinutes() : 0).toISOString();
+    const dd = popDraft; closePop(); await applyReschedule(dd, iso);
+  });
+}
+$("reschedPop").addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-rp]"); if (!b || !popDraft) return;
+  const act = b.dataset.rp, d = popDraft;
+  if (act === "open") { closePop(); calOn = false; updateViews(); openDraft(d); return; }
+  if (act === "clear") { closePop(); await applyReschedule(d, null); return; }
+  const days = parseInt(act.slice(1), 10);
+  const base = d.planned_at ? new Date(d.planned_at) : new Date();
+  base.setDate(base.getDate() + days);
+  closePop(); await applyReschedule(d, base.toISOString());
+});
 const calOpen = (e) => {
   const c = e.target.closest("[data-cal-id]"); if (!c) return;
-  const d = drafts.find((x) => x.id === c.dataset.calId);
-  if (d) { calOn = false; updateViews(); openDraft(d); }
+  const d = drafts.find((x) => x.id === c.dataset.calId); if (!d) return;
+  const r = c.getBoundingClientRect();
+  openReschedPop(d, r.left, r.bottom + 4);
 };
 $("calGrid").addEventListener("click", calOpen);
 $("calUnsched").addEventListener("click", calOpen);
+document.addEventListener("click", (e) => { if (!e.target.closest("#reschedPop") && !e.target.closest("[data-cal-id]")) closePop(); });
 
 // ---- data load LAST so the UI is interactive even if this fails ----
 await refresh();
 try { store.onChange(() => { refresh(); if (current) loadComments(); }); }
 catch (e) { console.warn("realtime unavailable:", e); }
-console.log("planner build 2026-08-24c · ws:", WS, "· role:", myRole);
+console.log("postbox build 2026-08-24d · ws:", WS, "· role:", myRole);
 </script>
 </body>
 </html>

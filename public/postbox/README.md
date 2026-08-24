@@ -1,4 +1,4 @@
-# team1 planner
+# Postbox
 
 A tiny internal tool for planning social content as a team — shared drafts, thread
 preview with live character counts, statuses (idea → draft → review → approved → posted),
@@ -8,7 +8,7 @@ Built by Sam (@shamwise8) for team1 Thailand. Any chapter is welcome to run thei
 
 ## Try it as a chapter (no setup at all)
 
-The hosted planner at **shamwise.com/planner** supports many chapters on one link —
+The hosted planner at **shamwise.com/postbox** supports many chapters on one link —
 each chapter is a workspace.
 
 - **Chapter leads:** sign in with your **@team1.network** email → you'll be offered a

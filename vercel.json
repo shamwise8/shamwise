@@ -3,13 +3,49 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/links", "destination": "/links.html" },
-    { "source": "/linkx", "destination": "/linkx.html" },
-    { "source": "/team1kickoff", "destination": "/Team1KickOff" },
-    { "source": "/team1kickoff/", "destination": "/Team1KickOff" },
-    { "source": "/Team1Kickoff", "destination": "/Team1KickOff" },
-    { "source": "/team1tubc", "destination": "/Team1TUBC" },
-    { "source": "/team1tubc/", "destination": "/Team1TUBC" },
-    { "source": "/team1TUBC", "destination": "/Team1TUBC" }
+    {
+      "source": "/links",
+      "destination": "/links.html"
+    },
+    {
+      "source": "/linkx",
+      "destination": "/linkx.html"
+    },
+    {
+      "source": "/team1kickoff",
+      "destination": "/Team1KickOff"
+    },
+    {
+      "source": "/team1kickoff/",
+      "destination": "/Team1KickOff"
+    },
+    {
+      "source": "/Team1Kickoff",
+      "destination": "/Team1KickOff"
+    },
+    {
+      "source": "/team1tubc",
+      "destination": "/Team1TUBC"
+    },
+    {
+      "source": "/team1tubc/",
+      "destination": "/Team1TUBC"
+    },
+    {
+      "source": "/team1TUBC",
+      "destination": "/Team1TUBC"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/planner",
+      "destination": "/postbox",
+      "permanent": true
+    },
+    {
+      "source": "/planner/",
+      "destination": "/postbox",
+      "permanent": true
+    }
   ]
 }
