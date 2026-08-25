@@ -343,7 +343,7 @@ const fmtWhen = (iso) => iso ? new Date(iso).toLocaleString(undefined, { month: 
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
 
 const chapter = cfg.chapterName || "team1";
-const FLAGS = { team1th:"🇹🇭", team1br:"🇧🇷", team1in:"🇮🇳", team1kr:"🇰🇷", team1latam:"🌎", team1tr:"🇹🇷", team1us:"🇺🇸", team1vn:"🇻🇳", team1jp:"🇯🇵", team1fr:"🇫🇷", team1africa:"🌍", team1za:"🇿🇦", team1uk:"🇬🇧", team1oceania:"🌏", team1cn:"🇨🇳", team1global:"🌐", team1it:"🇮🇹", shamwise:"🛠️" };
+const FLAGS = { team1th:"🇹🇭", team1br:"🇧🇷", team1in:"🇮🇳", team1kr:"🇰🇷", team1latam:"🌎", team1tr:"🇹🇷", team1us:"🇺🇸", team1vn:"🇻🇳", team1jp:"🇯🇵", team1fr:"🇫🇷", team1africa:"🌍", team1za:"🇿🇦", team1uk:"🇬🇧", team1oceania:"🌏", team1cn:"🇨🇳", team1global:"🌐", team1it:"🇮🇹", team1eastafrica:"🌍", team1ng:"🇳🇬", shamwise:"🛠️" };
 const flagOf = (id) => FLAGS[id] || "🔺";
 let WS = cfg.workspace || "default";
 let myRole = "member";
