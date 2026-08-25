@@ -1163,7 +1163,10 @@ function openReschedPop(d, x, y) {
   const pop = $("reschedPop");
   pop.innerHTML = `
     <div class="rt">${esc(d.title || firstLine(d.content) || "Untitled")}</div>
-    <input type="date" id="rpDate" value="${cur}" />
+    <div class="rrow" style="margin-bottom:8px">
+      <input type="date" id="rpDate" value="${cur}" style="flex:2; margin-bottom:0" />
+      <button class="small primary" id="rpSet" style="flex:0 0 auto">Set</button>
+    </div>
     <div class="rrow">
       <button class="small" data-rp="+7">+1 wk</button>
       <button class="small" data-rp="mo">+1 mo</button>
@@ -1176,13 +1179,16 @@ function openReschedPop(d, x, y) {
   const w = 236, h = pop.offsetHeight || 160;
   pop.style.left = Math.max(8, Math.min(x, window.innerWidth - w - 10)) + "px";
   pop.style.top = Math.max(8, Math.min(y, window.innerHeight - h - 10)) + "px";
-  $("rpDate").addEventListener("change", async () => {
-    const v = $("rpDate").value; if (!v) return;
+  const applyTypedDate = async () => {
+    const v = $("rpDate").value; if (!v || !popDraft) return;
     const [y2, m2, d2] = v.split("-").map(Number);
+    if (!y2 || y2 < 2000 || y2 > 2100) { toast("Enter a full date first"); return; }
     const prev = popDraft.planned_at ? new Date(popDraft.planned_at) : null;
     const iso = new Date(y2, m2 - 1, d2, prev ? prev.getHours() : 12, prev ? prev.getMinutes() : 0).toISOString();
     const dd = popDraft; closePop(); await applyReschedule(dd, iso);
-  });
+  };
+  $("rpSet").addEventListener("click", (ev) => { ev.preventDefault(); applyTypedDate(); });
+  $("rpDate").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); applyTypedDate(); } });
 }
 $("reschedPop").addEventListener("click", async (e) => {
   const b = e.target.closest("[data-rp]"); if (!b || !popDraft) return;
