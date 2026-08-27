@@ -1065,6 +1065,7 @@ function parseCampaign(raw, opts = {}) {
 }
 
 let cmPosts = [];
+let cmParsedFrom = "";
 function renderCmPreview() {
   if (!cmPosts.length) { $("cmPreview").innerHTML = `<span style="color:var(--dim)">Nothing detected — check the format.</span>`; $("cmCreate").disabled = true; return; }
   $("cmPreview").innerHTML = `<table style="width:100%; border-collapse:collapse">
@@ -1106,6 +1107,7 @@ $("cmParse").addEventListener("click", () => {
   const prior = {};
   cmPosts.forEach((p) => { prior[p.day] = { labelId: p.labelId, title: p.title, date: p.date }; });
 
+  cmParsedFrom = $("cmText").value;
   cmPosts = parseCampaign($("cmText").value, { startDate: $("cmStart").value });
   cmPosts.forEach((p) => {
     const kept = prior[p.day];
@@ -1121,11 +1123,18 @@ $("cmParse").addEventListener("click", () => {
   });
   renderCmPreview();
 });
-$("cmText").addEventListener("input", () => { try { localStorage.setItem("postbox.cmText", $("cmText").value); } catch (_) {} });
+$("cmText").addEventListener("input", () => {
+  try { localStorage.setItem("postbox.cmText", $("cmText").value); } catch (_) {}
+  if (cmPosts.length && $("cmText").value !== cmParsedFrom) {
+    $("cmCreate").disabled = true;
+    $("cmMsg").textContent = "Text changed — press Preview again";
+  }
+});
 $("cmCancel").addEventListener("click", () => { $("campaignPanel").style.display = "none"; });
 $("campaignPanel").addEventListener("click", (e) => { if (e.target === $("campaignPanel")) $("campaignPanel").style.display = "none"; });
 $("cmCreate").addEventListener("click", async () => {
   if (!cmPosts.length) return;
+  if ($("cmText").value !== cmParsedFrom) { toast("Text changed — press Preview first"); return; }
   const lang = $("cmLang").value;
   $("cmCreate").disabled = true;
   const cmLabel = $("cmCreate").textContent;
