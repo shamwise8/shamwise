@@ -168,6 +168,35 @@
     #app.m-calendar aside, #app.m-calendar #editor, #app.m-calendar #empty { display: none !important; }
     #app.m-calendar #calendar { display: flex !important; }
     .cal-grid { min-width: 620px; }
+
+    /* Editor: one surface at a time, chrome collapsed */
+    #editor { height: 100%; }
+    .ed-bar { padding: 6px 10px; gap: 6px; flex-wrap: nowrap; }
+    .ed-bar input[type="text"] { font-size: 15px; min-width: 0; }
+    /* hide metadata controls behind the ⋯ sheet */
+    .ed-bar #status, .ed-bar #plannedAt, .ed-bar #assignee,
+    .ed-bar #copyAll, .ed-bar #shareBtn, .ed-bar #deleteDraft { display: none; }
+    #app.sheet-open .ed-bar #status, #app.sheet-open .ed-bar #plannedAt,
+    #app.sheet-open .ed-bar #assignee, #app.sheet-open .ed-bar #copyAll,
+    #app.sheet-open .ed-bar #shareBtn, #app.sheet-open .ed-bar #deleteDraft { display: inline-flex; }
+    #app.sheet-open .ed-bar { flex-wrap: wrap; }
+    #saveState { min-width: 0; font-size: 11px; }
+
+    .ed-body { flex: 1; min-height: 0; }
+    .write { flex: 1; min-height: 0; }
+    .write textarea { font-size: 16px; padding: 14px; }
+    .hint { padding: 6px 12px; font-size: 11.5px; line-height: 1.4; }
+    #hintText { display: none; }
+
+    /* write / preview are exclusive on mobile */
+    #app.show-preview .write { display: none; }
+    #app:not(.show-preview) .preview { display: none; }
+    .preview { border-top: 1px solid var(--line); }
+
+    /* comments collapse to a bar */
+    .comments { max-height: none; }
+    .comments .clist { display: none; }
+    #app.comments-open .comments .clist { display: block; max-height: 34vh; }
   }
 </style>
 </head>
@@ -272,7 +301,7 @@
 
     <div id="editor" style="display:none">
       <div class="ed-bar">
-        <button class="small ghost m-only" id="edBack" title="Back to drafts">‹ Drafts</button>
+        <button class="small ghost m-only" id="edBack" title="Back to drafts">‹</button>
         <input type="text" id="title" placeholder="Untitled draft" />
         <select id="status">
           <option value="idea">💡 Idea</option>
@@ -286,6 +315,7 @@
         <button class="small" id="copyAll">Copy thread</button>
         <button class="small" id="shareBtn" title="Copy a link to this draft">🔗 Share</button>
         <button class="small ghost" id="deleteDraft" title="Delete draft">🗑</button>
+        <button class="small ghost m-only" id="edMore" title="Post settings">⋯</button>
         <span id="saveState"></span>
       </div>
       <div class="lrow" id="labelRow"></div>
@@ -294,6 +324,8 @@
           <textarea id="content" placeholder="Write your post…&#10;&#10;Split a thread with --- on its own line."></textarea>
           <div class="hint" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
             <button class="small" id="addTweet" title="Start the next tweet">＋ Tweet</button>
+            <button class="small ghost m-only" id="togglePreview" title="Preview">👁 Preview</button>
+            <button class="small ghost m-only" id="toggleComments" title="Comments">💬</button>
             <span id="hintText"></span>
           </div>
         </div>
@@ -1647,7 +1679,21 @@ const mMq = window.matchMedia("(max-width: 720px)");
 const isMobile = () => mMq.matches;
 function setPane(p) { $("app").classList.remove("m-list","m-editor","m-calendar"); $("app").classList.add("m-" + p); }
 setPane("list");
-$("edBack").addEventListener("click", () => setPane("list"));
+$("edBack").addEventListener("click", () => {
+  $("app").classList.remove("show-preview", "sheet-open", "comments-open");
+  $("togglePreview").textContent = "👁 Preview";
+  setPane("list");
+});
+$("edMore").addEventListener("click", () => $("app").classList.toggle("sheet-open"));
+$("togglePreview").addEventListener("click", () => {
+  const on = $("app").classList.toggle("show-preview");
+  $("togglePreview").textContent = on ? "✍️ Write" : "👁 Preview";
+  if (on) renderPreview();
+});
+$("toggleComments").addEventListener("click", () => {
+  const on = $("app").classList.toggle("comments-open");
+  $("toggleComments").style.borderColor = on ? "var(--accent)" : "";
+});
 
 // ---------- calendar ----------
 let calOn = false;
