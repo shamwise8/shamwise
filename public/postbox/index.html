@@ -333,6 +333,31 @@
     <div style="text-align:right; margin-top:14px"><button class="small ghost" id="teamClose">Close</button></div>
   </div>
 </div>
+<div id="campaignPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:42; align-items:center; justify-content:center; padding:20px">
+  <div class="card" style="max-width:760px">
+    <h1 style="font-size:17px; margin-bottom:4px">Import campaign</h1>
+    <p style="font-size:13px">Paste a dated plan (Day 1…, D-Day / D+1…, or dated headings). Each day becomes its own draft, scheduled. Review below before creating.</p>
+    <textarea id="cmText" rows="7" style="width:100%; resize:vertical; margin-bottom:8px" placeholder="Paste the whole campaign here…"></textarea>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px">
+      <label style="font-size:12.5px; color:var(--muted)">Start date <input type="date" id="cmStart" style="margin-left:5px" /></label>
+      <label style="font-size:12.5px; color:var(--muted)">Language
+        <select id="cmLang" style="margin-left:5px">
+          <option value="en">English</option>
+          <option value="th">Thai</option>
+          <option value="both">Both (2 drafts/day)</option>
+        </select>
+      </label>
+      <label style="font-size:12.5px; color:var(--muted)"><input type="checkbox" id="cmCats" checked /> create categories</label>
+      <button class="small" id="cmParse">Preview</button>
+    </div>
+    <div id="cmPreview" style="max-height:38vh; overflow:auto; font-size:13px"></div>
+    <div style="display:flex; align-items:center; gap:10px; margin-top:12px">
+      <span id="cmMsg" style="flex:1; color:var(--muted); font-size:13px"></span>
+      <button class="small ghost" id="cmCancel">Cancel</button>
+      <button class="primary" id="cmCreate" disabled>Create drafts</button>
+    </div>
+  </div>
+</div>
 <div id="importPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:40; align-items:center; justify-content:center; padding:20px">
   <div class="card" style="max-width:640px">
     <h1 style="font-size:17px; margin-bottom:4px">Import long text</h1>
@@ -469,7 +494,8 @@ Follow them → [HANDLE]
 [CITY]’s got talent. More spotlights coming 👀` },
 ];
 
-$("templateMenu").innerHTML = `<button type="button" data-import="1">📥 Import long text<small>Paste LLM output — auto-split into a thread</small></button>` + TEMPLATES.map((t, i) =>
+$("templateMenu").innerHTML = `<button type="button" data-import="1">📥 Import long text<small>Paste LLM output — auto-split into a thread</small></button>` +
+  `<button type="button" data-campaign="1">📅 Import campaign<small>A dated plan → one draft per day</small></button>` + TEMPLATES.map((t, i) =>
   `<button type="button" data-t="${i}">${esc(t.name)}<small>${esc(t.desc)}</small></button>`).join("");
 
 // ======================================================================
@@ -858,9 +884,157 @@ $("newDraft").addEventListener("click", () => createDraft());
 $("templateMenu").addEventListener("click", (e) => {
   const imp = e.target.closest("[data-import]");
   if (imp) { $("tmenu").removeAttribute("open"); $("importPanel").style.display = "flex"; $("impText").focus(); updateImpInfo(); return; }
+  if (e.target.closest("[data-campaign]")) {
+    $("tmenu").removeAttribute("open");
+    const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    $("cmStart").value = d.toISOString().slice(0, 10);
+    $("cmPreview").innerHTML = ""; $("cmCreate").disabled = true;
+    $("campaignPanel").style.display = "flex"; $("cmText").focus();
+    return;
+  }
   const b = e.target.closest("[data-t]"); if (!b) return;
   $("tmenu").removeAttribute("open");
   createDraft(TEMPLATES[+b.dataset.t]);
+});
+
+// ---------- campaign import ----------
+const CM_MONTHS = { jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,sept:8,oct:9,nov:10,dec:11 };
+const CM_HEADERS = [
+  /^\s*\d+\s*[.)]\s*(D-?Day|D\s*[+\-]\s*\d+)\s*[·\-–—|]*\s*(.*)$/i,
+  /^\s*(D-?Day|D\s*[+\-]\s*\d+)\s*[·:\-–—|]+\s*(.*)$/i,
+  /^\s*(Day\s*\d+)\s*[·:\-–—|]*\s*(.*)$/i,
+  /^\s*\d+\s*[.)]\s*((?:mon|tue|wed|thu|fri|sat|sun)[a-z]*\s+\d{1,2}\s+[a-z]{3,9}.*)$/i,
+];
+const CM_NOTE = /^(pin[.,]|ask @|reconfirm|pending|do not|don't|confirm |global only|no reply-bait|no cta|links only|producer|note:|photo if|short\.|mid\.|mid length|longest post|five or six lines|length:)/i;
+const CM_EN = /^\s*ENGLISH\s*$/i, CM_TH = /^\s*THAI\b/i;
+
+function cmParseDate(text, startDate) {
+  if (!text) return null;
+  const t = String(text).trim();
+  let m = t.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3], 12, 0, 0, 0);
+  const yr = startDate ? startDate.getFullYear() : new Date().getFullYear();
+  m = t.match(/(?:mon|tue|wed|thu|fri|sat|sun)[a-z]*\s+(\d{1,2})\s+([a-z]{3,9})/i) || t.match(/\b(\d{1,2})\s+([a-z]{3,9})\b/i);
+  if (m) {
+    const mon = CM_MONTHS[m[2].toLowerCase().slice(0,4)] ?? CM_MONTHS[m[2].toLowerCase().slice(0,3)];
+    if (mon !== undefined) return new Date(yr, mon, +m[1], 12, 0, 0, 0);
+  }
+  m = t.match(/\b([a-z]{3,9})\s+(\d{1,2})\b/i);
+  if (m) {
+    const mon = CM_MONTHS[m[1].toLowerCase().slice(0,4)] ?? CM_MONTHS[m[1].toLowerCase().slice(0,3)];
+    if (mon !== undefined) return new Date(yr, mon, +m[2], 12, 0, 0, 0);
+  }
+  return null;
+}
+function cmMatchHeader(line) {
+  for (const re of CM_HEADERS) { const m = line.match(re); if (m) return { day: (m[1]||"").replace(/\s+/g,""), rest: (m[2]||"").trim() }; }
+  return null;
+}
+function parseCampaign(raw, opts = {}) {
+  const startDate = opts.startDate ? new Date(opts.startDate + "T12:00:00") : null;
+  const lines = raw.replace(/\r\n/g,"\n").split("\n").map((l) => l.replace(/ /g," ").trimEnd());
+  const marks = [];
+  lines.forEach((l, i) => { const h = cmMatchHeader(l); if (h) marks.push({ i, ...h }); });
+  if (!marks.length) return [];
+  const posts = [];
+  marks.forEach((mk, idx) => {
+    const end = idx + 1 < marks.length ? marks[idx+1].i : lines.length;
+    const block = lines.slice(mk.i + 1, end);
+    let category = "", title = "";
+    const firstReal = block.find((l) => l.trim());
+    if (firstReal) {
+      const t = firstReal.trim();
+      const cm = t.match(/^(.{2,40}?)\s*[—–-]\s*(.+)$/);
+      if (cm) { category = cm[1].trim(); title = cm[2].trim(); } else title = t;
+    }
+    const enStart = block.findIndex((l) => CM_EN.test(l));
+    const thStart = block.findIndex((l) => CM_TH.test(l));
+    let en = [], th = [];
+    if (enStart > -1) { en = block.slice(enStart+1, thStart > enStart ? thStart : block.length); if (thStart > -1) th = block.slice(thStart+1); }
+    else if (thStart > -1) { th = block.slice(thStart+1); en = block.slice(0, thStart); }
+    else { en = block.filter((l, i2) => !(i2 === block.indexOf(firstReal)) && !CM_NOTE.test(l.trim())); }
+    const clean = (arr) => arr.map((l) => l.trim()).filter((l) => l && !CM_NOTE.test(l)).join("\n").trim();
+    posts.push({ day: mk.day, date: cmParseDate(mk.rest, startDate), category, title, en: clean(en), th: clean(th) });
+  });
+  let anchorDate = posts.find((p) => p.date)?.date || startDate || new Date();
+  const ai = Math.max(0, posts.findIndex((p) => p.date));
+  posts.forEach((p, i) => { if (!p.date) { const d = new Date(anchorDate); d.setDate(d.getDate() + (i - ai)); p.date = d; } });
+  for (let i = 1; i < posts.length; i++) if (posts[i].date < posts[i-1].date) { const d = new Date(posts[i].date); d.setFullYear(d.getFullYear()+1); posts[i].date = d; }
+  return posts;
+}
+
+let cmPosts = [];
+function renderCmPreview() {
+  if (!cmPosts.length) { $("cmPreview").innerHTML = `<span style="color:var(--dim)">Nothing detected — check the format.</span>`; $("cmCreate").disabled = true; return; }
+  $("cmPreview").innerHTML = `<table style="width:100%; border-collapse:collapse">
+    <tr style="color:var(--dim); font-size:11.5px; text-transform:uppercase">
+      <th style="text-align:left; padding:4px 6px">Day</th><th style="text-align:left; padding:4px 6px">Date</th>
+      <th style="text-align:left; padding:4px 6px">Category</th><th style="text-align:left; padding:4px 6px">Title</th>
+      <th style="text-align:right; padding:4px 6px">Lines</th></tr>
+    ${cmPosts.map((p, i) => `<tr style="border-top:1px solid var(--line)">
+      <td style="padding:5px 6px; color:var(--muted)">${esc(p.day)}</td>
+      <td style="padding:5px 6px"><input type="date" data-cmdate="${i}" value="${p.date.toISOString().slice(0,10)}" style="font-size:12px; padding:3px 5px" /></td>
+      <td style="padding:5px 6px; color:var(--muted)">${esc(p.category || "—")}</td>
+      <td style="padding:5px 6px">${esc((p.title || "").slice(0, 46))}</td>
+      <td style="padding:5px 6px; text-align:right; color:var(--dim)">${(p.en || p.th).split("\n").filter(Boolean).length}</td>
+    </tr>`).join("")}</table>`;
+  $("cmCreate").disabled = false;
+  $("cmMsg").textContent = `${cmPosts.length} posts detected`;
+}
+$("cmPreview").addEventListener("change", (e) => {
+  const d = e.target.closest("[data-cmdate]"); if (!d) return;
+  const [y, m, dd] = d.value.split("-").map(Number);
+  if (y) cmPosts[+d.dataset.cmdate].date = new Date(y, m-1, dd, 12, 0, 0, 0);
+});
+$("cmParse").addEventListener("click", () => {
+  cmPosts = parseCampaign($("cmText").value, { startDate: $("cmStart").value });
+  renderCmPreview();
+});
+$("cmCancel").addEventListener("click", () => { $("campaignPanel").style.display = "none"; });
+$("campaignPanel").addEventListener("click", (e) => { if (e.target === $("campaignPanel")) $("campaignPanel").style.display = "none"; });
+$("cmCreate").addEventListener("click", async () => {
+  if (!cmPosts.length) return;
+  const lang = $("cmLang").value, makeCats = $("cmCats").checked;
+  $("cmCreate").disabled = true;
+  let made = 0;
+  try {
+    // ensure categories exist
+    const catMap = {};
+    if (makeCats) {
+      const wanted = [...new Set(cmPosts.map((p) => p.category).filter(Boolean))];
+      for (const name of wanted) {
+        let l = labels.find((x) => x.name.toLowerCase() === name.toLowerCase());
+        if (!l) {
+          const palette = Object.keys(LABEL_COLORS);
+          l = await store.createLabel(name, palette[labels.length % palette.length]);
+          labels = [...labels, l];
+        }
+        catMap[name] = l.id;
+      }
+    }
+    const wanted = [];
+    for (const p of cmPosts) {
+      const body = lang === "th" ? (p.th || p.en) : (p.en || p.th);
+      if (body) wanted.push({ p, body, suffix: "" });
+      if (lang === "both" && p.th && p.en) wanted.push({ p, body: p.th, suffix: " (TH)" });
+    }
+    for (const w of wanted) {
+      const d = await store.createDraft();
+      await store.updateDraft(d.id, {
+        title: (w.p.title || w.p.day) + w.suffix,
+        content: w.body,
+        status: "draft",
+        planned_at: w.p.date.toISOString(),
+        labels: catMap[w.p.category] ? [catMap[w.p.category]] : [],
+      });
+      made++;
+      $("cmMsg").textContent = `Creating… ${made}/${wanted.length}`;
+    }
+  } catch (err) { toast("Import failed: " + err.message); $("cmCreate").disabled = false; return; }
+  $("campaignPanel").style.display = "none";
+  $("cmText").value = ""; cmPosts = [];
+  await loadLabels(); await refresh();
+  toast(`Created ${made} drafts`);
 });
 
 // ---------- smart import ----------
