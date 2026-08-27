@@ -1,0 +1,11 @@
+{
+  "name": "postbox-mcp",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": { "postbox-mcp": "index.js" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "zod": "^3.23.8"
+  }
+}
