@@ -234,7 +234,7 @@
         <button data-f="approved">Approved</button>
         <button data-f="posted">Posted</button>
       </div>
-      <div class="filters" id="labelFilters" style="display:none"></div>
+      <div class="filters" id="labelFilters"></div>
       <div id="list"></div>
     </aside>
 
@@ -1120,11 +1120,14 @@ async function loadLabels() {
 
 function renderLabelFilters() {
   const el = $("labelFilters");
-  if (!labels.length) { el.style.display = "none"; return; }
   el.style.display = "flex";
-  el.innerHTML = labels.map((l) =>
-    `<button class="lchip ${labelFilter === l.id ? "on" : ""}" data-lf="${l.id}" style="${labelFilter === l.id ? `color:${colorOf(l)}` : ""}">
-       <span class="ldot" style="background:${colorOf(l)}"></span>${esc(l.name)}</button>`).join("");
+  el.innerHTML =
+    (labels.length
+      ? labels.map((l) =>
+          `<button class="lchip ${labelFilter === l.id ? "on" : ""}" data-lf="${l.id}" style="${labelFilter === l.id ? `color:${colorOf(l)}` : ""}">
+             <span class="ldot" style="background:${colorOf(l)}"></span>${esc(l.name)}</button>`).join("")
+      : `<span style="color:var(--dim); font-size:12px">No categories yet —</span>`) +
+    `<button class="lchip" data-lnew="1" title="Create a category label">＋ Category</button>`;
 }
 
 function renderLabelRow() {
@@ -1136,14 +1139,29 @@ function renderLabelRow() {
       return `<button class="lchip ${on ? "on" : ""}" data-ltoggle="${l.id}" style="${on ? `color:${colorOf(l)}` : ""}">
         <span class="ldot" style="background:${colorOf(l)}"></span>${esc(l.name)}</button>`;
     }).join("") +
-    `<button class="lchip" data-lnew="1" title="Create a label">＋ Label</button>`;
+    `<button class="lchip" data-lnew="1" title="Create a category label">＋ Category</button>`;
 }
 
-$("labelFilters").addEventListener("click", (e) => {
+$("labelFilters").addEventListener("click", async (e) => {
+  if (e.target.closest("[data-lnew]")) { await createLabelFlow(false); return; }
   const b = e.target.closest("[data-lf]"); if (!b) return;
   labelFilter = labelFilter === b.dataset.lf ? null : b.dataset.lf;
   renderLabelFilters(); renderList(); if (calOn) renderCalendar();
 });
+
+async function createLabelFlow(assignToCurrent) {
+  const name = prompt("Category name (e.g. Builder Spotlight)");
+  if (!name || !name.trim()) return;
+  const palette = Object.keys(LABEL_COLORS);
+  const color = palette[labels.length % palette.length];
+  try {
+    const l = await store.createLabel(name.trim(), color);
+    labels = [...labels, l].sort((a, b) => a.name.localeCompare(b.name));
+    if (assignToCurrent && current) { current.labels = [...(current.labels || []), l.id]; await save(); }
+    renderLabelRow(); renderLabelFilters(); renderList();
+    toast(`Category "${l.name}" created`);
+  } catch (err) { toast("Could not create: " + err.message); }
+}
 
 $("labelRow").addEventListener("click", async (e) => {
   const t = e.target.closest("[data-ltoggle]");
@@ -1155,19 +1173,7 @@ $("labelRow").addEventListener("click", async (e) => {
     await save();
     return;
   }
-  if (e.target.closest("[data-lnew]")) {
-    const name = prompt("Label name (e.g. Builder Spotlight)");
-    if (!name || !name.trim()) return;
-    const palette = Object.keys(LABEL_COLORS);
-    const color = palette[labels.length % palette.length];
-    try {
-      const l = await store.createLabel(name.trim(), color);
-      labels = [...labels, l].sort((a, b) => a.name.localeCompare(b.name));
-      if (current) { current.labels = [...(current.labels || []), l.id]; await save(); }
-      renderLabelRow(); renderLabelFilters(); renderList();
-      toast(`Label "${l.name}" created`);
-    } catch (err) { toast("Could not create label: " + err.message); }
-  }
+  if (e.target.closest("[data-lnew]")) { await createLabelFlow(true); }
 });
 
 // ---------- mobile single-pane ----------
