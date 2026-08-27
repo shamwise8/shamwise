@@ -240,6 +240,16 @@
         <button data-f="approved">Approved</button>
         <button data-f="posted">Posted</button>
       </div>
+      <div class="filters" id="sortRow" style="gap:6px">
+        <span style="font-size:12px; color:var(--dim)">Sort</span>
+        <select id="sortBy" style="font-size:12px; padding:3px 6px; flex:1">
+          <option value="planned">📅 Planned date</option>
+          <option value="updated">🕓 Last modified</option>
+          <option value="created">✨ Recently created</option>
+          <option value="title">🔤 Title A–Z</option>
+          <option value="status">🚦 Status</option>
+        </select>
+      </div>
       <div class="filters" id="labelFilters"></div>
       <div id="bulkBar" style="display:none; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); background:var(--panel2)">
         <span id="bulkCount" style="font-size:12.5px; color:var(--muted); flex:1"></span>
@@ -878,8 +888,8 @@ $("filters").addEventListener("click", (e) => {
 const firstLine = (s) => (s || "").split("\n").find((l) => l.trim()) || "";
 
 function renderList() {
-  const rows = drafts.filter((d) => (filter === "all" || d.status === filter)
-    && (!labelFilter || (Array.isArray(d.labels) && d.labels.includes(labelFilter))));
+  const rows = sortDrafts(drafts.filter((d) => (filter === "all" || d.status === filter)
+    && (!labelFilter || (Array.isArray(d.labels) && d.labels.includes(labelFilter)))));
   $("list").innerHTML = rows.map((d) => `
     <div class="item ${current && current.id === d.id ? "on" : ""}" data-id="${d.id}">
       ${selecting ? `<input type="checkbox" data-sel="${d.id}" ${selected.has(d.id) ? "checked" : ""} style="float:right; margin-left:8px" />` : ""}
@@ -943,6 +953,7 @@ const CM_HEADERS = [
   /^\s*(D-?Day|D\s*[+\-]\s*\d+)\s*[·:\-–—|]+\s*(.*)$/i,
   /^\s*(Day\s*\d+)\s*[·:\-–—|]*\s*(.*)$/i,
   /^\s*\d+\s*[.)]\s*((?:mon|tue|wed|thu|fri|sat|sun)[a-z]*\s+\d{1,2}\s+[a-z]{3,9}.*)$/i,
+  /^\s*(S\d{1,2})\s*[·:\-–—|]+\s*(.*)$/,
 ];
 const CM_NOTE = /^(pin[.,]|ask @|reconfirm|pending|do not|don't|confirm |global only|no reply-bait|no cta|links only|producer|note:|photo if|short\.|mid\.|mid length|longest post|five or six lines|length:)/i;
 const CM_EN = /^\s*ENGLISH\s*$/i, CM_TH = /^\s*THAI\b/i;
@@ -980,11 +991,13 @@ function parseCampaign(raw, opts = {}) {
     const end = idx + 1 < marks.length ? marks[idx+1].i : lines.length;
     const block = lines.slice(mk.i + 1, end);
     let category = "", title = "";
+    if (/^S\d{1,2}$/.test(mk.day) && mk.rest) title = mk.rest.trim();
     const firstReal = block.find((l) => l.trim());
     if (firstReal) {
       const t = firstReal.trim();
       const cm = t.match(/^(.{2,40}?)\s*[—–-]\s*(.+)$/);
-      if (cm) { category = cm[1].trim(); title = cm[2].trim(); } else title = t;
+      if (cm) { category = cm[1].trim(); if (!title) title = cm[2].trim(); }
+      else if (!title) title = t;
     }
     const enStart = block.findIndex((l) => CM_EN.test(l));
     const thStart = block.findIndex((l) => CM_TH.test(l));
@@ -993,12 +1006,14 @@ function parseCampaign(raw, opts = {}) {
     else if (thStart > -1) { th = block.slice(thStart+1); en = block.slice(0, thStart); }
     else { en = block.filter((l, i2) => !(i2 === block.indexOf(firstReal)) && !CM_NOTE.test(l.trim())); }
     const clean = (arr) => arr.map((l) => l.trim()).filter((l) => l && !CM_NOTE.test(l)).join("\n").trim();
-    posts.push({ day: mk.day, date: cmParseDate(mk.rest, startDate), category, title, en: clean(en), th: clean(th) });
+    const isSpare = /^S\d{1,2}$/.test(mk.day);
+    posts.push({ day: mk.day, spare: isSpare, date: isSpare ? null : cmParseDate(mk.rest, startDate), category, title, en: clean(en), th: clean(th) });
   });
   let anchorDate = posts.find((p) => p.date)?.date || startDate || new Date();
   const ai = Math.max(0, posts.findIndex((p) => p.date));
-  posts.forEach((p, i) => { if (!p.date) { const d = new Date(anchorDate); d.setDate(d.getDate() + (i - ai)); p.date = d; } });
-  for (let i = 1; i < posts.length; i++) if (posts[i].date < posts[i-1].date) { const d = new Date(posts[i].date); d.setFullYear(d.getFullYear()+1); posts[i].date = d; }
+  posts.forEach((p, i) => { if (!p.date && !p.spare) { const d = new Date(anchorDate); d.setDate(d.getDate() + (i - ai)); p.date = d; } });
+  const dated = posts.filter((p) => p.date);
+  for (let i = 1; i < dated.length; i++) if (dated[i].date < dated[i-1].date) { const d = new Date(dated[i].date); d.setFullYear(d.getFullYear()+1); dated[i].date = d; }
   return posts;
 }
 
@@ -1012,7 +1027,9 @@ function renderCmPreview() {
       <th style="text-align:right; padding:4px 6px">Lines</th></tr>
     ${cmPosts.map((p, i) => `<tr style="border-top:1px solid var(--line)">
       <td style="padding:5px 6px; color:var(--muted)">${esc(p.day)}</td>
-      <td style="padding:5px 6px"><input type="date" data-cmdate="${i}" value="${p.date.toISOString().slice(0,10)}" style="font-size:12px; padding:3px 5px" /></td>
+      <td style="padding:5px 6px">${p.date
+        ? `<input type="date" data-cmdate="${i}" value="${p.date.toISOString().slice(0,10)}" style="font-size:12px; padding:3px 5px" />`
+        : `<span style="color:var(--dim); font-size:12px">spare · unscheduled</span>`}</td>
       <td style="padding:5px 6px">
         <select data-cmcat="${i}" style="font-size:12px; padding:3px 5px; max-width:150px">
           <option value="">— none —</option>
@@ -1090,8 +1107,8 @@ $("cmCreate").addEventListener("click", async () => {
       await store.updateDraft(d.id, {
         title: (w.p.title || w.p.day) + w.suffix,
         content: w.body,
-        status: "draft",
-        planned_at: w.p.date.toISOString(),
+        status: w.p.spare ? "idea" : "draft",
+        planned_at: w.p.date ? w.p.date.toISOString() : null,
         labels: labelFor(w.p),
       });
       made++;
@@ -1450,6 +1467,36 @@ $("bulkDel").addEventListener("click", async () => {
 
 // ---------- labels ----------
 let labelFilter = null;
+let sortBy = localStorage.getItem("postbox.sortBy") || "planned";
+const STATUS_ORDER = { idea: 0, draft: 1, review: 2, approved: 3, posted: 4 };
+function sortDrafts(rows) {
+  const t = (v) => (v ? new Date(v).getTime() : null);
+  const byUpdated = (a, b) => (t(b.updated_at) || 0) - (t(a.updated_at) || 0);
+  return [...rows].sort((a, b) => {
+    switch (sortBy) {
+      case "planned": {
+        const pa = t(a.planned_at), pb = t(b.planned_at);
+        if (pa === null && pb === null) return byUpdated(a, b);
+        if (pa === null) return 1;   // unscheduled last
+        if (pb === null) return -1;
+        return pa - pb;              // soonest first
+      }
+      case "created": return (t(b.created_at) || 0) - (t(a.created_at) || 0);
+      case "title": return (a.title || firstLine(a.content) || "").localeCompare(b.title || firstLine(b.content) || "");
+      case "status": {
+        const d = (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9);
+        return d !== 0 ? d : byUpdated(a, b);
+      }
+      default: return byUpdated(a, b);
+    }
+  });
+}
+$("sortBy").value = sortBy;
+$("sortBy").addEventListener("change", () => {
+  sortBy = $("sortBy").value;
+  try { localStorage.setItem("postbox.sortBy", sortBy); } catch (_) {}
+  renderList();
+});
 
 async function loadMembers() {
   try { members = await store.listMembers(); } catch (e) { members = []; }
