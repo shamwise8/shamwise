@@ -1357,7 +1357,7 @@ function renderLabelFilters() {
              <span class="ldot" style="background:${colorOf(l)}"></span>${esc(l.name)}</button>`).join("")
       : `<span style="color:var(--dim); font-size:12px">No categories yet —</span>`) +
     `<button class="lchip" data-lnew="1" title="Create a category label">＋ Category</button>` +
-    (labels.length ? `<button class="lchip" data-lmanage="1" title="Rename, recolour or delete categories">✎</button>` : "");
+    (labels.length ? `<button class="lchip" data-lmanage="1" title="Rename, recolour, lock or delete categories">✎ Manage</button>` : "");
 }
 
 function renderLabelRow() {
@@ -1370,7 +1370,7 @@ function renderLabelRow() {
         <span class="ldot" style="background:${colorOf(l)}"></span>${esc(l.name)}</button>`;
     }).join("") +
     `<button class="lchip" data-lnew="1" title="Create a category label">＋ Category</button>` +
-    (labels.length ? `<button class="lchip" data-lmanage="1" title="Rename, recolour or delete categories">✎</button>` : "");
+    (labels.length ? `<button class="lchip" data-lmanage="1" title="Rename, recolour, lock or delete categories">✎ Manage</button>` : "");
 }
 
 $("labelFilters").addEventListener("click", async (e) => {
@@ -1389,7 +1389,7 @@ function renderCatPanel() {
       </select>
       <span class="ldot" style="background:${colorOf(l)}"></span>
       <input type="text" data-lname="${l.id}" value="${esc(l.name)}" style="flex:1; min-width:70px; font-size:13.5px; ${l.locked ? "opacity:.6" : ""}" ${l.locked ? "readonly" : ""} />
-      <button class="small ghost" data-llock="${l.id}" title="${l.locked ? "Locked — click to unlock" : "Lock to prevent edits and deletion"}">${l.locked ? "🔒" : "🔓"}</button>
+      <button class="small ghost" data-llock="${l.id}" title="${l.locked ? "Locked — click to unlock" : "Lock to prevent edits and deletion"}" style="${l.locked ? "border-color:var(--warn)" : ""}">${l.locked ? "🔒 Locked" : "🔓"}</button>
       <button class="small ghost" data-ldel="${l.id}" title="${l.locked ? "Unlock first to delete" : "Delete"}" ${l.locked ? "disabled style=opacity:.35" : ""}>🗑</button>
     </div>`).join("");
 }
