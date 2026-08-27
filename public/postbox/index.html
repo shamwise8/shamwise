@@ -236,12 +236,17 @@
       </div>
       <div class="filters" id="filters">
         <button data-f="all" class="on">All</button>
-        <button data-f="mine" title="Assigned to me">👤 Mine</button>
         <button data-f="idea">Idea</button>
         <button data-f="draft">Draft</button>
         <button data-f="review">Review</button>
         <button data-f="approved">Approved</button>
         <button data-f="posted">Posted</button>
+      </div>
+      <div class="filters" id="mineRow" style="gap:6px">
+        <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); cursor:pointer">
+          <input type="checkbox" id="mineOnly" /> 👤 Assigned to me
+        </label>
+        <span id="mineCount" style="font-size:11.5px; color:var(--dim); margin-left:auto"></span>
       </div>
       <div class="filters" id="sortRow" style="gap:6px">
         <span style="font-size:12px; color:var(--dim)">Sort</span>
@@ -895,8 +900,11 @@ $("filters").addEventListener("click", (e) => {
 const firstLine = (s) => (s || "").split("\n").find((l) => l.trim()) || "";
 
 function renderList() {
-  const rows = sortDrafts(drafts.filter((d) => (filter === "all" || (filter === "mine" ? isMine(d) : d.status === filter))
+  const rows = sortDrafts(drafts.filter((d) => (filter === "all" || d.status === filter)
+    && (!mineOnly || isMine(d))
     && (!labelFilter || (Array.isArray(d.labels) && d.labels.includes(labelFilter)))));
+  const mineTotal = drafts.filter(isMine).length;
+  $("mineCount").textContent = mineTotal ? `${mineTotal} assigned to you` : "";
   $("list").innerHTML = rows.map((d) => `
     <div class="item ${current && current.id === d.id ? "on" : ""} ${isMine(d) ? "mine" : ""}" data-id="${d.id}">
       ${selecting ? `<input type="checkbox" data-sel="${d.id}" ${selected.has(d.id) ? "checked" : ""} style="float:right; margin-left:8px" />` : ""}
@@ -1475,6 +1483,7 @@ $("bulkDel").addEventListener("click", async () => {
 // ---------- labels ----------
 let labelFilter = null;
 let sortBy = localStorage.getItem("postbox.sortBy") || "planned";
+let mineOnly = localStorage.getItem("postbox.mineOnly") === "1";
 const STATUS_ORDER = { idea: 0, draft: 1, review: 2, approved: 3, posted: 4 };
 function sortDrafts(rows) {
   const t = (v) => (v ? new Date(v).getTime() : null);
@@ -1498,6 +1507,12 @@ function sortDrafts(rows) {
     }
   });
 }
+$("mineOnly").checked = mineOnly;
+$("mineOnly").addEventListener("change", () => {
+  mineOnly = $("mineOnly").checked;
+  try { localStorage.setItem("postbox.mineOnly", mineOnly ? "1" : "0"); } catch (_) {}
+  renderList(); if (calOn) renderCalendar();
+});
 $("sortBy").value = sortBy;
 $("sortBy").addEventListener("change", () => {
   sortBy = $("sortBy").value;
@@ -1654,7 +1669,9 @@ $("calToday").addEventListener("click", () => { calMonth = new Date(new Date().g
 const chipHtml = (d) => `<div class="chip c-${d.status}" draggable="true" data-cal-id="${d.id}" title="${esc(d.title || firstLine(d.content) || "Untitled")}">${esc(d.title || firstLine(d.content) || "Untitled")}</div>`;
 
 function renderCalendar() {
-  const rows = drafts.filter((d) => filter === "all" || d.status === filter);
+  const rows = drafts.filter((d) => (filter === "all" || d.status === filter)
+    && (!mineOnly || isMine(d))
+    && (!labelFilter || (Array.isArray(d.labels) && d.labels.includes(labelFilter))));
   const byDay = {};
   const unsched = [];
   for (const d of rows) {
