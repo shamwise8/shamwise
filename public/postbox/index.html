@@ -266,7 +266,10 @@
       <div class="ed-body">
         <div class="write">
           <textarea id="content" placeholder="Write your post…&#10;&#10;Split a thread with --- on its own line."></textarea>
-          <div class="hint">Press <b>⌘↵</b> or leave <b>2 empty lines</b> to start the next tweet · links count as 23 chars · red = over 280</div>
+          <div class="hint" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+            <button class="small" id="addTweet" title="Start the next tweet">＋ Tweet</button>
+            <span id="hintText"></span>
+          </div>
         </div>
         <div class="preview">
           <h3>Preview <span id="threadInfo"></span></h3>
@@ -943,20 +946,27 @@ const toLocalInput = (iso) => {
   return d.toISOString().slice(0, 16);
 };
 
+function insertThreadBreak() {
+  const ta = $("content"), start = ta.selectionStart ?? ta.value.length, end = ta.selectionEnd ?? ta.value.length;
+  const before = ta.value.slice(0, start).replace(/\s+$/, "");
+  const after = ta.value.slice(end).replace(/^\s+/, "");
+  const sep = "\n\n\n";
+  ta.value = before + sep + after;
+  const pos = (before + sep).length;
+  ta.setSelectionRange(pos, pos);
+  ta.dispatchEvent(new Event("input", { bubbles: true }));
+  ta.focus();
+}
+$("addTweet").addEventListener("click", (e) => { e.preventDefault(); insertThreadBreak(); });
 $("content").addEventListener("keydown", (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-    e.preventDefault();
-    const ta = $("content"), start = ta.selectionStart, end = ta.selectionEnd;
-    const before = ta.value.slice(0, start).replace(/\s+$/, "");
-    const after = ta.value.slice(end).replace(/^\s+/, "");
-    const sep = "\n\n\n";
-    ta.value = before + sep + after;
-    const pos = (before + sep).length;
-    ta.setSelectionRange(pos, pos);
-    ta.dispatchEvent(new Event("input", { bubbles: true }));
-    ta.focus();
-  }
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); insertThreadBreak(); }
 });
+(function setHint() {
+  const touch = window.matchMedia("(max-width: 720px)").matches || ("ontouchstart" in window);
+  $("hintText").innerHTML = touch
+    ? "or leave <b>2 empty lines</b> to start the next tweet · links = 23 chars · red = over 280"
+    : "or press <b>⌘↵</b> / leave <b>2 empty lines</b> · links count as 23 chars · red = over 280";
+})();
 
 for (const [id, field] of [["title", "title"], ["content", "content"]]) {
   $(id).addEventListener("input", () => {
