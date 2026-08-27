@@ -496,7 +496,7 @@ function localStore() {
     async listLabels() { return JSON.parse(localStorage.getItem("planner.labels") || "[]"); },
     async createLabel(name, color) {
       const all = JSON.parse(localStorage.getItem("planner.labels") || "[]");
-      const l = { id: uuid(), name, color };
+      const l = { id: uuid(), name, color, locked: false };
       all.push(l); localStorage.setItem("planner.labels", JSON.stringify(all));
       return l;
     },
@@ -592,7 +592,7 @@ async function supabaseStore() {
       if (error) throw error;
     },
     async listLabels() {
-      const { data, error } = await sb.from("labels").select("id,name,color").eq("workspace_id", WS).order("name");
+      const { data, error } = await sb.from("labels").select("id,name,color,locked").eq("workspace_id", WS).order("name");
       if (error) throw error;
       return data;
     },
@@ -1175,12 +1175,13 @@ $("labelFilters").addEventListener("click", async (e) => {
 function renderCatPanel() {
   $("catList").innerHTML = labels.map((l) => `
     <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--line)">
-      <select data-lcolor="${l.id}" title="Colour" style="padding:4px 6px; font-size:12px">
+      <select data-lcolor="${l.id}" title="Colour" style="padding:4px 6px; font-size:12px" ${l.locked ? "disabled" : ""}>
         ${Object.keys(LABEL_COLORS).map((c) => `<option value="${c}" ${c === l.color ? "selected" : ""}>${c}</option>`).join("")}
       </select>
       <span class="ldot" style="background:${colorOf(l)}"></span>
-      <input type="text" data-lname="${l.id}" value="${esc(l.name)}" style="flex:1; min-width:80px; font-size:13.5px" />
-      <button class="small ghost" data-ldel="${l.id}" title="Delete">🗑</button>
+      <input type="text" data-lname="${l.id}" value="${esc(l.name)}" style="flex:1; min-width:70px; font-size:13.5px; ${l.locked ? "opacity:.6" : ""}" ${l.locked ? "readonly" : ""} />
+      <button class="small ghost" data-llock="${l.id}" title="${l.locked ? "Locked — click to unlock" : "Lock to prevent edits and deletion"}">${l.locked ? "🔒" : "🔓"}</button>
+      <button class="small ghost" data-ldel="${l.id}" title="${l.locked ? "Unlock first to delete" : "Delete"}" ${l.locked ? "disabled style=opacity:.35" : ""}>🗑</button>
     </div>`).join("");
 }
 $("catPanel").addEventListener("click", (e) => { if (e.target === $("catPanel")) $("catPanel").style.display = "none"; });
@@ -1196,14 +1197,23 @@ $("catList").addEventListener("blur", async (e) => {
   const n = e.target.closest("[data-lname]"); if (!n) return;
   const l = labelById(n.dataset.lname);
   const val = n.value.trim();
-  if (!l || !val || val === l.name) return;
+  if (!l || l.locked || !val || val === l.name) return;
   try { await store.updateLabel(l.id, { name: val }); } catch (err) { toast("Rename failed: " + err.message); return; }
   await loadLabels(); renderCatPanel(); renderList(); toast("Renamed");
 }, true);
 $("catList").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.closest("[data-lname]")) e.target.blur(); });
 $("catList").addEventListener("click", async (e) => {
+  const lk = e.target.closest("[data-llock]");
+  if (lk) {
+    const l = labelById(lk.dataset.llock); if (!l) return;
+    try { await store.updateLabel(l.id, { locked: !l.locked }); } catch (err) { toast("Failed: " + err.message); return; }
+    await loadLabels(); renderCatPanel();
+    toast(l.locked ? `"${l.name}" unlocked` : `"${l.name}" locked`);
+    return;
+  }
   const d = e.target.closest("[data-ldel]"); if (!d) return;
   const l = labelById(d.dataset.ldel); if (!l) return;
+  if (l.locked) { toast("Unlock it first"); return; }
   if (!confirm(`Delete "${l.name}"? It will be removed from every draft.`)) return;
   try { await store.deleteLabel(l.id); } catch (err) { toast("Delete failed: " + err.message); return; }
   if (labelFilter === l.id) labelFilter = null;
