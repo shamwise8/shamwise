@@ -1102,8 +1102,19 @@ $("cmPreview").addEventListener("input", (e) => {
   if (t) cmPosts[+t.dataset.cmtitle].title = t.value;
 });
 $("cmParse").addEventListener("click", () => {
+  // remember any edits the user already made, keyed by day marker
+  const prior = {};
+  cmPosts.forEach((p) => { prior[p.day] = { labelId: p.labelId, title: p.title, date: p.date }; });
+
   cmPosts = parseCampaign($("cmText").value, { startDate: $("cmStart").value });
   cmPosts.forEach((p) => {
+    const kept = prior[p.day];
+    if (kept && kept.labelId !== undefined) {
+      p.labelId = kept.labelId;           // keeps "" (none) and existing-category picks
+      if (kept.title) p.title = kept.title;
+      if (kept.date) p.date = kept.date;
+      return;
+    }
     if (!p.category) { p.labelId = ""; return; }
     const hit = labels.find((l) => l.name.toLowerCase() === p.category.toLowerCase());
     p.labelId = hit ? hit.id : "new:" + p.category;
@@ -1123,7 +1134,8 @@ $("cmCreate").addEventListener("click", async () => {
   try {
     // ensure categories exist
     const resolved = {};
-    const newNames = [...new Set(cmPosts.map((p) => p.labelId).filter((v) => v && v.startsWith("new:")).map((v) => v.slice(4)))];
+    const inUse = cmPosts.map((p) => p.labelId).filter(Boolean);
+    const newNames = [...new Set(inUse.filter((v) => v.startsWith("new:")).map((v) => v.slice(4)))];
     for (const name of newNames) {
       let l = labels.find((x) => x.name.toLowerCase() === name.toLowerCase());
       if (!l) {
