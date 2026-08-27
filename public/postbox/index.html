@@ -122,6 +122,11 @@
   .chip.c-review { border-left-color: var(--review); } .chip.c-approved { border-left-color: var(--approved); }
   .chip.c-posted { border-left-color: var(--posted); }
   #empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--dim); text-align: center; padding: 20px; line-height: 1.7; }
+  .lchip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel2); color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .lchip.on { color: var(--ink); border-color: currentColor; }
+  .ldot { width: 8px; height: 8px; border-radius: 99px; flex: none; }
+  .lrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+  .item .ldots { display: inline-flex; gap: 3px; margin-right: 6px; vertical-align: middle; }
   .rpop { position: fixed; z-index: 46; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; box-shadow: 0 14px 44px rgba(0,0,0,.6); width: 236px; }
   .rpop .rt { font-weight: 500; font-size: 13.5px; margin-bottom: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .rpop input[type="date"] { width: 100%; margin-bottom: 8px; }
@@ -229,6 +234,7 @@
         <button data-f="approved">Approved</button>
         <button data-f="posted">Posted</button>
       </div>
+      <div class="filters" id="labelFilters" style="display:none"></div>
       <div id="list"></div>
     </aside>
 
@@ -251,6 +257,7 @@
         <button class="small ghost" id="deleteDraft" title="Delete draft">🗑</button>
         <span id="saveState"></span>
       </div>
+      <div class="lrow" id="labelRow"></div>
       <div class="ed-body">
         <div class="write">
           <textarea id="content" placeholder="Write your post…&#10;&#10;Split a thread with --- on its own line."></textarea>
@@ -346,6 +353,10 @@ const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())
 const chapter = cfg.chapterName || "team1";
 const FLAGS = { team1th:"🇹🇭", team1br:"🇧🇷", team1in:"🇮🇳", team1kr:"🇰🇷", team1latam:"🌎", team1tr:"🇹🇷", team1us:"🇺🇸", team1vn:"🇻🇳", team1jp:"🇯🇵", team1fr:"🇫🇷", team1africa:"🌍", team1za:"🇿🇦", team1uk:"🇬🇧", team1oceania:"🌏", team1cn:"🇨🇳", team1global:"🌐", team1it:"🇮🇹", team1eastafrica:"🌍", team1ng:"🇳🇬", shamwise:"🛠️" };
 const flagOf = (id) => FLAGS[id] || "🔺";
+const LABEL_COLORS = { grey:"#9a9aa2", red:"#e84142", orange:"#fb923c", yellow:"#fbbf24", green:"#34d399", blue:"#60a5fa", purple:"#a78bfa", pink:"#f472b6" };
+let labels = [];
+const labelById = (id) => labels.find((l) => l.id === id);
+const colorOf = (l) => LABEL_COLORS[l && l.color] || LABEL_COLORS.grey;
 let WS = cfg.workspace || "default";
 let myRole = "member";
 $("chapterName").textContent = chapter;
@@ -474,6 +485,17 @@ function localStore() {
       write(LS_DRAFTS, read(LS_DRAFTS).filter((x) => x.id !== id));
       const c = read(LS_COMMENTS); delete c[id]; write(LS_COMMENTS, c);
     },
+    async listLabels() { return JSON.parse(localStorage.getItem("planner.labels") || "[]"); },
+    async createLabel(name, color) {
+      const all = JSON.parse(localStorage.getItem("planner.labels") || "[]");
+      const l = { id: uuid(), name, color };
+      all.push(l); localStorage.setItem("planner.labels", JSON.stringify(all));
+      return l;
+    },
+    async deleteLabel(id) {
+      const all = JSON.parse(localStorage.getItem("planner.labels") || "[]").filter((l) => l.id !== id);
+      localStorage.setItem("planner.labels", JSON.stringify(all));
+    },
     async listComments(draftId) { return (read(LS_COMMENTS)[draftId] || []); },
     async addComment(draftId, body) {
       const c = read(LS_COMMENTS);
@@ -552,6 +574,20 @@ async function supabaseStore() {
     },
     async deleteDraft(id) {
       const { error } = await sb.from("drafts").delete().eq("id", id);
+      if (error) throw error;
+    },
+    async listLabels() {
+      const { data, error } = await sb.from("labels").select("id,name,color").eq("workspace_id", WS).order("name");
+      if (error) throw error;
+      return data;
+    },
+    async createLabel(name, color) {
+      const { data, error } = await sb.from("labels").insert({ workspace_id: WS, name, color }).select().single();
+      if (error) throw error;
+      return data;
+    },
+    async deleteLabel(id) {
+      const { error } = await sb.from("labels").delete().eq("id", id);
       if (error) throw error;
     },
     async listComments(draftId) {
@@ -754,10 +790,11 @@ $("filters").addEventListener("click", (e) => {
 const firstLine = (s) => (s || "").split("\n").find((l) => l.trim()) || "";
 
 function renderList() {
-  const rows = drafts.filter((d) => filter === "all" || d.status === filter);
+  const rows = drafts.filter((d) => (filter === "all" || d.status === filter)
+    && (!labelFilter || (Array.isArray(d.labels) && d.labels.includes(labelFilter))));
   $("list").innerHTML = rows.map((d) => `
     <div class="item ${current && current.id === d.id ? "on" : ""}" data-id="${d.id}">
-      <div class="t">${esc(d.title || firstLine(d.content) || "Untitled")}</div>
+      <div class="t">${(Array.isArray(d.labels) && d.labels.length ? `<span class="ldots">${d.labels.map((id) => { const l = labelById(id); return l ? `<span class="ldot" style="background:${colorOf(l)}" title="${esc(l.name)}"></span>` : ""; }).join("")}</span>` : "")}${esc(d.title || firstLine(d.content) || "Untitled")}</div>
       <div class="m">
         <span class="dot s-${d.status}"></span>
         <span>${d.status}</span>
@@ -856,6 +893,7 @@ function openDraft(d, keepScroll = false) {
   const cb = $("calBtn"); if (cb) cb.textContent = "📅 Calendar";
   current = { ...d };
   current.media = Array.isArray(d.media) ? d.media : [];
+  current.labels = Array.isArray(d.labels) ? d.labels : [];
   dirty = false;
   $("empty").style.display = "none";
   $("editor").style.display = "flex";
@@ -865,6 +903,7 @@ function openDraft(d, keepScroll = false) {
   $("plannedAt").value = d.planned_at ? toLocalInput(d.planned_at) : "";
   $("saveState").textContent = "";
   renderPreview();
+  renderLabelRow();
   renderList();
   loadComments();
   if (!keepScroll) $("content").scrollTop = 0;
@@ -900,7 +939,7 @@ async function save() {
   try {
     data = await store.updateDraft(current.id, {
       title: current.title, content: current.content, status: current.status, planned_at: current.planned_at,
-      media: current.media || [],
+      media: current.media || [], labels: current.labels || [],
     });
   } catch (e) { $("saveState").textContent = "⚠︎"; toast("Save failed: " + e.message); return; }
   current.updated_at = data.updated_at;
@@ -1070,6 +1109,67 @@ $("commentForm").addEventListener("submit", async (e) => {
   loadComments();
 });
 
+// ---------- labels ----------
+let labelFilter = null;
+
+async function loadLabels() {
+  try { labels = await store.listLabels(); } catch (e) { labels = []; }
+  renderLabelFilters();
+  if (current) renderLabelRow();
+}
+
+function renderLabelFilters() {
+  const el = $("labelFilters");
+  if (!labels.length) { el.style.display = "none"; return; }
+  el.style.display = "flex";
+  el.innerHTML = labels.map((l) =>
+    `<button class="lchip ${labelFilter === l.id ? "on" : ""}" data-lf="${l.id}" style="${labelFilter === l.id ? `color:${colorOf(l)}` : ""}">
+       <span class="ldot" style="background:${colorOf(l)}"></span>${esc(l.name)}</button>`).join("");
+}
+
+function renderLabelRow() {
+  if (!current) return;
+  const mine = current.labels || [];
+  $("labelRow").innerHTML =
+    labels.map((l) => {
+      const on = mine.includes(l.id);
+      return `<button class="lchip ${on ? "on" : ""}" data-ltoggle="${l.id}" style="${on ? `color:${colorOf(l)}` : ""}">
+        <span class="ldot" style="background:${colorOf(l)}"></span>${esc(l.name)}</button>`;
+    }).join("") +
+    `<button class="lchip" data-lnew="1" title="Create a label">＋ Label</button>`;
+}
+
+$("labelFilters").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-lf]"); if (!b) return;
+  labelFilter = labelFilter === b.dataset.lf ? null : b.dataset.lf;
+  renderLabelFilters(); renderList(); if (calOn) renderCalendar();
+});
+
+$("labelRow").addEventListener("click", async (e) => {
+  const t = e.target.closest("[data-ltoggle]");
+  if (t && current) {
+    const id = t.dataset.ltoggle;
+    const mine = current.labels || [];
+    current.labels = mine.includes(id) ? mine.filter((x) => x !== id) : [...mine, id];
+    renderLabelRow(); renderList();
+    await save();
+    return;
+  }
+  if (e.target.closest("[data-lnew]")) {
+    const name = prompt("Label name (e.g. Builder Spotlight)");
+    if (!name || !name.trim()) return;
+    const palette = Object.keys(LABEL_COLORS);
+    const color = palette[labels.length % palette.length];
+    try {
+      const l = await store.createLabel(name.trim(), color);
+      labels = [...labels, l].sort((a, b) => a.name.localeCompare(b.name));
+      if (current) { current.labels = [...(current.labels || []), l.id]; await save(); }
+      renderLabelRow(); renderLabelFilters(); renderList();
+      toast(`Label "${l.name}" created`);
+    } catch (err) { toast("Could not create label: " + err.message); }
+  }
+});
+
 // ---------- mobile single-pane ----------
 const mMq = window.matchMedia("(max-width: 720px)");
 const isMobile = () => mMq.matches;
@@ -1224,6 +1324,7 @@ $("calUnsched").addEventListener("click", calOpen);
 document.addEventListener("click", (e) => { if (!e.target.closest("#reschedPop") && !e.target.closest("[data-cal-id]")) closePop(); });
 
 // ---- data load LAST so the UI is interactive even if this fails ----
+await loadLabels();
 await refresh();
 try { store.onChange(() => { refresh(); if (current) loadComments(); }); }
 catch (e) { console.warn("realtime unavailable:", e); }
