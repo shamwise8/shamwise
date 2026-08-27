@@ -263,6 +263,7 @@
           <option value="approved">✅ Approved</option>
           <option value="posted">🚀 Posted</option>
         </select>
+        <select id="assignee" title="Who owns this draft"><option value="">👤 Unassigned</option></select>
         <input type="datetime-local" id="plannedAt" title="Planned time" />
         <button class="small" id="copyAll">Copy thread</button>
         <button class="small" id="shareBtn" title="Copy a link to this draft">🔗 Share</button>
@@ -404,6 +405,8 @@ const FLAGS = { team1th:"🇹🇭", team1br:"🇧🇷", team1in:"🇮🇳", team
 const flagOf = (id) => FLAGS[id] || "🔺";
 const LABEL_COLORS = { grey:"#9a9aa2", red:"#e84142", orange:"#fb923c", yellow:"#fbbf24", green:"#34d399", blue:"#60a5fa", purple:"#a78bfa", pink:"#f472b6" };
 let labels = [];
+let members = [];
+const memberName = (email) => { const m = members.find((x) => x.email === email); return m ? (m.name || m.email.split("@")[0]) : (email ? email.split("@")[0] : ""); };
 const labelById = (id) => labels.find((l) => l.id === id);
 const colorOf = (l) => LABEL_COLORS[l && l.color] || LABEL_COLORS.grey;
 const avName = () => ($("whoami") && $("whoami").textContent) || "You";
@@ -537,6 +540,8 @@ function localStore() {
       write(LS_DRAFTS, read(LS_DRAFTS).filter((x) => x.id !== id));
       const c = read(LS_COMMENTS); delete c[id]; write(LS_COMMENTS, c);
     },
+    async listMembers() { return [{ email: "you", name: "You", role: "admin", hidden: false }]; },
+    async updateMember() {},
     async listLabels() { return JSON.parse(localStorage.getItem("planner.labels") || "[]"); },
     async createLabel(name, color) {
       const all = JSON.parse(localStorage.getItem("planner.labels") || "[]");
@@ -633,6 +638,15 @@ async function supabaseStore() {
     },
     async deleteDraft(id) {
       const { error } = await sb.from("drafts").delete().eq("id", id);
+      if (error) throw error;
+    },
+    async listMembers() {
+      const { data, error } = await sb.from("members").select("email,name,role,hidden").eq("workspace_id", WS).order("name");
+      if (error) throw error;
+      return data;
+    },
+    async updateMember(email, patch) {
+      const { error } = await sb.from("members").update(patch).eq("workspace_id", WS).eq("email", email);
       if (error) throw error;
     },
     async listLabels() {
@@ -791,13 +805,15 @@ if (store.mode === "team") await maybeImportLocal(store);
 
 // ---------- team panel (admins, team mode only) ----------
 async function loadTeam() {
-  const { data, error } = await store.sb.from("members").select("email,name,role").eq("workspace_id", WS).order("name");
+  const { data, error } = await store.sb.from("members").select("email,name,role,hidden").eq("workspace_id", WS).order("name");
   if (error) { toast("Load failed: " + error.message); return; }
   $("teamList").innerHTML = data.map((m) => `
     <div style="display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--line); font-size:13.5px">
       <span>${esc(m.name || m.email.split("@")[0])}</span>
       <span style="color:var(--dim)">${esc(m.email)}</span>
       ${m.role === "admin" ? '<span class="badge">admin</span>' : ""}
+      ${m.hidden ? '<span class="badge" title="Hidden from chapter members">🙈 hidden</span>' : ""}
+      <button class="small ghost" data-hide="${esc(m.email)}" data-now="${m.hidden ? 1 : 0}" title="${m.hidden ? "Show to chapter members" : "Hide from chapter members"}">${m.hidden ? "👁" : "🙈"}</button>
       ${m.email !== identity.me ? `<button class="small ghost" style="margin-left:auto" data-rm="${esc(m.email)}">remove</button>` : '<span style="margin-left:auto; color:var(--dim); font-size:12px">you</span>'}
     </div>`).join("");
 }
@@ -817,6 +833,14 @@ if (TEAM_MODE) {
     loadTeam();
   });
   $("teamList").addEventListener("click", async (e) => {
+    const h = e.target.closest("[data-hide]");
+    if (h) {
+      try { await store.updateMember(h.dataset.hide, { hidden: h.dataset.now !== "1" }); }
+      catch (err) { toast("Failed: " + err.message); return; }
+      loadTeam(); await loadMembers();
+      toast(h.dataset.now === "1" ? "Now visible to the chapter" : "Hidden from chapter members");
+      return;
+    }
     const b = e.target.closest("[data-rm]"); if (!b) return;
     if (!confirm("Remove " + b.dataset.rm + " from this workspace?")) return;
     const { error } = await store.sb.from("members").delete().eq("workspace_id", WS).eq("email", b.dataset.rm);
@@ -864,7 +888,7 @@ function renderList() {
         <span class="dot s-${d.status}"></span>
         <span>${d.status}</span>
         ${d.planned_at ? `<span>· 📅 ${fmtWhen(d.planned_at)}</span>` : ""}
-        <span style="margin-left:auto">${esc(String(d.updated_by || d.author || "").split("@")[0])}</span>
+        <span style="margin-left:auto">${d.assignee ? "👤 " + esc(memberName(d.assignee)) : esc(String(d.updated_by || d.author || "").split("@")[0])}</span>
       </div>
     </div>`).join("") || `<div style="padding:16px;color:var(--dim)">Nothing here yet.</div>`;
 }
@@ -1145,6 +1169,8 @@ function openDraft(d, keepScroll = false) {
   current = { ...d };
   current.media = Array.isArray(d.media) ? d.media : [];
   current.labels = Array.isArray(d.labels) ? d.labels : [];
+  current.assignee = d.assignee || "";
+  $("assignee").value = current.assignee;
   dirty = false;
   $("empty").style.display = "none";
   $("editor").style.display = "flex";
@@ -1200,6 +1226,7 @@ for (const [id, field] of [["title", "title"], ["content", "content"]]) {
   });
 }
 $("status").addEventListener("change", () => { if (current) { current.status = $("status").value; save(); } });
+$("assignee").addEventListener("change", () => { if (current) { current.assignee = $("assignee").value; save(); renderList(); } });
 $("plannedAt").addEventListener("change", () => {
   if (!current) return;
   current.planned_at = $("plannedAt").value ? new Date($("plannedAt").value).toISOString() : null;
@@ -1212,7 +1239,7 @@ async function save() {
   try {
     data = await store.updateDraft(current.id, {
       title: current.title, content: current.content, status: current.status, planned_at: current.planned_at,
-      media: current.media || [], labels: current.labels || [],
+      media: current.media || [], labels: current.labels || [], assignee: current.assignee || null,
     });
   } catch (e) { $("saveState").textContent = "⚠︎"; toast("Save failed: " + e.message); return; }
   current.updated_at = data.updated_at;
@@ -1424,6 +1451,12 @@ $("bulkDel").addEventListener("click", async () => {
 // ---------- labels ----------
 let labelFilter = null;
 
+async function loadMembers() {
+  try { members = await store.listMembers(); } catch (e) { members = []; }
+  $("assignee").innerHTML = `<option value="">👤 Unassigned</option>` +
+    members.map((m) => `<option value="${esc(m.email)}">${esc(m.name || m.email.split("@")[0])}</option>`).join("");
+  if (current) $("assignee").value = current.assignee || "";
+}
 async function loadLabels() {
   try { labels = await store.listLabels(); } catch (e) { labels = []; }
   renderLabelFilters();
@@ -1695,6 +1728,7 @@ document.addEventListener("click", (e) => { if (!e.target.closest("#reschedPop")
 
 // ---- data load LAST so the UI is interactive even if this fails ----
 await loadLabels();
+await loadMembers();
 await refresh();
 try { store.onChange(() => { refresh(); if (current) loadComments(); }); }
 catch (e) { console.warn("realtime unavailable:", e); }
