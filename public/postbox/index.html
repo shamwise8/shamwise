@@ -69,6 +69,8 @@
   .item { padding: 11px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
   .item:hover { background: var(--panel2); }
   .item.on { background: var(--panel2); box-shadow: inset 3px 0 0 var(--accent); }
+  .item.mine { background: rgba(232,65,66,.05); }
+  .item.on.mine { background: var(--panel2); }
   .item .t { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .item .m { display: flex; gap: 8px; align-items: center; color: var(--dim); font-size: 12px; margin-top: 3px; }
   .dot { width: 8px; height: 8px; border-radius: 99px; flex: none; }
@@ -234,6 +236,7 @@
       </div>
       <div class="filters" id="filters">
         <button data-f="all" class="on">All</button>
+        <button data-f="mine" title="Assigned to me">👤 Mine</button>
         <button data-f="idea">Idea</button>
         <button data-f="draft">Draft</button>
         <button data-f="review">Review</button>
@@ -416,6 +419,8 @@ const flagOf = (id) => FLAGS[id] || "🔺";
 const LABEL_COLORS = { grey:"#9a9aa2", red:"#e84142", orange:"#fb923c", yellow:"#fbbf24", green:"#34d399", blue:"#60a5fa", purple:"#a78bfa", pink:"#f472b6" };
 let labels = [];
 let members = [];
+let myEmail = "";
+const isMine = (d) => !!(d.assignee && myEmail && d.assignee === myEmail);
 const memberName = (email) => { const m = members.find((x) => x.email === email); return m ? (m.name || m.email.split("@")[0]) : (email ? email.split("@")[0] : ""); };
 const labelById = (id) => labels.find((l) => l.id === id);
 const colorOf = (l) => LABEL_COLORS[l && l.color] || LABEL_COLORS.grey;
@@ -761,6 +766,7 @@ const store = TEAM_MODE ? await supabaseStore() : localStore();
 const identity = await store.init();
 if (store.mode === "local") {
   $("whoami").textContent = identity.name;
+  myEmail = "you";
   $("localBadge").style.display = "";
 } else {
   const mems = identity.memberships;
@@ -771,6 +777,7 @@ if (store.mode === "local") {
   if (_sharedWs && !ids.includes(_sharedWs)) window.__sharedDenied = _sharedWs;
   const my = mems.find((m) => m.workspace_id === WS);
   myRole = my.role || "member";
+  myEmail = identity.me;
   $("whoami").textContent = my.name || identity.me;
   const wsName = (my.workspaces && my.workspaces.name) || WS;
   $("chapterName").textContent = flagOf(WS) + " " + wsName;
@@ -888,17 +895,17 @@ $("filters").addEventListener("click", (e) => {
 const firstLine = (s) => (s || "").split("\n").find((l) => l.trim()) || "";
 
 function renderList() {
-  const rows = sortDrafts(drafts.filter((d) => (filter === "all" || d.status === filter)
+  const rows = sortDrafts(drafts.filter((d) => (filter === "all" || (filter === "mine" ? isMine(d) : d.status === filter))
     && (!labelFilter || (Array.isArray(d.labels) && d.labels.includes(labelFilter)))));
   $("list").innerHTML = rows.map((d) => `
-    <div class="item ${current && current.id === d.id ? "on" : ""}" data-id="${d.id}">
+    <div class="item ${current && current.id === d.id ? "on" : ""} ${isMine(d) ? "mine" : ""}" data-id="${d.id}">
       ${selecting ? `<input type="checkbox" data-sel="${d.id}" ${selected.has(d.id) ? "checked" : ""} style="float:right; margin-left:8px" />` : ""}
       <div class="t">${(Array.isArray(d.labels) && d.labels.length ? `<span class="ldots">${d.labels.map((id) => { const l = labelById(id); return l ? `<span class="ldot" style="background:${colorOf(l)}" title="${esc(l.name)}"></span>` : ""; }).join("")}</span>` : "")}${esc(d.title || firstLine(d.content) || "Untitled")}</div>
       <div class="m">
         <span class="dot s-${d.status}"></span>
         <span>${d.status}</span>
         ${d.planned_at ? `<span>· 📅 ${fmtWhen(d.planned_at)}</span>` : ""}
-        <span style="margin-left:auto">${d.assignee ? "👤 " + esc(memberName(d.assignee)) : esc(String(d.updated_by || d.author || "").split("@")[0])}</span>
+        <span style="margin-left:auto; ${isMine(d) ? "color:var(--accent); font-weight:600" : ""}">${d.assignee ? "👤 " + esc(memberName(d.assignee)) : esc(String(d.updated_by || d.author || "").split("@")[0])}</span>
       </div>
     </div>`).join("") || `<div style="padding:16px;color:var(--dim)">Nothing here yet.</div>`;
 }
