@@ -347,7 +347,6 @@
           <option value="both">Both (2 drafts/day)</option>
         </select>
       </label>
-      <label style="font-size:12.5px; color:var(--muted)"><input type="checkbox" id="cmCats" checked /> create categories</label>
       <button class="small" id="cmParse">Preview</button>
     </div>
     <div id="cmPreview" style="max-height:38vh; overflow:auto; font-size:13px"></div>
@@ -888,6 +887,7 @@ $("templateMenu").addEventListener("click", (e) => {
     $("tmenu").removeAttribute("open");
     const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     $("cmStart").value = d.toISOString().slice(0, 10);
+    $("cmText").value = localStorage.getItem("postbox.cmText") || "";
     $("cmPreview").innerHTML = ""; $("cmCreate").disabled = true;
     $("campaignPanel").style.display = "flex"; $("cmText").focus();
     return;
@@ -974,44 +974,65 @@ function renderCmPreview() {
     ${cmPosts.map((p, i) => `<tr style="border-top:1px solid var(--line)">
       <td style="padding:5px 6px; color:var(--muted)">${esc(p.day)}</td>
       <td style="padding:5px 6px"><input type="date" data-cmdate="${i}" value="${p.date.toISOString().slice(0,10)}" style="font-size:12px; padding:3px 5px" /></td>
-      <td style="padding:5px 6px; color:var(--muted)">${esc(p.category || "—")}</td>
-      <td style="padding:5px 6px">${esc((p.title || "").slice(0, 46))}</td>
+      <td style="padding:5px 6px">
+        <select data-cmcat="${i}" style="font-size:12px; padding:3px 5px; max-width:150px">
+          <option value="">— none —</option>
+          ${labels.map((l) => `<option value="${l.id}" ${p.labelId === l.id ? "selected" : ""}>${esc(l.name)}</option>`).join("")}
+          ${p.category && !labels.some((l) => l.name.toLowerCase() === p.category.toLowerCase())
+            ? `<option value="new:${esc(p.category)}" ${p.labelId === "new:" + p.category ? "selected" : ""}>+ new: ${esc(p.category)}</option>` : ""}
+        </select>
+      </td>
+      <td style="padding:5px 6px"><input type="text" data-cmtitle="${i}" value="${esc(p.title || "")}" style="font-size:12.5px; padding:3px 5px; width:100%; min-width:120px" /></td>
       <td style="padding:5px 6px; text-align:right; color:var(--dim)">${(p.en || p.th).split("\n").filter(Boolean).length}</td>
     </tr>`).join("")}</table>`;
   $("cmCreate").disabled = false;
   $("cmMsg").textContent = `${cmPosts.length} posts detected`;
 }
 $("cmPreview").addEventListener("change", (e) => {
-  const d = e.target.closest("[data-cmdate]"); if (!d) return;
-  const [y, m, dd] = d.value.split("-").map(Number);
-  if (y) cmPosts[+d.dataset.cmdate].date = new Date(y, m-1, dd, 12, 0, 0, 0);
+  const d = e.target.closest("[data-cmdate]");
+  if (d) { const [y, m, dd] = d.value.split("-").map(Number); if (y) cmPosts[+d.dataset.cmdate].date = new Date(y, m-1, dd, 12, 0, 0, 0); return; }
+  const c = e.target.closest("[data-cmcat]");
+  if (c) { cmPosts[+c.dataset.cmcat].labelId = c.value; return; }
+});
+$("cmPreview").addEventListener("input", (e) => {
+  const t = e.target.closest("[data-cmtitle]");
+  if (t) cmPosts[+t.dataset.cmtitle].title = t.value;
 });
 $("cmParse").addEventListener("click", () => {
   cmPosts = parseCampaign($("cmText").value, { startDate: $("cmStart").value });
+  cmPosts.forEach((p) => {
+    if (!p.category) { p.labelId = ""; return; }
+    const hit = labels.find((l) => l.name.toLowerCase() === p.category.toLowerCase());
+    p.labelId = hit ? hit.id : "new:" + p.category;
+  });
   renderCmPreview();
 });
+$("cmText").addEventListener("input", () => { try { localStorage.setItem("postbox.cmText", $("cmText").value); } catch (_) {} });
 $("cmCancel").addEventListener("click", () => { $("campaignPanel").style.display = "none"; });
 $("campaignPanel").addEventListener("click", (e) => { if (e.target === $("campaignPanel")) $("campaignPanel").style.display = "none"; });
 $("cmCreate").addEventListener("click", async () => {
   if (!cmPosts.length) return;
-  const lang = $("cmLang").value, makeCats = $("cmCats").checked;
+  const lang = $("cmLang").value;
   $("cmCreate").disabled = true;
   let made = 0;
   try {
     // ensure categories exist
-    const catMap = {};
-    if (makeCats) {
-      const wanted = [...new Set(cmPosts.map((p) => p.category).filter(Boolean))];
-      for (const name of wanted) {
-        let l = labels.find((x) => x.name.toLowerCase() === name.toLowerCase());
-        if (!l) {
-          const palette = Object.keys(LABEL_COLORS);
-          l = await store.createLabel(name, palette[labels.length % palette.length]);
-          labels = [...labels, l];
-        }
-        catMap[name] = l.id;
+    const resolved = {};
+    const newNames = [...new Set(cmPosts.map((p) => p.labelId).filter((v) => v && v.startsWith("new:")).map((v) => v.slice(4)))];
+    for (const name of newNames) {
+      let l = labels.find((x) => x.name.toLowerCase() === name.toLowerCase());
+      if (!l) {
+        const palette = Object.keys(LABEL_COLORS);
+        l = await store.createLabel(name, palette[labels.length % palette.length]);
+        labels = [...labels, l];
       }
+      resolved["new:" + name] = l.id;
     }
+    const labelFor = (p) => {
+      if (!p.labelId) return [];
+      const id = p.labelId.startsWith("new:") ? resolved[p.labelId] : p.labelId;
+      return id ? [id] : [];
+    };
     const wanted = [];
     for (const p of cmPosts) {
       const body = lang === "th" ? (p.th || p.en) : (p.en || p.th);
@@ -1025,14 +1046,15 @@ $("cmCreate").addEventListener("click", async () => {
         content: w.body,
         status: "draft",
         planned_at: w.p.date.toISOString(),
-        labels: catMap[w.p.category] ? [catMap[w.p.category]] : [],
+        labels: labelFor(w.p),
       });
       made++;
       $("cmMsg").textContent = `Creating… ${made}/${wanted.length}`;
     }
   } catch (err) { toast("Import failed: " + err.message); $("cmCreate").disabled = false; return; }
   $("campaignPanel").style.display = "none";
-  $("cmText").value = ""; cmPosts = [];
+  cmPosts = []; try { localStorage.removeItem("postbox.cmText"); } catch (_) {}
+  $("cmText").value = "";
   await loadLabels(); await refresh();
   toast(`Created ${made} drafts`);
 });
