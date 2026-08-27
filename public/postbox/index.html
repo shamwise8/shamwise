@@ -361,6 +361,7 @@ const toast = (msg) => {
 };
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const fmtWhen = (iso) => iso ? new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+const defaultPlannedAt = () => { const d = new Date(); d.setHours(12, 0, 0, 0); return d.toISOString(); };
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
 
 const chapter = cfg.chapterName || "team1";
@@ -483,7 +484,7 @@ function localStore() {
       return read(LS_DRAFTS).sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || ""));
     },
     async createDraft() {
-      const d = { id: uuid(), title: "", content: "", status: "idea", planned_at: null,
+      const d = { id: uuid(), title: "", content: "", status: "idea", planned_at: defaultPlannedAt(),
         author: "you", updated_by: "you", created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
       write(LS_DRAFTS, [d, ...read(LS_DRAFTS)]);
       return d;
@@ -584,7 +585,7 @@ async function supabaseStore() {
       return data;
     },
     async createDraft() {
-      const { data, error } = await sb.from("drafts").insert({ workspace_id: WS, author: me, updated_by: me }).select().single();
+      const { data, error } = await sb.from("drafts").insert({ workspace_id: WS, author: me, updated_by: me, planned_at: defaultPlannedAt() }).select().single();
       if (error) throw error;
       return data;
     },
