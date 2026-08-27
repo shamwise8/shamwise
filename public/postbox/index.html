@@ -226,6 +226,7 @@
     <aside>
       <div class="side-top">
         <button class="primary" id="newDraft">+ New draft</button>
+        <button class="small ghost" id="selMode" title="Select multiple drafts">☑</button>
         <details class="tmenu" id="tmenu">
           <summary>Templates ▾</summary>
           <div class="menu" id="templateMenu"></div>
@@ -240,6 +241,12 @@
         <button data-f="posted">Posted</button>
       </div>
       <div class="filters" id="labelFilters"></div>
+      <div id="bulkBar" style="display:none; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); background:var(--panel2)">
+        <span id="bulkCount" style="font-size:12.5px; color:var(--muted); flex:1"></span>
+        <button class="small ghost" id="bulkAll">All</button>
+        <button class="small ghost" id="bulkDel" title="Delete selected">🗑 Delete</button>
+        <button class="small ghost" id="bulkCancel">Done</button>
+      </div>
       <div id="list"></div>
     </aside>
 
@@ -342,9 +349,10 @@
       <label style="font-size:12.5px; color:var(--muted)">Start date <input type="date" id="cmStart" style="margin-left:5px" /></label>
       <label style="font-size:12.5px; color:var(--muted)">Language
         <select id="cmLang" style="margin-left:5px">
-          <option value="en">English</option>
-          <option value="th">Thai</option>
-          <option value="both">Both (2 drafts/day)</option>
+          <option value="thread">EN + TH in one thread</option>
+          <option value="en">English only</option>
+          <option value="th">Thai only</option>
+          <option value="both">EN + TH as separate drafts</option>
         </select>
       </label>
       <button class="small" id="cmParse">Preview</button>
@@ -850,6 +858,7 @@ function renderList() {
     && (!labelFilter || (Array.isArray(d.labels) && d.labels.includes(labelFilter))));
   $("list").innerHTML = rows.map((d) => `
     <div class="item ${current && current.id === d.id ? "on" : ""}" data-id="${d.id}">
+      ${selecting ? `<input type="checkbox" data-sel="${d.id}" ${selected.has(d.id) ? "checked" : ""} style="float:right; margin-left:8px" />` : ""}
       <div class="t">${(Array.isArray(d.labels) && d.labels.length ? `<span class="ldots">${d.labels.map((id) => { const l = labelById(id); return l ? `<span class="ldot" style="background:${colorOf(l)}" title="${esc(l.name)}"></span>` : ""; }).join("")}</span>` : "")}${esc(d.title || firstLine(d.content) || "Untitled")}</div>
       <div class="m">
         <span class="dot s-${d.status}"></span>
@@ -862,6 +871,12 @@ function renderList() {
 
 $("list").addEventListener("click", (e) => {
   const el = e.target.closest(".item"); if (!el) return;
+  if (selecting) {
+    const id = el.dataset.id;
+    selected.has(id) ? selected.delete(id) : selected.add(id);
+    renderBulk(); renderList();
+    return;
+  }
   const d = drafts.find((x) => x.id === el.dataset.id);
   if (d) openDraft(d);
 });
@@ -1014,6 +1029,8 @@ $("cmCreate").addEventListener("click", async () => {
   if (!cmPosts.length) return;
   const lang = $("cmLang").value;
   $("cmCreate").disabled = true;
+  const cmLabel = $("cmCreate").textContent;
+  $("cmCreate").textContent = "Creating…";
   let made = 0;
   try {
     // ensure categories exist
@@ -1035,6 +1052,11 @@ $("cmCreate").addEventListener("click", async () => {
     };
     const wanted = [];
     for (const p of cmPosts) {
+      if (lang === "thread") {
+        const body = p.en && p.th ? `${p.en}\n---\n${p.th}` : (p.en || p.th);
+        if (body) wanted.push({ p, body, suffix: "" });
+        continue;
+      }
       const body = lang === "th" ? (p.th || p.en) : (p.en || p.th);
       if (body) wanted.push({ p, body, suffix: "" });
       if (lang === "both" && p.th && p.en) wanted.push({ p, body: p.th, suffix: " (TH)" });
@@ -1049,9 +1071,11 @@ $("cmCreate").addEventListener("click", async () => {
         labels: labelFor(w.p),
       });
       made++;
+      $("cmCreate").textContent = `Creating ${made}/${wanted.length}…`;
       $("cmMsg").textContent = `Creating… ${made}/${wanted.length}`;
     }
-  } catch (err) { toast("Import failed: " + err.message); $("cmCreate").disabled = false; return; }
+  } catch (err) { toast("Import failed: " + err.message); $("cmCreate").textContent = cmLabel; $("cmCreate").disabled = false; return; }
+  $("cmCreate").textContent = cmLabel;
   $("campaignPanel").style.display = "none";
   cmPosts = []; try { localStorage.removeItem("postbox.cmText"); } catch (_) {}
   $("cmText").value = "";
@@ -1358,6 +1382,43 @@ $("commentForm").addEventListener("submit", async (e) => {
   $("commentBody").value = "";
   try { await store.addComment(current.id, body); } catch (err) { toast("Comment failed: " + err.message); return; }
   loadComments();
+});
+
+// ---------- multi-select ----------
+let selecting = false;
+const selected = new Set();
+function renderBulk() {
+  $("bulkBar").style.display = selecting ? "flex" : "none";
+  $("selMode").style.borderColor = selecting ? "var(--accent)" : "";
+  $("bulkCount").textContent = selected.size ? `${selected.size} selected` : "Select drafts to delete";
+}
+$("selMode").addEventListener("click", () => {
+  selecting = !selecting;
+  if (!selecting) selected.clear();
+  renderBulk(); renderList();
+});
+$("bulkCancel").addEventListener("click", () => { selecting = false; selected.clear(); renderBulk(); renderList(); });
+$("bulkAll").addEventListener("click", () => {
+  const rows = drafts.filter((d) => (filter === "all" || d.status === filter) && (!labelFilter || (Array.isArray(d.labels) && d.labels.includes(labelFilter))));
+  const allOn = rows.every((d) => selected.has(d.id));
+  rows.forEach((d) => allOn ? selected.delete(d.id) : selected.add(d.id));
+  renderBulk(); renderList();
+});
+$("bulkDel").addEventListener("click", async () => {
+  if (!selected.size) { toast("Nothing selected"); return; }
+  if (!confirm(`Delete ${selected.size} draft(s)? This cannot be undone.`)) return;
+  const ids = [...selected];
+  $("bulkDel").disabled = true;
+  let done = 0;
+  for (const id of ids) {
+    try { await store.deleteDraft(id); done++; $("bulkCount").textContent = `Deleting ${done}/${ids.length}…`; }
+    catch (e) { toast("Delete failed: " + e.message); break; }
+  }
+  $("bulkDel").disabled = false;
+  selected.clear(); selecting = false;
+  if (current && ids.includes(current.id)) { current = null; $("editor").style.display = "none"; $("empty").style.display = "flex"; }
+  renderBulk(); await refresh();
+  toast(`Deleted ${done} draft(s)`);
 });
 
 // ---------- labels ----------
