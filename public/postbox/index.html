@@ -247,6 +247,7 @@
         </select>
         <input type="datetime-local" id="plannedAt" title="Planned time" />
         <button class="small" id="copyAll">Copy thread</button>
+        <button class="small" id="shareBtn" title="Copy a link to this draft">🔗 Share</button>
         <button class="small ghost" id="deleteDraft" title="Delete draft">🗑</button>
         <span id="saveState"></span>
       </div>
@@ -628,6 +629,10 @@ const show = (id) => {
   $(id).style.display = "flex";
 };
 
+const _qp = new URLSearchParams(location.search);
+window.__openDraftId = _qp.get("d") || null;
+const _sharedWs = _qp.get("ws") || null;
+
 const store = TEAM_MODE ? await supabaseStore() : localStore();
 const identity = await store.init();
 if (store.mode === "local") {
@@ -637,7 +642,9 @@ if (store.mode === "local") {
   const mems = identity.memberships;
   const ids = mems.map((m) => m.workspace_id);
   const saved = localStorage.getItem("planner.ws");
-  WS = ids.includes(saved) ? saved : (ids.includes(cfg.workspace) ? cfg.workspace : ids[0]);
+  WS = (_sharedWs && ids.includes(_sharedWs)) ? _sharedWs
+     : (ids.includes(saved) ? saved : (ids.includes(cfg.workspace) ? cfg.workspace : ids[0]));
+  if (_sharedWs && !ids.includes(_sharedWs)) window.__sharedDenied = _sharedWs;
   const my = mems.find((m) => m.workspace_id === WS);
   myRole = my.role || "member";
   $("whoami").textContent = my.name || identity.me;
@@ -1033,6 +1040,12 @@ $("mediaFile").addEventListener("change", async () => {
   }
   await save(); renderPreview();
 });
+$("shareBtn").addEventListener("click", async () => {
+  if (!current) return;
+  const url = `${location.origin}${location.pathname.replace(/index\.html$/, "")}?ws=${encodeURIComponent(WS)}&d=${encodeURIComponent(current.id)}`;
+  try { await navigator.clipboard.writeText(url); toast("Draft link copied — paste it for feedback"); }
+  catch { prompt("Copy this link:", url); }
+});
 $("copyAll").addEventListener("click", () => {
   navigator.clipboard.writeText(segments($("content").value).join("\n\n"));
   toast("Thread copied — paste into X");
@@ -1214,7 +1227,16 @@ document.addEventListener("click", (e) => { if (!e.target.closest("#reschedPop")
 await refresh();
 try { store.onChange(() => { refresh(); if (current) loadComments(); }); }
 catch (e) { console.warn("realtime unavailable:", e); }
-console.log("postbox build 2026-08-24d · ws:", WS, "· role:", myRole);
+// open a shared draft if one was linked
+if (window.__sharedDenied) {
+  toast("That draft is in a chapter you're not a member of");
+} else if (window.__openDraftId) {
+  const target = drafts.find((d) => d.id === window.__openDraftId);
+  if (target) { openDraft(target); }
+  else toast("That draft no longer exists");
+  history.replaceState(null, "", location.pathname);
+}
+console.log("postbox build 2026-08-26a · ws:", WS, "· role:", myRole);
 </script>
 </body>
 </html>
