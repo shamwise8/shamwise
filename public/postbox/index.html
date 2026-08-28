@@ -386,7 +386,8 @@
       <div style="font-size:12px; color:var(--dim); letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px">Posting identity</div>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
         <span id="brandPreview" style="width:34px; height:34px; border-radius:99px; display:flex; align-items:center; justify-content:center; background:var(--panel2); overflow:hidden; flex:none"></span>
-        <input type="text" id="brandHandle" placeholder="@Team1Thailand" style="flex:1; min-width:130px; font-size:13.5px" />
+        <input type="text" id="brandName" placeholder="team1 Thailand" style="flex:1; min-width:120px; font-size:13.5px" />
+        <input type="text" id="brandHandle" placeholder="@team1TH" style="flex:1; min-width:110px; font-size:13.5px" />
         <button class="small" id="brandLogoBtn">Logo…</button>
         <button class="small primary" id="brandSave">Save</button>
       </div>
@@ -895,6 +896,7 @@ if (TEAM_MODE) {
   $("teamBtn").addEventListener("click", () => {
     $("teamPanel").style.display = "flex";
     $("brandBox").style.display = myRole === "admin" ? "block" : "none";
+    $("brandName").value = brand.name || "";
     $("brandHandle").value = brand.handle || "";
     $("brandPreview").innerHTML = brand.avatar_url
       ? `<img src="${esc(brand.avatar_url)}" style="width:100%;height:100%;object-fit:cover" />`
@@ -917,10 +919,17 @@ if (TEAM_MODE) {
   });
   $("brandSave").addEventListener("click", async () => {
     const handle = $("brandHandle").value.trim();
+    const name = $("brandName").value.trim();
+    if (!name) { toast("Name cannot be empty"); return; }
     const { error } = await store.sb.from("workspaces")
-      .update({ handle: handle || null, avatar_url: brand.avatar_url || null }).eq("id", WS);
+      .update({ name, handle: handle || null, avatar_url: brand.avatar_url || null }).eq("id", WS);
     if (error) { toast("Save failed: " + error.message); return; }
     brand.handle = handle;
+    brand.name = name;
+    $("chapterName").textContent = flagOf(WS) + " " + name;
+    document.title = flagOf(WS) + " Postbox — " + name;
+    const opt = $("wsPicker") && [...$("wsPicker").options].find((o) => o.value === WS);
+    if (opt) opt.textContent = flagOf(WS) + " " + name;
     renderPreview();
     toast("Posting identity saved");
   });
