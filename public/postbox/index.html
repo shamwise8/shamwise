@@ -190,6 +190,7 @@
 
     /* write / preview are exclusive on mobile */
     #app.show-preview .write { display: none; }
+    #actionBar { position: sticky; bottom: 0; background: var(--panel); z-index: 5; }
     #app:not(.show-preview) .preview { display: none; }
     .preview { border-top: 1px solid var(--line); }
 
@@ -322,17 +323,19 @@
       <div class="ed-body">
         <div class="write">
           <textarea id="content" placeholder="Write your post…&#10;&#10;Split a thread with --- on its own line."></textarea>
-          <div class="hint" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
-            <button class="small" id="addTweet" title="Start the next tweet">＋ Tweet</button>
-            <button class="small ghost m-only" id="togglePreview" title="Preview">👁 Preview</button>
-            <button class="small ghost m-only" id="toggleComments" title="Comments">💬</button>
-            <span id="hintText"></span>
-          </div>
         </div>
         <div class="preview">
           <h3>Preview <span id="threadInfo"></span></h3>
           <div id="tweets"></div>
         </div>
+      </div>
+      <div class="hint" id="actionBar" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+        <button class="small" id="addTweet" title="Start the next tweet">＋ Tweet</button>
+        <button class="small ghost m-only" id="togglePreview" title="Preview">👁 Preview</button>
+        <button class="small m-only" id="mCopy" title="Copy thread">📋</button>
+        <button class="small ghost m-only" id="toggleComments" title="Comments">💬</button>
+        <span id="liveCount" style="color:var(--dim); font-size:12px"></span>
+        <span id="hintText"></span>
       </div>
       <div class="comments">
         <div class="clist" id="clist"></div>
@@ -1245,6 +1248,15 @@ $("impCreate").addEventListener("click", async () => {
   await createDraft({ title, content: segs.join("\n---\n") });
 });
 document.addEventListener("click", (e) => { if (!e.target.closest("#tmenu")) $("tmenu").removeAttribute("open"); });
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  for (const id of ["campaignPanel", "importPanel", "catPanel", "teamPanel", "joinPanel"]) {
+    const el = $(id);
+    if (el && getComputedStyle(el).display !== "none") { el.style.display = "none"; return; }
+  }
+  if ($("reschedPop") && getComputedStyle($("reschedPop")).display !== "none") { closePop(); return; }
+  $("tmenu").removeAttribute("open");
+});
 
 // ---------- editor ----------
 function openDraft(d, keepScroll = false) {
@@ -1358,6 +1370,14 @@ const segments = (text) => text.split(/\n\s*---\s*\n|\n[ \t]*\n[ \t]*\n+/).map((
 
 function renderPreview() {
   const segs = segments($("content").value);
+  const over = segs.filter((x) => tweetLen(x) > 280).length;
+  const lc = $("liveCount");
+  if (lc) {
+    lc.textContent = segs.length
+      ? `${segs.length} tweet${segs.length > 1 ? "s" : ""} · ${tweetLen(segs[segs.length - 1])}/280${over ? ` · ⚠ ${over} over` : ""}`
+      : "";
+    lc.style.color = over ? "var(--bad)" : "var(--dim)";
+  }
   $("threadInfo").textContent = segs.length > 1 ? segs.length + " tweets" : "";
   const media = (current && current.media) || [];
   const segMedia = (i) => media.filter((m) => Math.min(m.seg, segs.length - 1) === i);
@@ -1472,6 +1492,7 @@ $("shareBtn").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText(url); toast("Draft link copied — paste it for feedback"); }
   catch { prompt("Copy this link:", url); }
 });
+$("mCopy").addEventListener("click", () => $("copyAll").click());
 $("copyAll").addEventListener("click", () => {
   navigator.clipboard.writeText(segments($("content").value).join("\n\n"));
   toast("Thread copied — paste into X");
@@ -1701,6 +1722,7 @@ const isMobile = () => mMq.matches;
 function setPane(p) { $("app").classList.remove("m-list","m-editor","m-calendar"); $("app").classList.add("m-" + p); }
 setPane("list");
 $("edBack").addEventListener("click", () => {
+  if (dirty) { clearTimeout(saveTimer); save(); }
   $("app").classList.remove("show-preview", "sheet-open", "comments-open");
   $("togglePreview").textContent = "👁 Preview";
   setPane("list");
