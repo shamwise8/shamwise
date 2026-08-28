@@ -19,6 +19,17 @@
     --accent: #e84142; --ok: #34d399; --warn: #fbbf24; --bad: #f87171;
     --idea: #9a9aa2; --draft: #60a5fa; --review: #fbbf24; --approved: #34d399; --posted: #a78bfa;
   }
+  /* ---------- themes ---------- */
+  html[data-theme="avalanche"] { --accent: #e84142; }
+  html[data-theme="solana"]    { --accent: #9945ff; --ok: #14f195; --approved: #14f195; }
+  html[data-theme="bitcoin"]   { --accent: #f7931a; }
+  html[data-theme="ethereum"]  { --accent: #627eea; }
+  html[data-theme="base"]      { --accent: #0052ff; }
+  html[data-theme="mono"]      { --accent: #8a8a94; }
+  html[data-theme="forest"]    { --accent: #16a34a; }
+  html[data-theme="robinhood"] { --accent: #ccff00; --ok: #ccff00; --approved: #ccff00; }
+  html[data-theme="sunset"]    { --accent: #f43f5e; }
+
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; }
   body { background: var(--bg); color: var(--ink); font-family: "DM Sans", system-ui, sans-serif; font-size: 14.5px; }
@@ -388,6 +399,7 @@
         <span id="brandPreview" style="width:34px; height:34px; border-radius:99px; display:flex; align-items:center; justify-content:center; background:var(--panel2); overflow:hidden; flex:none"></span>
         <input type="text" id="brandName" placeholder="team1 Thailand" style="flex:1; min-width:120px; font-size:13.5px" />
         <input type="text" id="brandHandle" placeholder="@team1TH" style="flex:1; min-width:110px; font-size:13.5px" />
+        <select id="brandTheme" title="UI theme" style="font-size:12.5px; padding:5px 6px"></select>
         <button class="small" id="brandLogoBtn">🖼 Upload logo</button>
         <button class="small primary" id="brandSave">Save</button>
       </div>
@@ -472,7 +484,16 @@ const LABEL_COLORS = { grey:"#9a9aa2", red:"#e84142", orange:"#fb923c", yellow:"
 let labels = [];
 let members = [];
 let myEmail = "";
-let brand = { name: "", handle: "", avatar_url: "" };
+let brand = { name: "", handle: "", avatar_url: "", theme: "team1" };
+const THEMES = [
+  ["team1", "🔺 team1 (default)"], ["avalanche", "🔺 Avalanche"], ["solana", "🟣 Solana"],
+  ["bitcoin", "🟠 Bitcoin"], ["ethereum", "🔷 Ethereum"], ["base", "🔵 Base"],
+  ["robinhood", "🟩 Robinhood"], ["forest", "🟢 Forest"], ["sunset", "🌅 Sunset"], ["mono", "⚪️ Mono"],
+];
+function applyTheme(t) {
+  if (!t || t === "team1") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+}
 const isMine = (d) => !!(d.assignee && myEmail && d.assignee === myEmail);
 const memberName = (email) => { const m = members.find((x) => x.email === email); return m ? (m.name || m.email.split("@")[0]) : (email ? email.split("@")[0] : ""); };
 const labelById = (id) => labels.find((l) => l.id === id);
@@ -658,7 +679,7 @@ async function supabaseStore() {
           if (!session) { show("login"); return; }
           if (me === session.user.email) return;
           const email = session.user.email;
-          const { data: mems, error } = await sb.from("members").select("workspace_id,name,role,workspaces(name,handle,avatar_url)").eq("email", email);
+          const { data: mems, error } = await sb.from("members").select("workspace_id,name,role,workspaces(name,handle,avatar_url,theme)").eq("email", email);
           if (error || !mems || !mems.length) {
             if (!error) { openCreateWs(sb, email); return; }
             $("deniedEmail").textContent = email; show("denied"); return;
@@ -837,7 +858,8 @@ if (store.mode === "local") {
   myEmail = identity.me;
   $("whoami").textContent = my.name || identity.me;
   const wsName = (my.workspaces && my.workspaces.name) || WS;
-  brand = { name: wsName, handle: (my.workspaces && my.workspaces.handle) || "", avatar_url: (my.workspaces && my.workspaces.avatar_url) || "" };
+  brand = { name: wsName, handle: (my.workspaces && my.workspaces.handle) || "", avatar_url: (my.workspaces && my.workspaces.avatar_url) || "", theme: (my.workspaces && my.workspaces.theme) || "team1" };
+  applyTheme(brand.theme);
   $("chapterName").textContent = flagOf(WS) + " " + wsName;
   document.title = flagOf(WS) + " Postbox — " + wsName;
   if (mems.length > 1) {
@@ -896,6 +918,7 @@ if (TEAM_MODE) {
   $("teamBtn").addEventListener("click", () => {
     $("teamPanel").style.display = "flex";
     $("brandBox").style.display = myRole === "admin" ? "block" : "none";
+    $("brandTheme").innerHTML = THEMES.map(([v, l]) => `<option value="${v}" ${brand.theme === v ? "selected" : ""}>${l}</option>`).join("");
     $("brandName").value = brand.name || "";
     $("brandHandle").value = brand.handle || "";
     $("brandPreview").innerHTML = brand.avatar_url
@@ -945,15 +968,19 @@ if (TEAM_MODE) {
     renderPreview();
     toast("Logo saved");
   });
+  $("brandTheme").addEventListener("change", () => applyTheme($("brandTheme").value));
   $("brandSave").addEventListener("click", async () => {
     const handle = $("brandHandle").value.trim();
     const name = $("brandName").value.trim();
+    const theme = $("brandTheme").value;
     if (!name) { toast("Name cannot be empty"); return; }
     const { error } = await store.sb.from("workspaces")
-      .update({ name, handle: handle || null, avatar_url: brand.avatar_url || null }).eq("id", WS);
+      .update({ name, handle: handle || null, avatar_url: brand.avatar_url || null, theme }).eq("id", WS);
     if (error) { toast("Save failed: " + error.message); return; }
     brand.handle = handle;
     brand.name = name;
+    brand.theme = theme;
+    applyTheme(theme);
     $("chapterName").textContent = flagOf(WS) + " " + name;
     document.title = flagOf(WS) + " Postbox — " + name;
     const opt = $("wsPicker") && [...$("wsPicker").options].find((o) => o.value === WS);
