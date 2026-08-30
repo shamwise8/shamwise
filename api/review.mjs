@@ -93,8 +93,8 @@ const CSS = `
   .qt { margin-top:12px; border:1px solid var(--line); border-radius:16px; overflow:hidden;
         display:block; text-decoration:none; color:inherit; background:var(--panel2); }
   .qt .qh { display:flex; align-items:center; gap:6px; padding:10px 12px 0; font-size:13.5px; }
-  .qt .qa { width:20px; height:20px; border-radius:99px; background:var(--line); flex:none;
-            display:flex; align-items:center; justify-content:center; font-size:11px; }
+  .qt .qa { width:20px; height:20px; border-radius:99px; flex:none; overflow:hidden; display:block; }
+  .qt .qa img { width:100%; height:100%; object-fit:cover; display:block; }
   .qt .qn { font-weight:700; }
   .qt .qd { color:var(--dim); }
   .qt .qx { padding:4px 12px 10px; font-size:14px; line-height:1.4; white-space:pre-wrap;
@@ -150,14 +150,14 @@ const shell = (title, theme, body) => `<!doctype html>
 (async () => {
   for (const el of document.querySelectorAll("[data-card]")) {
     try {
-      const r = await fetch("/api/unfurl?url=" + encodeURIComponent(el.dataset.card) + "&v=2");
+      const r = await fetch("/api/unfurl?url=" + encodeURIComponent(el.dataset.card) + "&v=3");
       if (!r.ok) { el.remove(); continue; }
       const m = await r.json();
       const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
         ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
       if (m.type === "tweet") {
         el.outerHTML = '<a class="qt" href="' + esc(m.url) + '" target="_blank" rel="noopener noreferrer">' +
-          '<div class="qh"><span class="qa">' + esc((m.author || "?").slice(0, 1)) + '</span>' +
+          '<div class="qh">' + (m.avatar ? '<span class="qa"><img src="' + esc(m.avatar) + '" alt="" onerror="this.parentNode.remove()" /></span>' : "") +
           '<span class="qn">' + esc(m.author) + '</span><span class="qd">' + esc(m.handle) + '</span></div>' +
           (m.text ? '<div class="qx">' + esc(m.text) + '</div>' : "") +
           (m.image ? '<div class="qm"><img src="' + esc(m.image) + '" alt="" loading="lazy" onerror="this.parentNode.remove()" />' +

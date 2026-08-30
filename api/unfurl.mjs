@@ -102,6 +102,12 @@ async function fetchMeta(url) {
     const st = safe.href.match(X_STATUS);
     if (st) {
       const who = title.match(AUTHOR_LINE);
+      // The status page carries no author avatar; the profile page does.
+      let avatar = "";
+      try {
+        const prof = await fetchMeta(`https://x.com/${st[1]}`);
+        if (prof && /profile_images/.test(prof.image || "")) avatar = prof.image;
+      } catch { /* a card without an avatar is fine; a fake one is not */ }
       // X often omits og:video, but names video thumbnails distinctively
       const hasVideo = !!pick(html, "og:video", "og:video:url", "og:video:secure_url", "twitter:player")
         || /amplify_video_thumb|ext_tw_video_thumb|video_thumb/i.test(image || "");
@@ -113,6 +119,7 @@ async function fetchMeta(url) {
         handle: "@" + (who ? who[2] : st[1]),
         text: desc,
         image,
+        avatar,
         video: hasVideo,
       };
     }
