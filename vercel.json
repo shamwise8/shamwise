@@ -4,6 +4,14 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/postbox/p",
+      "destination": "/api/preview"
+    },
+    {
+      "source": "/postbox/p/",
+      "destination": "/api/preview"
+    },
+    {
       "source": "/links",
       "destination": "/links.html"
     },
