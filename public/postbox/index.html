@@ -301,7 +301,7 @@
     <div class="logo"><span id="chapterName">team1</span> · postbox<span>.</span></div>
     <span class="badge local" id="localBadge" style="display:none" title="Drafts are saved in this browser only. Set up Supabase (see postbox/README.md) to share with your team.">local mode — this browser only</span>
     <select id="wsPicker" style="display:none; max-width:180px" title="Switch workspace"></select>
-    <div class="who"><button class="small ghost" id="calBtn">📅 Calendar</button><button class="small ghost" id="joinBtn" style="display:none" title="Join another chapter">＋ Chapter</button><button class="small ghost" id="teamBtn" style="display:none">Team</button><span id="whoami"></span><button class="small ghost" id="signOut" style="display:none">Sign out</button></div>
+    <div class="who"><button class="small ghost" id="calBtn">📅 Calendar</button><button class="small ghost" id="joinBtn" style="display:none" title="Join another chapter">＋ Chapter</button><button class="small ghost" id="teamBtn" style="display:none">Team</button><button class="small ghost" id="linksBtn" style="display:none" title="Manage review links">🔐 Links</button><span id="whoami"></span><button class="small ghost" id="signOut" style="display:none">Sign out</button></div>
   </header>
   <div class="main">
     <aside>
@@ -416,6 +416,14 @@
   </div>
 </div>
 
+<div id="linksPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:52; align-items:center; justify-content:center; padding:16px">
+  <div class="card" style="max-width:560px; width:100%; max-height:88vh; display:flex; flex-direction:column">
+    <h1 style="font-size:17px; margin-bottom:4px">🔐 Review links</h1>
+    <p style="font-size:13px">Everything currently shared from this workspace. Changes take effect immediately.</p>
+    <div id="linksList" style="flex:1; overflow-y:auto; min-height:0"></div>
+    <div style="text-align:right; margin-top:14px"><button class="small ghost" id="linksClose">Close</button></div>
+  </div>
+</div>
 <div id="revPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:50; align-items:center; justify-content:center; padding:16px">
   <div class="card" style="max-width:460px; width:100%">
     <h1 style="font-size:17px; margin-bottom:4px">🔐 Review link</h1>
@@ -425,10 +433,13 @@
       <input type="text" id="revKey" placeholder="Access key (share this separately)" autocomplete="off" style="width:100%" />
       <div style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap">
         <select id="revTtl" style="font-size:13px">
-          <option value="">No expiry</option>
-          <option value="7">Expires in 7 days</option>
-          <option value="30" selected>Expires in 30 days</option>
+          <option value="1">Expires in 1 day</option>
+          <option value="3">Expires in 3 days</option>
+          <option value="7" selected>Expires in 7 days</option>
+          <option value="14">Expires in 14 days</option>
+          <option value="30">Expires in 30 days</option>
           <option value="90">Expires in 90 days</option>
+          <option value="">No expiry</option>
         </select>
         <button class="small ghost" id="revGen" title="Suggest a key">🎲 Suggest</button>
         <button class="primary" id="revCreate" style="margin-left:auto">Create link</button>
@@ -1014,7 +1025,8 @@ if (store.mode === "local") {
       location.reload();
     });
   }
-  if (myRole === "admin") $("teamBtn").style.display = "";
+  if (myRole === "admin") $("linksBtn").style.display = "";
+  $("teamBtn").style.display = "";
   $("signOut").style.display = "";
   $("signOut").addEventListener("click", () => store.signOut());
 
@@ -2165,6 +2177,97 @@ $("bulkAll").addEventListener("click", () => {
   rows.forEach((d) => allOn ? selected.delete(d.id) : selected.add(d.id));
   renderBulk(); renderList();
 });
+// Managing links after the fact: drop posts, shorten the window, kill it now.
+let revSets = [];
+async function loadReviewSets() {
+  const { data, error } = await store.sb.from("review_sets")
+    .select("id, name, token, draft_ids, created_at, expires_at")
+    .eq("workspace_id", WS).order("created_at", { ascending: false });
+  revSets = error ? [] : (data || []);
+  renderReviewSets();
+}
+const expLabel = (e) => {
+  if (!e) return `<span style="color:var(--warn)">never expires</span>`;
+  const days = Math.ceil((new Date(e) - Date.now()) / 86400000);
+  if (days <= 0) return `<span style="color:var(--bad)">expired</span>`;
+  return `expires in ${days} day${days === 1 ? "" : "s"}`;
+};
+function renderReviewSets() {
+  if (!revSets.length) {
+    $("linksList").innerHTML = `<div style="color:var(--dim); font-size:13px; padding:14px 0">No review links yet. Select drafts in the list, then 🔐 Review link.</div>`;
+    return;
+  }
+  $("linksList").innerHTML = revSets.map((r) => {
+    const posts = (r.draft_ids || []).map((id) => {
+      const d = drafts.find((x) => x.id === id);
+      return `<div style="display:flex; align-items:center; gap:6px; padding:2px 0; font-size:12.5px">
+        <span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted)">${esc(d ? (d.title || firstLine(d.content) || "Untitled") : "(deleted draft)")}</span>
+        <button class="small ghost" data-rvdrop="${r.id}:${id}" title="Remove from this link" style="padding:1px 6px; font-size:11px">✕</button>
+      </div>`;
+    }).join("") || `<div style="font-size:12.5px; color:var(--bad); padding:2px 0">No posts left — this link shows an empty set.</div>`;
+    return `<div style="border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:10px">
+      <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap">
+        <b style="font-size:13.5px">${esc(r.name)}</b>
+        <span style="color:var(--dim); font-size:12px">${(r.draft_ids || []).length} post${(r.draft_ids || []).length === 1 ? "" : "s"} · ${expLabel(r.expires_at)}</span>
+      </div>
+      <div style="margin:8px 0">${posts}</div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+        <button class="small ghost" data-rvcopy="${r.id}">Copy link</button>
+        <select data-rvttl="${r.id}" style="font-size:12px; padding:3px 5px">
+          <option value="">Change expiry…</option>
+          <option value="1">1 day</option><option value="3">3 days</option>
+          <option value="7">7 days</option><option value="30">30 days</option>
+          <option value="none">Never</option>
+        </select>
+        <button class="small ghost" data-rvkill="${r.id}" title="Stop this link working now" style="margin-left:auto; border-color:var(--bad); color:var(--bad)">Retire now</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+$("linksBtn").addEventListener("click", async (e) => {
+  e.preventDefault();
+  $("linksList").innerHTML = `<div style="color:var(--dim); font-size:13px; padding:14px 0">Loading…</div>`;
+  $("linksPanel").style.display = "flex";
+  await loadReviewSets();
+});
+$("linksClose").addEventListener("click", (e) => { e.preventDefault(); $("linksPanel").style.display = "none"; });
+$("linksPanel").addEventListener("click", (e) => { if (e.target === $("linksPanel")) $("linksPanel").style.display = "none"; });
+
+$("linksList").addEventListener("click", async (e) => {
+  const copy = e.target.closest("[data-rvcopy]");
+  if (copy) {
+    const r = revSets.find((x) => x.id === copy.dataset.rvcopy);
+    await navigator.clipboard.writeText(`${location.origin}/postbox/r/?t=${r.token}`);
+    toast("Link copied"); return;
+  }
+  const drop = e.target.closest("[data-rvdrop]");
+  if (drop) {
+    const [setId, draftId] = drop.dataset.rvdrop.split(":");
+    const r = revSets.find((x) => x.id === setId);
+    const next = (r.draft_ids || []).filter((x) => x !== draftId);
+    const { error } = await store.sb.from("review_sets").update({ draft_ids: next }).eq("id", setId);
+    if (error) { toast("Could not remove: " + error.message); return; }
+    r.draft_ids = next; renderReviewSets(); toast("Removed from the link");
+    return;
+  }
+  const kill = e.target.closest("[data-rvkill]");
+  if (kill) {
+    const r = revSets.find((x) => x.id === kill.dataset.rvkill);
+    if (!confirm(`Retire "${r.name}"? The link stops working immediately and cannot be brought back.`)) return;
+    const { error } = await store.sb.from("review_sets").delete().eq("id", r.id);
+    if (error) { toast("Could not retire: " + error.message); return; }
+    revSets = revSets.filter((x) => x.id !== r.id); renderReviewSets(); toast("Link retired");
+  }
+});
+$("linksList").addEventListener("change", async (e) => {
+  const sel = e.target.closest("[data-rvttl]"); if (!sel || !sel.value) return;
+  const r = revSets.find((x) => x.id === sel.dataset.rvttl);
+  const exp = sel.value === "none" ? null : new Date(Date.now() + (+sel.value) * 86400000).toISOString();
+  const { error } = await store.sb.from("review_sets").update({ expires_at: exp }).eq("id", r.id);
+  if (error) { toast("Could not update: " + error.message); return; }
+  r.expires_at = exp; renderReviewSets(); toast("Expiry updated");
+});
+
 // Review links — a batch of drafts behind a key the sharer sets.
 let revIds = [];
 $("bulkReview").addEventListener("click", (e) => {

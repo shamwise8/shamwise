@@ -150,8 +150,8 @@ export default async function handler(req, res) {
 
   const fmtDay = (d) => d ? new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "";
   const tabs = posts.map((p, i) =>
-    `<button class="tab${i === 0 ? " on" : ""}" data-i="${i}">${i + 1}${
-      p.planned_at ? " · " + esc(fmtDay(p.planned_at)) : ""}</button>`).join("");
+    `<button class="tab${i === 0 ? " on" : ""}" data-i="${i}">${i + 1} · ${
+      p.planned_at ? esc(fmtDay(p.planned_at)) : "undated"}</button>`).join("");
 
   const panels = posts.map((p, i) => {
     const segs = segments(p.content);

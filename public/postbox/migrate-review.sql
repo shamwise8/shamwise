@@ -66,7 +66,7 @@ begin
       select json_agg(json_build_object(
         'title', d.title, 'content', d.content,
         'media', coalesce(d.media, '[]'::jsonb), 'planned_at', d.planned_at)
-        order by array_position(s.draft_ids, d.id))
+        order by d.planned_at asc nulls last, array_position(s.draft_ids, d.id))
       from postbox.drafts d where d.id = any(s.draft_ids)
     ), '[]'::json)
   ) into out
