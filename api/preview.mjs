@@ -20,7 +20,7 @@ function page({ title, desc, image, body, theme, name }) {
 <meta name="robots" content="noindex, nofollow" />
 <title>${esc(title)}</title>
 <meta property="og:type" content="article" />
-<meta property="og:site_name" content="${esc(name || "Postbox")}" />
+<meta property="og:site_name" content="${esc(name ? name + " · Postbox" : "Postbox")}" />
 <meta property="og:title" content="${esc(title)}" />
 <meta property="og:description" content="${esc(desc)}" />
 ${image ? `<meta property="og:image" content="${esc(image)}" />
