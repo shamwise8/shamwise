@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
   if (userErr || !userData?.user?.email) return json({ error: "Not signed in" }, 401);
   const email = userData.user.email.toLowerCase();
 
-  let body: { workspace?: string; content?: string; action?: string; notes?: string[] };
+  let body: { workspace?: string; content?: string; action?: string; notes?: string[]; scope?: string };
   try { body = await req.json(); } catch { return json({ error: "Bad request" }, 400); }
   const { workspace, content } = body;
   const action = body.action && ACTIONS[body.action] ? body.action : "tighten";
@@ -128,6 +128,12 @@ Deno.serve(async (req) => {
     : [];
   const notesWithLinks = notes.filter((n) => /https?:\/\//i.test(n)).length;
   let userMsg = `${ACTIONS[action]}\n\n---\n${content}`;
+  if (body.scope === "tweet") {
+    userMsg = `This is ONE tweet taken from inside a longer thread. Rewrite only this tweet and return ` +
+      `exactly one tweet — no --- separators, no extra tweets, and do not add an opening hook or a sign-off ` +
+      `that assumes it stands alone. It has to drop straight back into the thread where it came from.\n\n` +
+      userMsg;
+  }
   if (notes.length) {
     userMsg += `\n\n---\nThe team left these notes on this draft. Apply them — where a note conflicts ` +
       `with the instruction above, the note wins. Do not reply to the notes or mention them in the output. ` +
