@@ -150,7 +150,7 @@ const shell = (title, theme, body) => `<!doctype html>
 (async () => {
   for (const el of document.querySelectorAll("[data-card]")) {
     try {
-      const r = await fetch("/api/unfurl?url=" + encodeURIComponent(el.dataset.card)) + "&v=2";
+      const r = await fetch("/api/unfurl?url=" + encodeURIComponent(el.dataset.card) + "&v=2");
       if (!r.ok) { el.remove(); continue; }
       const m = await r.json();
       const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
