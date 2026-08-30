@@ -134,15 +134,17 @@ export default async function handler(req, res) {
       </div></div>`;
   }).join("");
 
-  // The card shows the post itself — first line as the title, the opening as the blurb.
-  const flat = segs.join(" ").replace(/\s+/g, " ").trim();
-  const title = clip(segs[0].split("\n")[0].trim() || name, 70);
+  // The card shows the post itself. og:site_name already carries the chapter, and
+  // the title carries the first line — so the blurb starts after both, no echoes.
+  const firstLine = segs[0].split("\n")[0].trim();
+  const rest = segs.join("\n").slice(firstLine.length).replace(/\s+/g, " ").trim();
+  const title = clip(firstLine || name, 70);
   const count = `${segs.length} tweet${segs.length === 1 ? "" : "s"}`;
 
   res.statusCode = 200;
   res.end(page({
-    title: `${title} — ${name}`,
-    desc: clip(flat, 200),
+    title,
+    desc: clip(rest || firstLine, 200),
     image: firstImage,
     theme: data.theme,
     name,
