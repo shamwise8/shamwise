@@ -335,6 +335,7 @@
         <input type="datetime-local" id="plannedAt" title="Planned time" />
         <button class="small" id="copyAll">Copy thread</button>
         <button class="small" id="shareBtn" title="Copy a link to this draft">🔗 Share</button>
+        <button class="small ghost" id="lockDraft" title="Lock to protect from edits and deletion">🔓 Lock</button>
         <button class="small ghost" id="deleteDraft" title="Delete draft">🗑</button>
         <button class="small ghost m-only" id="edMore" title="Post settings">⋯</button>
         <span id="saveState"></span>
@@ -1124,7 +1125,7 @@ function renderList() {
   $("list").innerHTML = rows.map((d) => `
     <div class="item ${current && current.id === d.id ? "on" : ""} ${isMine(d) ? "mine" : ""}" data-id="${d.id}">
       ${selecting ? `<input type="checkbox" data-sel="${d.id}" ${selected.has(d.id) ? "checked" : ""} style="float:right; margin-left:8px" />` : ""}
-      <div class="t">${(Array.isArray(d.labels) && d.labels.length ? `<span class="ldots">${d.labels.map((id) => { const l = labelById(id); return l ? `<span class="ldot" style="background:${colorOf(l)}" title="${esc(l.name)}"></span>` : ""; }).join("")}</span>` : "")}${esc(d.title || firstLine(d.content) || "Untitled")}</div>
+      <div class="t">${(Array.isArray(d.labels) && d.labels.length ? `<span class="ldots">${d.labels.map((id) => { const l = labelById(id); return l ? `<span class="ldot" style="background:${colorOf(l)}" title="${esc(l.name)}"></span>` : ""; }).join("")}</span>` : "")}${d.locked ? `<span title="Locked" style="margin-right:4px">🔒</span>` : ""}${esc(d.title || firstLine(d.content) || "Untitled")}</div>
       <div class="m">
         <span class="dot s-${d.status}"></span>
         <span>${d.status}</span>
@@ -1459,6 +1460,7 @@ function openDraft(d, keepScroll = false) {
   $("saveState").textContent = "";
   renderPreview();
   renderLabelRow();
+  renderLockState();
   renderList();
   loadComments();
   if (!keepScroll) $("content").scrollTop = 0;
@@ -1681,7 +1683,7 @@ $("plannedAt").addEventListener("change", () => {
 });
 
 async function save() {
-  if (!current) return;
+  if (!current || current.locked) return;
   let data;
   try {
     data = await store.updateDraft(current.id, {
@@ -1697,8 +1699,36 @@ async function save() {
   renderList();
 }
 
+function renderLockState() {
+  const on = !!(current && current.locked);
+  const b = $("lockDraft");
+  b.textContent = on ? "🔒 Locked" : "🔓 Lock";
+  b.title = on ? "Locked — click to unlock before editing or deleting" : "Lock to protect from edits and deletion";
+  b.style.borderColor = on ? "var(--warn)" : "";
+  b.style.color = on ? "var(--warn)" : "";
+  $("content").readOnly = on;
+  $("deleteDraft").disabled = on;
+  $("deleteDraft").style.opacity = on ? ".35" : "";
+}
+
+$("lockDraft").addEventListener("click", async () => {
+  if (!current) return;
+  const next = !current.locked;
+  // flush pending edits first — save() refuses to write once locked is set
+  if (next && dirty) { clearTimeout(saveTimer); await save(); }
+  try { await store.updateDraft(current.id, { locked: next }); }
+  catch (e) { toast("Could not " + (next ? "lock" : "unlock") + ": " + e.message); return; }
+  current.locked = next;
+  const i = drafts.findIndex((d) => d.id === current.id);
+  if (i > -1) drafts[i].locked = next;
+  renderLockState(); renderList();
+  toast(next ? "Locked — this draft can't be edited or deleted" : "Unlocked");
+});
+
 $("deleteDraft").addEventListener("click", async () => {
-  if (!current || !confirm("Delete this draft for everyone?")) return;
+  if (!current) return;
+  if (current.locked) { toast("This draft is locked — unlock it first"); return; }
+  if (!confirm("Delete this draft for everyone?")) return;
   try { await store.deleteDraft(current.id); }
   catch (e) { toast("Delete failed: " + e.message); return; }
   drafts = drafts.filter((d) => d.id !== current.id);
@@ -1889,8 +1919,11 @@ $("bulkAll").addEventListener("click", () => {
 });
 $("bulkDel").addEventListener("click", async () => {
   if (!selected.size) { toast("Nothing selected"); return; }
-  if (!confirm(`Delete ${selected.size} draft(s)? This cannot be undone.`)) return;
-  const ids = [...selected];
+  const lockedHit = [...selected].filter((id) => (drafts.find((d) => d.id === id) || {}).locked);
+  const ids = [...selected].filter((id) => !lockedHit.includes(id));
+  if (!ids.length) { toast(`All ${lockedHit.length} selected draft(s) are locked — nothing deleted`); return; }
+  const warn = lockedHit.length ? `\n\n${lockedHit.length} locked draft(s) will be kept.` : "";
+  if (!confirm(`Delete ${ids.length} draft(s)? This cannot be undone.${warn}`)) return;
   $("bulkDel").disabled = true;
   let done = 0;
   for (const id of ids) {

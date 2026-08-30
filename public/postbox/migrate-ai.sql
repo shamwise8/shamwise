@@ -50,3 +50,6 @@ alter table postbox.workspaces add column if not exists ai_pool_daily int not nu
 -- Per-workspace voice guide + the only handles the model may tag.
 alter table postbox.workspaces add column if not exists ai_context text;
 alter table postbox.workspaces add column if not exists ai_handles text;
+
+-- Protect finished drafts from deletion; a category is cheap to recreate, a thread is not.
+alter table postbox.drafts add column if not exists locked boolean not null default false;
