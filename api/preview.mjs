@@ -9,18 +9,24 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
 
 // @handles, #hashtags and URLs, rendered the way X shows them.
 function linkify(text) {
-  const re = /(https?:\/\/[^\s<]+)|(^|[^\w@#\/])([@#])([A-Za-z0-9_]{1,30})/g;
+  // Same shape as the character counter's URL rule, so what counts as a link and
+  // what renders as one cannot drift apart.
+  const re = /(https?:\/\/[^\s<]+)|(^|\s)((?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s<]*)?)|(^|[^\w@#\/])([@#])([A-Za-z0-9_]{1,30})/gi;
+  const a = (href, label) =>
+    `<a class="tl" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;
   let out = "", last = 0, m;
+  re.lastIndex = 0;
   while ((m = re.exec(text))) {
-    const [full, url, pre, sigil, word] = m;
+    const [full, url, pre1, bare, pre2, sigil, word] = m;
     out += esc(text.slice(last, m.index));
     if (url) {
-      const clean = url.replace(/[.,;:!?)\]]+$/, "");
-      out += `<a class="tl" href="${esc(clean)}" target="_blank" rel="noopener noreferrer">${esc(clean)}</a>`
-           + esc(url.slice(clean.length));
+      const c = url.replace(/[.,;:!?)\]]+$/, "");
+      out += a(c, c) + esc(url.slice(c.length));
+    } else if (bare) {
+      const c = bare.replace(/[.,;:!?)\]]+$/, "");
+      out += esc(pre1) + a("https://" + c, c) + esc(bare.slice(c.length));
     } else {
-      const href = sigil === "@" ? `https://x.com/${word}` : `https://x.com/hashtag/${word}`;
-      out += esc(pre) + `<a class="tl" href="${href}" target="_blank" rel="noopener noreferrer">${sigil}${esc(word)}</a>`;
+      out += esc(pre2) + a(sigil === "@" ? `https://x.com/${word}` : `https://x.com/hashtag/${word}`, sigil + word);
     }
     last = m.index + full.length;
   }
