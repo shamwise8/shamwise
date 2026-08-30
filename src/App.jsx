@@ -14,7 +14,7 @@ const OFFERINGS = [
     desc:"Business websites and LINE bot systems built for the Thai market. Fast, professional, and actually drives customers.",
     tags:["Landing Pages","LINE OA","Web Apps","Thai Market"] },
   { num:"03", icon:"⛓️", title:"Web3 Events Bangkok",
-    desc:"Your go-to for crypto and blockchain events in Bangkok. 16 events hosted in the past year as Avalanche Team1 Thailand Lead.",
+    desc:"Your go-to for crypto and blockchain events in Bangkok. 14 events in 6 months as Avalanche Team1 Thailand Lead.",
     tags:["Avalanche","Community","Bangkok","Bootcamps"] },
 ];
 
@@ -109,7 +109,7 @@ const WORK_ITEMS = [
 
 const COMMUNITY_ITEMS = [
   { title:"Hmong Cyber", desc:"Co-founded a youth development platform for Hmong hill tribe communities in Phitsanulok. 3 seasons of coding, media production, culinary arts, and hospitality training — 100+ students, 50+ volunteer teachers, 300+ hours taught. Ran the Hmong Cyber Festival celebrating culture and new skills.", photos:["/hmong-coding.jpg","/hmong-festival.jpg","/hmong-teaching.jpg","/hmong-tiedye.jpg","/hmong-booth1.jpg","/hmong-booth2.jpg","/hmong-booth3.jpg"], badge:"CO-FOUNDER", tags:["Phitsanulok","Youth Dev","Education","Social Impact","Blockchain Thailand"], status:"Active" },
-  { title:"Team1 Thailand", desc:"Avalanche's builder network in Thailand — 16 events in 12 months as Team1 Thailand Lead: builder bootcamps, a 140+ Money 20/20 side event, the 200+ Padel Rave, and more. Ratings 4.86–4.91/5.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg","/avalanche-bootcamp.jpg"], badge:"TEAM1 THAILAND LEAD", tags:["Bangkok","Avalanche","Team1","Web3"], status:"16 events hosted", link:"https://www.shamwise.com/mediakit" },
+  { title:"Team1 Thailand", desc:"Avalanche's builder network in Thailand — 14 events in 6 months as Team1 Thailand Lead: builder bootcamps, a 140+ Money 20/20 side event, the 200+ Padel Rave, and more. Ratings 4.86–4.91/5.", photos:["/avalanche-group.jpg","/avalanche-speaker.jpg","/avalanche-bootcamp.jpg"], badge:"TEAM1 THAILAND LEAD", tags:["Bangkok","Avalanche","Team1","Web3"], status:"14 events in 6 months", link:"https://www.shamwise.com/mediakit" },
 ];
 
 export default function Shamwise() {
@@ -181,7 +181,7 @@ export default function Shamwise() {
         <div className="hero-right" style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:20, animation:"fadeUp 0.8s ease 0.6s both" }}>
           <div style={{ fontFamily:"'Instrument Serif',serif", fontStyle:"italic", fontSize:56, color:C.ink3, textAlign:"right", lineHeight:1 }}>Bangkok<br />based.</div>
           <div style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent:"flex-end" }}>
-            {["IronMap on 3 App Stores","16 Events Run","Team1 Thailand Lead"].map(t => (
+            {["IronMap on 3 App Stores","14 Events in 6 Months","Team1 Thailand Lead"].map(t => (
               <span key={t} style={{ background:C.ink, color:C.bg2, padding:"6px 14px", borderRadius:100, fontSize:11, fontWeight:500 }}>{t}</span>
             ))}
           </div>
@@ -348,7 +348,7 @@ export default function Shamwise() {
               While building IronMap (now live on the App Store, Google Play and Solana dApp Store), CoachProof, and Santi, I realised I could help local businesses get the same quality of digital presence. So I started doing that too.
             </p>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, padding:24, background:"#0D0A08", borderRadius:12, border:"1px solid #2D2620" }}>
-              {[["3","Apps in TestFlight"],["5+","Events run"],["BKK","Based in Bangkok"]].map(([num,label]) => (
+              {[["3","Apps in TestFlight"],["14","Events run"],["BKK","Based in Bangkok"]].map(([num,label]) => (
                 <div key={label}>
                   <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:900, fontSize:30, color:C.accent2, lineHeight:1, letterSpacing:-1, marginBottom:4 }}>{num}</div>
                   <div style={{ fontSize:11, color:"#4A3F35", letterSpacing:0.5, lineHeight:1.4 }}>{label}</div>
