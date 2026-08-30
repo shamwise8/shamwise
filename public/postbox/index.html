@@ -437,6 +437,10 @@
         <button class="small primary" id="brandSave">Save</button>
       </div>
       <p style="font-size:12px; color:var(--dim); margin:8px 0 0">Shown on post previews so drafts look like the account that will publish them.</p>
+      <div style="font-size:12px; color:var(--dim); letter-spacing:.08em; text-transform:uppercase; margin:14px 0 6px">AI context — steers ✨ Rewrite</div>
+      <textarea id="brandCtx" rows="3" placeholder="How this account sounds. e.g. Plain English, no hype words. We report what shipped, not what might. Never use rocket or fire emoji." style="width:100%; font-size:13px; line-height:1.45"></textarea>
+      <textarea id="brandHandles" rows="2" placeholder="Handles the AI may tag, one per line — Sam @shamwise8, Ellio @elliobeats" style="width:100%; font-size:13px; line-height:1.45; margin-top:6px"></textarea>
+      <p style="font-size:12px; color:var(--dim); margin:6px 0 0">The AI can only tag handles on this list. Anyone else gets their plain name, never a guessed @.</p>
     </div>
     <input type="file" id="brandLogoFile" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" />
     <h1 style="font-size:17px; margin-bottom:4px">Team</h1>
@@ -712,7 +716,7 @@ async function supabaseStore() {
           if (!session) { show("login"); return; }
           if (me === session.user.email) return;
           const email = session.user.email;
-          const { data: mems, error } = await sb.from("members").select("workspace_id,name,role,workspaces(name,handle,avatar_url,theme)").eq("email", email);
+          const { data: mems, error } = await sb.from("members").select("workspace_id,name,role,workspaces(name,handle,avatar_url,theme,ai_context,ai_handles)").eq("email", email);
           if (error || !mems || !mems.length) {
             if (!error) { openCreateWs(sb, email); return; }
             $("deniedEmail").textContent = email; show("denied"); return;
@@ -891,7 +895,8 @@ if (store.mode === "local") {
   myEmail = identity.me;
   $("whoami").textContent = my.name || identity.me;
   const wsName = (my.workspaces && my.workspaces.name) || WS;
-  brand = { name: wsName, handle: (my.workspaces && my.workspaces.handle) || "", avatar_url: (my.workspaces && my.workspaces.avatar_url) || "", theme: (my.workspaces && my.workspaces.theme) || "team1" };
+  brand = { name: wsName, handle: (my.workspaces && my.workspaces.handle) || "", avatar_url: (my.workspaces && my.workspaces.avatar_url) || "", theme: (my.workspaces && my.workspaces.theme) || "team1",
+    ai_context: (my.workspaces && my.workspaces.ai_context) || "", ai_handles: (my.workspaces && my.workspaces.ai_handles) || "" };
   applyTheme(brand.theme);
   $("chapterName").textContent = flagOf(WS) + " " + wsName;
   document.title = flagOf(WS) + " Postbox — " + wsName;
@@ -954,6 +959,8 @@ if (TEAM_MODE) {
     $("brandTheme").innerHTML = THEMES.map(([v, l]) => `<option value="${v}" ${brand.theme === v ? "selected" : ""}>${l}</option>`).join("");
     $("brandName").value = brand.name || "";
     $("brandHandle").value = brand.handle || "";
+    $("brandCtx").value = brand.ai_context || "";
+    $("brandHandles").value = brand.ai_handles || "";
     $("brandPreview").innerHTML = brand.avatar_url
       ? `<img src="${esc(brand.avatar_url)}" style="width:100%;height:100%;object-fit:cover" />`
       : flagOf(WS);
@@ -1008,9 +1015,13 @@ if (TEAM_MODE) {
     const theme = $("brandTheme").value;
     if (!name) { toast("Name cannot be empty"); return; }
     const { error } = await store.sb.from("workspaces")
-      .update({ name, handle: handle || null, avatar_url: brand.avatar_url || null, theme }).eq("id", WS);
+      .update({ name, handle: handle || null, avatar_url: brand.avatar_url || null, theme,
+                ai_context: $("brandCtx").value.trim() || null,
+                ai_handles: $("brandHandles").value.trim() || null }).eq("id", WS);
     if (error) { toast("Save failed: " + error.message); return; }
     brand.handle = handle;
+    brand.ai_context = $("brandCtx").value.trim();
+    brand.ai_handles = $("brandHandles").value.trim();
     brand.name = name;
     brand.theme = theme;
     applyTheme(theme);

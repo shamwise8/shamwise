@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
   // Who pays? A sponsored workspace (e.g. Thailand) draws on the sponsor's pool
   // instead of each member burning their own daily allowance.
   const { data: ws } = await admin.from("workspaces")
-    .select("ai_sponsor, ai_pool_daily").eq("id", workspace).maybeSingle();
+    .select("ai_sponsor, ai_pool_daily, ai_context, ai_handles").eq("id", workspace).maybeSingle();
   const sponsor = (ws?.ai_sponsor ?? "").toLowerCase();
   const billedTo = sponsor || email;
   const since = new Date(Date.now() - 86400000).toISOString();
@@ -94,11 +94,22 @@ Deno.serve(async (req) => {
     }
   }
 
-  const system =
+  let system =
     "You rewrite social posts for X. Rules: never invent facts, numbers, dates, names, handles or links — " +
     "carry them across exactly. Keep the author's voice; do not make it sound like marketing copy. " +
     "Threads are separated by a line containing only ---; keep that format and keep each tweet under 280 characters. " +
     "Links count as 23 characters. Reply with the rewritten post only — no preamble, no explanation, no quotes around it.";
+
+  if (ws?.ai_context) {
+    system += "\n\nHouse style for this account — follow it:\n" + String(ws.ai_context).slice(0, 2000);
+  }
+  if (ws?.ai_handles) {
+    // A wrong @mention tags a real stranger, so the roster is a closed list, not a hint.
+    system += "\n\nThe ONLY X handles you may use are the ones listed here:\n" +
+      String(ws.ai_handles).slice(0, 2000) +
+      "\nNever write an @handle that is not on that list or already in the author's text. " +
+      "If you want to credit someone who is not listed, use their plain name with no @.";
+  }
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

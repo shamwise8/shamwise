@@ -46,3 +46,7 @@ update postbox.workspaces set ai_sponsor = 'shamwise8@gmail.com' where id in ('t
 update postbox.members set ai_uncapped = true
   where lower(email) in ('shamwise8@gmail.com','shamwise@team1.network');
 alter table postbox.workspaces add column if not exists ai_pool_daily int not null default 300;
+
+-- Per-workspace voice guide + the only handles the model may tag.
+alter table postbox.workspaces add column if not exists ai_context text;
+alter table postbox.workspaces add column if not exists ai_handles text;
