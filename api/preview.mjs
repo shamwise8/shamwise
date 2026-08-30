@@ -33,6 +33,17 @@ function linkify(text) {
   return out + esc(text.slice(last));
 }
 
+// Last link in a tweet — same rule as the counter, so bare domains count.
+function lastLink(text) {
+  const re = /(https?:\/\/[^\s<>"']+)|(?:^|\s)((?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s<>"']*)?)/gi;
+  let found = null, m;
+  while ((m = re.exec(String(text || "")))) {
+    const raw = (m[1] || m[2] || "").replace(/[.,;:!?)\]]+$/, "");
+    if (raw) found = m[1] ? raw : "https://" + raw;
+  }
+  return found;
+}
+
 const segments = (t) => String(t || "")
   .split(/\n\s*---\s*\n|\n[ \t]*\n[ \t]*\n+/).map((x) => x.trim()).filter(Boolean);
 const clip = (s, n) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
@@ -85,6 +96,15 @@ ${image ? `<meta property="og:image" content="${esc(image)}" />
   .tl { color:var(--link); text-decoration:none; }
   .tl:hover { text-decoration:underline; }
   .body { white-space:pre-wrap; word-wrap:break-word; margin-top:2px; }
+  .lcard { margin-top:12px; border:1px solid var(--line); border-radius:16px; overflow:hidden;
+           display:block; text-decoration:none; color:inherit; background:var(--panel2); }
+  .lcard .im { width:100%; aspect-ratio:1.91/1; object-fit:cover; display:block; border-bottom:1px solid var(--line); }
+  .lcard.small { display:flex; align-items:stretch; }
+  .lcard.small .im { width:128px; aspect-ratio:1/1; flex:none; border-bottom:0; border-right:1px solid var(--line); }
+  .lcard .meta { padding:10px 12px; min-width:0; }
+  .lcard .dm { color:var(--dim); font-size:12.5px; }
+  .lcard .ti { font-size:14px; margin-top:1px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .lcard .ds { color:var(--dim); font-size:13px; margin-top:2px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
   .media { margin-top:12px; border-radius:16px; overflow:hidden; border:1px solid var(--line);
            display:grid; gap:2px; background:var(--line); }
   .media.n1 { grid-template-columns:1fr; }
@@ -100,6 +120,25 @@ ${image ? `<meta property="og:image" content="${esc(image)}" />
 </style>
 </head>
 <body>${body}
+<script>
+(async () => {
+  for (const el of document.querySelectorAll("[data-card]")) {
+    try {
+      const r = await fetch("/api/unfurl?url=" + encodeURIComponent(el.dataset.card));
+      if (!r.ok) { el.remove(); continue; }
+      const m = await r.json();
+      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      el.outerHTML = '<a class="lcard ' + (m.image && !m.large ? "small" : "") + '" href="' + esc(m.url) +
+        '" target="_blank" rel="noopener noreferrer">' +
+        (m.image ? '<img class="im" src="' + esc(m.image) + '" alt="" loading="lazy" onerror="this.remove()" />' : "") +
+        '<div class="meta"><div class="dm">' + esc(m.domain) + '</div><div class="ti">' +
+        esc(m.title || m.domain) + '</div>' +
+        (m.desc ? '<div class="ds">' + esc(m.desc) + '</div>' : "") + '</div></a>';
+    } catch { el.remove(); }
+  }
+})();
+</script>
 <div class="foot">Read-only preview · made with <a href="/postbox">Postbox</a></div>
 </body>
 </html>`;
@@ -159,7 +198,8 @@ export default async function handler(req, res) {
       <div class="main">
         <div class="who"><span class="nm">${esc(name)}</span>${data.handle ? `<span class="hd">${esc(data.handle)}</span>` : ""}</div>
         <div class="body">${linkify(seg)}</div>
-        ${cells ? `<div class="media n${mine.length}">${cells}</div>` : ""}
+        ${cells ? `<div class="media n${mine.length}">${cells}</div>`
+          : (lastLink(seg) ? `<div data-card="${esc(lastLink(seg))}"></div>` : "")}
       </div></div>`;
   }).join("");
 
