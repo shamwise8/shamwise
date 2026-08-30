@@ -1497,11 +1497,16 @@ async function loadAiNotes() {
   let rows = [];
   try { rows = await store.listComments(current.id); } catch { return; }
   if (!rows.length) return;
-  $("aiNotesList").innerHTML = rows.map((c, i) => `
+  $("aiNotesList").innerHTML = rows.map((c, i) => {
+    const hasLink = /https?:\/\//i.test(c.body || "");
+    return `
     <label style="display:flex; gap:7px; align-items:flex-start; padding:3px 0; cursor:pointer">
       <input type="checkbox" class="ai-note" data-i="${i}" checked style="margin-top:3px; flex:none" />
-      <span><b style="color:var(--muted)">${esc(String(c.author).split("@")[0])}</b> ${esc(c.body)}</span>
-    </label>`).join("");
+      <span><b style="color:var(--muted)">${esc(String(c.author).split("@")[0])}</b> ${esc(c.body)}${
+        hasLink ? ` <span title="The AI cannot open links — it will apply the note's wording only" style="color:var(--warn); font-size:11px; white-space:nowrap">🔗 link not read</span>` : ""
+      }</span>
+    </label>`;
+  }).join("");
   $("aiNotesList").dataset.bodies = JSON.stringify(rows.map((c) => c.body));
   box.style.display = "";
 }
@@ -1543,7 +1548,9 @@ async function runAi(action) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { $("aiMsg").textContent = data.error || `Failed (${res.status})`; return; }
-    $("aiMsg").textContent = "Edit anything you like, then Replace.";
+    $("aiMsg").textContent = data.unreadable_links
+      ? `Edit anything you like, then Replace. Note: ${data.unreadable_links} note(s) linked to a page — the AI can't open links, so it applied only what the note said.`
+      : "Edit anything you like, then Replace.";
     $("aiOut").value = data.result || "";
     $("aiOut").style.display = "";
     $("aiReplace").style.display = "";

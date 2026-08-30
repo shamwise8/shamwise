@@ -98,7 +98,12 @@ Deno.serve(async (req) => {
     "You rewrite social posts for X. Rules: never invent facts, numbers, dates, names, handles or links — " +
     "carry them across exactly. Keep the author's voice; do not make it sound like marketing copy. " +
     "Threads are separated by a line containing only ---; keep that format and keep each tweet under 280 characters. " +
-    "Links count as 23 characters. Reply with the rewritten post only — no preamble, no explanation, no quotes around it.";
+    "Links count as 23 characters. Reply with the rewritten post only — no preamble, no explanation, no quotes around it.\n\n" +
+    "You have no web access and cannot open links. Treat every URL as an opaque string: reproduce it exactly, " +
+    "move it where asked, but NEVER state, summarise, paraphrase or imply what a linked page contains — not even " +
+    "if you recognise the domain or think you know the story. If the author's text or a team note asks you to use " +
+    "information from a link, do not guess: leave that part of the post exactly as the author wrote it. " +
+    "An unchanged sentence is always better than an invented fact.";
 
   if (ws?.ai_context) {
     system += "\n\nHouse style for this account — follow it:\n" + String(ws.ai_context).slice(0, 2000);
@@ -116,10 +121,12 @@ Deno.serve(async (req) => {
   const notes = Array.isArray(body.notes)
     ? body.notes.map((n) => String(n).trim()).filter(Boolean).slice(0, 12).map((n) => n.slice(0, 500))
     : [];
+  const notesWithLinks = notes.filter((n) => /https?:\/\//i.test(n)).length;
   let userMsg = `${ACTIONS[action]}\n\n---\n${content}`;
   if (notes.length) {
     userMsg += `\n\n---\nThe team left these notes on this draft. Apply them — where a note conflicts ` +
-      `with the instruction above, the note wins. Do not reply to the notes or mention them in the output:\n` +
+      `with the instruction above, the note wins. Do not reply to the notes or mention them in the output. ` +
+      `If a note points at a link, you still cannot read it — apply only what the note itself says:\n` +
       notes.map((n) => `- ${n}`).join("\n");
   }
 
@@ -154,5 +161,9 @@ Deno.serve(async (req) => {
     input_tokens: inTok, output_tokens: outTok, cost_usd: cost,
   });
 
-  return json({ result: text, usage: { input_tokens: inTok, output_tokens: outTok, cost_usd: cost, model: MODEL } });
+  return json({
+    result: text,
+    unreadable_links: notesWithLinks,
+    usage: { input_tokens: inTok, output_tokens: outTok, cost_usd: cost, model: MODEL },
+  });
 });
