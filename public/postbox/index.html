@@ -375,7 +375,9 @@
           <textarea id="content" placeholder="Write your post…&#10;&#10;Split a thread with --- on its own line."></textarea>
         </div>
         <div class="preview">
-          <h3>Preview <span id="threadInfo"></span></h3>
+          <h3 style="display:flex; align-items:center; gap:8px">Preview <span id="threadInfo"></span>
+            <button class="small ghost" id="fsBtn2" title="Full-screen preview of the whole thread" style="margin-left:auto; font-weight:400">⛶ Full</button>
+          </h3>
           <div id="tweets"></div>
         </div>
       </div>
@@ -1864,12 +1866,14 @@ function renderFullPreview() {
   }).join("") || `<div style="color:var(--dim); text-align:center; padding:40px">Nothing to preview yet.</div>`;
 }
 const closeFs = () => { $("fsPanel").style.display = "none"; };
-$("fsBtn").addEventListener("click", (e) => {
-  e.preventDefault();
+function openFs(e) {
+  if (e) e.preventDefault();
   renderFullPreview();
   $("fsPanel").style.display = "flex";
   $("fsScroll").scrollTop = 0;
-});
+}
+$("fsBtn").addEventListener("click", openFs);
+$("fsBtn2").addEventListener("click", openFs);
 $("fsClose").addEventListener("click", (e) => { e.preventDefault(); closeFs(); });
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
