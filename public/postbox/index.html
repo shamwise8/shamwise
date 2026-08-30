@@ -1992,14 +1992,14 @@ $("labelFilters").addEventListener("click", async (e) => {
 
 function renderCatPanel() {
   $("catList").innerHTML = labels.map((l) => `
-    <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--line)">
-      <select data-lcolor="${l.id}" title="Colour" style="padding:4px 6px; font-size:12px" ${l.locked ? "disabled" : ""}>
+    <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--line); flex-wrap:wrap">
+      <span class="ldot" style="background:${colorOf(l)}; flex:none"></span>
+      <input type="text" data-lname="${l.id}" value="${esc(l.name)}" style="flex:1; min-width:110px; font-size:13.5px; ${l.locked ? "opacity:.6" : ""}" ${l.locked ? "readonly" : ""} />
+      <select data-lcolor="${l.id}" title="Colour" style="padding:4px 6px; font-size:12px; flex:none; max-width:96px" ${l.locked ? "disabled" : ""}>
         ${Object.keys(LABEL_COLORS).map((c) => `<option value="${c}" ${c === l.color ? "selected" : ""}>${c}</option>`).join("")}
       </select>
-      <span class="ldot" style="background:${colorOf(l)}"></span>
-      <input type="text" data-lname="${l.id}" value="${esc(l.name)}" style="flex:1; min-width:70px; font-size:13.5px; ${l.locked ? "opacity:.6" : ""}" ${l.locked ? "readonly" : ""} />
-      <button class="small ghost" data-llock="${l.id}" title="${l.locked ? "Locked — click to unlock" : "Lock to prevent edits and deletion"}" style="${l.locked ? "border-color:var(--warn)" : ""}">${l.locked ? "🔒 Locked" : "🔓"}</button>
-      <button class="small ghost" data-ldel="${l.id}" title="${l.locked ? "Unlock first to delete" : "Delete"}" ${l.locked ? "disabled style=opacity:.35" : ""}>🗑</button>
+      <button class="small ghost" data-llock="${l.id}" title="${l.locked ? "Locked — click to unlock" : "Lock to prevent edits and deletion"}" style="flex:none; ${l.locked ? "border-color:var(--warn); color:var(--warn)" : ""}">${l.locked ? "🔒 Locked" : "🔓 Lock"}</button>
+      <button class="small ghost" data-ldel="${l.id}" title="${l.locked ? "Unlock first to delete" : "Delete"}" style="flex:none${l.locked ? "; opacity:.35" : ""}" ${l.locked ? "disabled" : ""}>🗑</button>
     </div>`).join("");
 }
 $("catPanel").addEventListener("click", (e) => { if (e.target === $("catPanel")) $("catPanel").style.display = "none"; });
