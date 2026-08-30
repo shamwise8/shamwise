@@ -1592,6 +1592,49 @@ const toLocalInput = (iso) => {
   return d.toISOString().slice(0, 16);
 };
 
+// Pasting a numbered thread (1/ 2/ 3/) should just work — LLMs and shared docs
+// use those markers, and the blank lines inside a section make the usual
+// two-blank-line rule split in the wrong places.
+const NUM_MARKER = /^[ \t]*\(?(\d{1,2})[ \t]*\/[ \t]*(\d{1,2})?\)?[.:]?[ \t]*(.*)$/;
+const SECTION_HEADER = /^[ \t]*(english|thai|th|en|ภาษาไทย|ไทย|อังกฤษ)([ \t]+(thread|version|post))?[ \t]*:?[ \t]*$/i;
+
+function normalizeNumberedThread(raw) {
+  const lines = raw.replace(/\r\n/g, "\n").split("\n");
+  const marks = lines.reduce((n, l) => n + (NUM_MARKER.test(l) && /^[ \t]*\(?\d{1,2}[ \t]*\//.test(l) ? 1 : 0), 0);
+  if (marks < 2) return null;
+
+  const out = [];
+  let cur = null;
+  for (const line of lines) {
+    const m = line.match(NUM_MARKER);
+    if (m && /^[ \t]*\(?\d{1,2}[ \t]*\//.test(line)) {
+      if (cur !== null) out.push(cur.join("\n").trim());
+      cur = m[3].trim() ? [m[3].trim()] : [];      // text may sit on the marker line
+      continue;
+    }
+    if (SECTION_HEADER.test(line)) continue;       // "English thread" / "Thai thread" labels
+    if (cur === null) { if (line.trim()) cur = [line]; continue; }
+    cur.push(line);
+  }
+  if (cur !== null) out.push(cur.join("\n").trim());
+  const tweets = out.filter(Boolean);
+  return tweets.length >= 2 ? tweets.join("\n---\n") : null;
+}
+
+$("content").addEventListener("paste", (e) => {
+  const raw = (e.clipboardData || window.clipboardData)?.getData("text");
+  if (!raw) return;
+  const tidy = normalizeNumberedThread(raw);
+  if (!tidy) return;                                // ordinary paste, untouched
+  e.preventDefault();
+  const ta = $("content"), a = ta.selectionStart ?? 0, b = ta.selectionEnd ?? 0;
+  ta.value = ta.value.slice(0, a) + tidy + ta.value.slice(b);
+  const pos = a + tidy.length;
+  ta.setSelectionRange(pos, pos);
+  ta.dispatchEvent(new Event("input", { bubbles: true }));
+  toast(`Split into ${tidy.split("\n---\n").length} tweets from the numbering`);
+});
+
 function insertThreadBreak() {
   const ta = $("content"), start = ta.selectionStart ?? ta.value.length, end = ta.selectionEnd ?? ta.value.length;
   const before = ta.value.slice(0, start).replace(/\s+$/, "");
