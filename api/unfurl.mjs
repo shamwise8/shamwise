@@ -102,7 +102,9 @@ async function fetchMeta(url) {
     const st = safe.href.match(X_STATUS);
     if (st) {
       const who = title.match(AUTHOR_LINE);
-      const hasVideo = !!(pick(html, "og:video", "og:video:url", "og:video:secure_url", "twitter:player"));
+      // X often omits og:video, but names video thumbnails distinctively
+      const hasVideo = !!pick(html, "og:video", "og:video:url", "og:video:secure_url", "twitter:player")
+        || /amplify_video_thumb|ext_tw_video_thumb|video_thumb/i.test(image || "");
       return {
         url: `https://x.com/${st[1]}/status/${st[2]}`,
         domain: "x.com",

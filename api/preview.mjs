@@ -96,6 +96,21 @@ ${image ? `<meta property="og:image" content="${esc(image)}" />
   .tl { color:var(--link); text-decoration:none; }
   .tl:hover { text-decoration:underline; }
   .body { white-space:pre-wrap; word-wrap:break-word; margin-top:2px; }
+  .qt { margin-top:12px; border:1px solid var(--line); border-radius:16px; overflow:hidden;
+        display:block; text-decoration:none; color:inherit; background:var(--panel2); }
+  .qt .qh { display:flex; align-items:center; gap:6px; padding:10px 12px 0; font-size:13.5px; }
+  .qt .qa { width:20px; height:20px; border-radius:99px; background:var(--line); flex:none;
+            display:flex; align-items:center; justify-content:center; font-size:11px; }
+  .qt .qn { font-weight:700; }
+  .qt .qd { color:var(--dim); }
+  .qt .qx { padding:4px 12px 10px; font-size:14px; line-height:1.4; white-space:pre-wrap;
+            overflow:hidden; display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; }
+  .qt .qm { position:relative; }
+  .qt .qm img { width:100%; display:block; max-height:400px; object-fit:cover; }
+  .qt .qp { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .qt .qp i { width:52px; height:52px; border-radius:99px; background:rgba(0,0,0,.65);
+              border:2px solid rgba(255,255,255,.9); display:flex; align-items:center;
+              justify-content:center; font-style:normal; color:#fff; font-size:19px; padding-left:4px; }
   .lcard { margin-top:12px; border:1px solid var(--line); border-radius:16px; overflow:hidden;
            display:block; text-decoration:none; color:inherit; background:var(--panel2); }
   .lcard .im { width:100%; aspect-ratio:1.91/1; object-fit:cover; display:block; border-bottom:1px solid var(--line); }
@@ -129,12 +144,21 @@ ${image ? `<meta property="og:image" content="${esc(image)}" />
       const m = await r.json();
       const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
         ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-      el.outerHTML = '<a class="lcard ' + (m.image && !m.large ? "small" : "") + '" href="' + esc(m.url) +
-        '" target="_blank" rel="noopener noreferrer">' +
-        (m.image ? '<img class="im" src="' + esc(m.image) + '" alt="" loading="lazy" onerror="this.remove()" />' : "") +
-        '<div class="meta"><div class="dm">' + esc(m.domain) + '</div><div class="ti">' +
-        esc(m.title || m.domain) + '</div>' +
-        (m.desc ? '<div class="ds">' + esc(m.desc) + '</div>' : "") + '</div></a>';
+      if (m.type === "tweet") {
+        el.outerHTML = '<a class="qt" href="' + esc(m.url) + '" target="_blank" rel="noopener noreferrer">' +
+          '<div class="qh"><span class="qa">' + esc((m.author || "?").slice(0, 1)) + '</span>' +
+          '<span class="qn">' + esc(m.author) + '</span><span class="qd">' + esc(m.handle) + '</span></div>' +
+          (m.text ? '<div class="qx">' + esc(m.text) + '</div>' : "") +
+          (m.image ? '<div class="qm"><img src="' + esc(m.image) + '" alt="" loading="lazy" onerror="this.parentNode.remove()" />' +
+            (m.video ? '<span class="qp"><i>&#9654;</i></span>' : "") + '</div>' : "") + '</a>';
+      } else {
+        el.outerHTML = '<a class="lcard ' + (m.image && !m.large ? "small" : "") + '" href="' + esc(m.url) +
+          '" target="_blank" rel="noopener noreferrer">' +
+          (m.image ? '<img class="im" src="' + esc(m.image) + '" alt="" loading="lazy" onerror="this.remove()" />' : "") +
+          '<div class="meta"><div class="dm">' + esc(m.domain) + '</div><div class="ti">' +
+          esc(m.title || m.domain) + '</div>' +
+          (m.desc ? '<div class="ds">' + esc(m.desc) + '</div>' : "") + '</div></a>';
+      }
     } catch { el.remove(); }
   }
 })();
