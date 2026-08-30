@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
   if (userErr || !userData?.user?.email) return json({ error: "Not signed in" }, 401);
   const email = userData.user.email.toLowerCase();
 
-  let body: { workspace?: string; content?: string; action?: string };
+  let body: { workspace?: string; content?: string; action?: string; notes?: string[] };
   try { body = await req.json(); } catch { return json({ error: "Bad request" }, 400); }
   const { workspace, content } = body;
   const action = body.action && ACTIONS[body.action] ? body.action : "tighten";
@@ -111,6 +111,18 @@ Deno.serve(async (req) => {
       "If you want to credit someone who is not listed, use their plain name with no @.";
   }
 
+  // Teammate comments on the draft, passed through as editing direction.
+  // These come from authenticated workspace members, so they are instructions, not untrusted input.
+  const notes = Array.isArray(body.notes)
+    ? body.notes.map((n) => String(n).trim()).filter(Boolean).slice(0, 12).map((n) => n.slice(0, 500))
+    : [];
+  let userMsg = `${ACTIONS[action]}\n\n---\n${content}`;
+  if (notes.length) {
+    userMsg += `\n\n---\nThe team left these notes on this draft. Apply them — where a note conflicts ` +
+      `with the instruction above, the note wins. Do not reply to the notes or mention them in the output:\n` +
+      notes.map((n) => `- ${n}`).join("\n");
+  }
+
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -122,7 +134,7 @@ Deno.serve(async (req) => {
       model: MODEL,
       max_tokens: 4000,
       system,
-      messages: [{ role: "user", content: `${ACTIONS[action]}\n\n---\n${content}` }],
+      messages: [{ role: "user", content: userMsg }],
     }),
   });
 

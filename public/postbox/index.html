@@ -391,6 +391,13 @@
       <button class="small ghost" data-ai="clearer">Clearer</button>
       <button class="small ghost" data-ai="thai">→ Thai</button>
     </div>
+    <div id="aiNotes" style="display:none; border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin-bottom:10px">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+        <span style="font-size:12px; color:var(--dim); letter-spacing:.08em; text-transform:uppercase">Team notes to apply</span>
+        <button class="small ghost" id="aiNotesNone" style="margin-left:auto; font-size:11px">Untick all</button>
+      </div>
+      <div id="aiNotesList" style="max-height:22vh; overflow-y:auto; font-size:13px"></div>
+    </div>
     <div style="flex:1; min-height:0; overflow:auto">
       <div id="aiMsg" style="font-size:13px; color:var(--muted); margin-bottom:8px"></div>
       <textarea id="aiOut" style="width:100%; min-height:220px; display:none; font:inherit; line-height:1.5"></textarea>
@@ -1477,7 +1484,31 @@ function openAi() {
   $("aiReplace").style.display = "none";
   $("aiCopy").style.display = "none";
   $("aiPanel").style.display = "flex";
+  loadAiNotes();
 }
+
+// The draft's comments become editing direction — ticked by default, since a
+// note someone bothered to leave is usually the whole point of rewriting.
+async function loadAiNotes() {
+  const box = $("aiNotes");
+  box.style.display = "none";
+  $("aiNotesList").innerHTML = "";
+  if (!current) return;
+  let rows = [];
+  try { rows = await store.listComments(current.id); } catch { return; }
+  if (!rows.length) return;
+  $("aiNotesList").innerHTML = rows.map((c, i) => `
+    <label style="display:flex; gap:7px; align-items:flex-start; padding:3px 0; cursor:pointer">
+      <input type="checkbox" class="ai-note" data-i="${i}" checked style="margin-top:3px; flex:none" />
+      <span><b style="color:var(--muted)">${esc(String(c.author).split("@")[0])}</b> ${esc(c.body)}</span>
+    </label>`).join("");
+  $("aiNotesList").dataset.bodies = JSON.stringify(rows.map((c) => c.body));
+  box.style.display = "";
+}
+const aiCheckedNotes = () => {
+  const all = JSON.parse($("aiNotesList").dataset.bodies || "[]");
+  return [...document.querySelectorAll("#aiNotesList .ai-note:checked")].map((el) => all[+el.dataset.i]).filter(Boolean);
+};
 const closeAi = () => { $("aiPanel").style.display = "none"; };
 
 function aiCounts() {
@@ -1508,7 +1539,7 @@ async function runAi(action) {
     const res = await fetch(AI_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` },
-      body: JSON.stringify({ workspace: WS, content: input, action }),
+      body: JSON.stringify({ workspace: WS, content: input, action, notes: aiCheckedNotes() }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { $("aiMsg").textContent = data.error || `Failed (${res.status})`; return; }
@@ -1530,6 +1561,13 @@ $("aiBtn").addEventListener("click", (e) => { e.preventDefault(); openAi(); });
 $("aiClose").addEventListener("click", (e) => { e.preventDefault(); closeAi(); });
 $("aiPanel").addEventListener("click", (e) => { if (e.target.id === "aiPanel") closeAi(); });
 $("aiOut").addEventListener("input", aiCounts);
+$("aiNotesNone").addEventListener("click", (e) => {
+  e.preventDefault();
+  const boxes = [...document.querySelectorAll("#aiNotesList .ai-note")];
+  const anyOn = boxes.some((b) => b.checked);
+  boxes.forEach((b) => (b.checked = !anyOn));
+  $("aiNotesNone").textContent = anyOn ? "Tick all" : "Untick all";
+});
 document.querySelectorAll("#aiActions button").forEach((b) =>
   b.addEventListener("click", (e) => { e.preventDefault(); runAi(b.dataset.ai); }));
 $("aiCopy").addEventListener("click", async (e) => {
