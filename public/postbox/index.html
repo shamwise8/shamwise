@@ -1979,9 +1979,15 @@ function linkify(text) {
 // Link cards. X shows one card, for the last link in the tweet, and none at all
 // when the tweet has media — so we mirror that rather than carding every URL.
 const linkCards = new Map();   // url -> meta | null (null = no card available)
+// Same link rule as linkify and the counter, so a bare domain gets a card too.
 const lastLink = (text) => {
-  const m = String(text || "").match(/https?:\/\/[^\s<>"']+/g);
-  return m ? m[m.length - 1].replace(/[.,;:)\]]+$/, "") : null;
+  const re = /(https?:\/\/[^\s<>"']+)|(?:^|\s)((?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s<>"']*)?)/gi;
+  let found = null, m;
+  while ((m = re.exec(String(text || "")))) {
+    const raw = (m[1] || m[2] || "").replace(/[.,;:!?)\]]+$/, "");
+    if (raw) found = m[1] ? raw : "https://" + raw;
+  }
+  return found;
 };
 function cardHtml(meta) {
   if (!meta) return "";
