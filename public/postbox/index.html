@@ -351,6 +351,7 @@
       </div>
       <div class="hint" id="actionBar" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
         <button class="small" id="addTweet" title="Start the next tweet">＋ Tweet</button>
+        <button class="small" id="aiBtn" title="Rewrite with AI">✨ Rewrite</button>
         <button class="small ghost m-only" id="togglePreview" title="Preview">👁 Preview</button>
         <button class="small m-only" id="mCopy" title="Copy thread">📋</button>
         <button class="small ghost m-only" id="toggleComments" title="Comments">💬</button>
@@ -380,6 +381,29 @@
   </div>
 </div>
 
+<div id="aiPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:46; align-items:center; justify-content:center; padding:16px">
+  <div class="card" style="max-width:720px; width:100%; max-height:88vh; display:flex; flex-direction:column">
+    <h1 style="font-size:17px; margin-bottom:2px">✨ Rewrite <span id="aiScope" style="color:var(--dim); font-size:12px; font-weight:400"></span></h1>
+    <p style="font-size:13px; margin:0 0 10px">Facts, numbers, handles and links are carried across untouched. Nothing saves until you hit Replace.</p>
+    <div id="aiActions" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px">
+      <button class="small" data-ai="tighten">Fit 280</button>
+      <button class="small ghost" data-ai="punchier">Punchier</button>
+      <button class="small ghost" data-ai="clearer">Clearer</button>
+      <button class="small ghost" data-ai="thai">→ Thai</button>
+    </div>
+    <div style="flex:1; min-height:0; overflow:auto">
+      <div id="aiMsg" style="font-size:13px; color:var(--muted); margin-bottom:8px"></div>
+      <textarea id="aiOut" style="width:100%; min-height:220px; display:none; font:inherit; line-height:1.5"></textarea>
+      <div id="aiCounts" style="font-size:12px; color:var(--dim); margin-top:6px"></div>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap">
+      <button class="primary" id="aiReplace" style="display:none">Replace</button>
+      <button class="small" id="aiCopy" style="display:none">Copy</button>
+      <span id="aiCost" style="color:var(--dim); font-size:11px; margin-left:auto"></span>
+      <button class="small ghost" id="aiClose">Close</button>
+    </div>
+  </div>
+</div>
 <div id="joinPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:40; align-items:center; justify-content:center; padding:20px">
   <div class="card" style="max-width:460px">
     <h1 style="font-size:17px; margin-bottom:4px">Join another chapter</h1>
@@ -1422,6 +1446,94 @@ function insertThreadBreak() {
   ta.focus();
 }
 $("addTweet").addEventListener("click", (e) => { e.preventDefault(); insertThreadBreak(); });
+
+// ---------------------------------------------------------------- AI rewrite
+// Calls a Supabase Edge Function; the API key lives there, never in this page.
+const AI_URL = TEAM_MODE ? cfg.supabaseUrl + "/functions/v1/rewrite" : null;
+let aiSel = null; // {start,end} when rewriting a selection rather than the whole draft
+
+function openAi() {
+  if (!current) return;
+  const ta = $("content");
+  const s = ta.selectionStart ?? 0, e = ta.selectionEnd ?? 0;
+  aiSel = e > s + 20 ? { start: s, end: e } : null;
+  $("aiScope").textContent = aiSel ? "· selected text" : "· whole draft";
+  $("aiMsg").textContent = "Pick how you want it rewritten.";
+  $("aiOut").style.display = "none";
+  $("aiOut").value = "";
+  $("aiCounts").textContent = "";
+  $("aiCost").textContent = "";
+  $("aiReplace").style.display = "none";
+  $("aiCopy").style.display = "none";
+  $("aiPanel").style.display = "flex";
+}
+const closeAi = () => { $("aiPanel").style.display = "none"; };
+
+function aiCounts() {
+  const segs = segments($("aiOut").value);
+  const parts = segs.map((x, i) => {
+    const n = tweetLen(x);
+    return `<span style="color:${n > 280 ? "var(--bad)" : "var(--dim)"}">${i + 1}: ${n}</span>`;
+  });
+  $("aiCounts").innerHTML = parts.join(" · ") || "";
+}
+
+async function runAi(action) {
+  if (!AI_URL) { $("aiMsg").textContent = "AI is only available when signed in to a shared workspace."; return; }
+  const ta = $("content");
+  const input = aiSel ? ta.value.slice(aiSel.start, aiSel.end) : ta.value;
+  if (!input.trim()) { $("aiMsg").textContent = "Nothing to rewrite yet."; return; }
+
+  const btns = [...document.querySelectorAll("#aiActions button")];
+  btns.forEach((b) => (b.disabled = true));
+  $("aiMsg").textContent = "Rewriting…";
+  $("aiOut").style.display = "none";
+  $("aiReplace").style.display = "none";
+  $("aiCopy").style.display = "none";
+  $("aiCounts").textContent = "";
+
+  try {
+    const { data: { session } } = await store.sb.auth.getSession();
+    const res = await fetch(AI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` },
+      body: JSON.stringify({ workspace: WS, content: input, action }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { $("aiMsg").textContent = data.error || `Failed (${res.status})`; return; }
+    $("aiMsg").textContent = "Edit anything you like, then Replace.";
+    $("aiOut").value = data.result || "";
+    $("aiOut").style.display = "";
+    $("aiReplace").style.display = "";
+    $("aiCopy").style.display = "";
+    if (data.usage) $("aiCost").textContent = `${data.usage.model} · $${(data.usage.cost_usd || 0).toFixed(4)}`;
+    aiCounts();
+  } catch (err) {
+    $("aiMsg").textContent = "Network error — try again.";
+  } finally {
+    btns.forEach((b) => (b.disabled = false));
+  }
+}
+
+$("aiBtn").addEventListener("click", (e) => { e.preventDefault(); openAi(); });
+$("aiClose").addEventListener("click", (e) => { e.preventDefault(); closeAi(); });
+$("aiPanel").addEventListener("click", (e) => { if (e.target.id === "aiPanel") closeAi(); });
+$("aiOut").addEventListener("input", aiCounts);
+document.querySelectorAll("#aiActions button").forEach((b) =>
+  b.addEventListener("click", (e) => { e.preventDefault(); runAi(b.dataset.ai); }));
+$("aiCopy").addEventListener("click", async (e) => {
+  e.preventDefault();
+  await navigator.clipboard.writeText($("aiOut").value);
+  toast("Copied");
+});
+$("aiReplace").addEventListener("click", (e) => {
+  e.preventDefault();
+  const ta = $("content"), out = $("aiOut").value;
+  ta.value = aiSel ? ta.value.slice(0, aiSel.start) + out + ta.value.slice(aiSel.end) : out;
+  ta.dispatchEvent(new Event("input", { bubbles: true }));
+  closeAi();
+  toast("Rewritten — saved as a draft edit");
+});
 $("content").addEventListener("keydown", (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); insertThreadBreak(); }
 });
