@@ -46,10 +46,20 @@ const pick = (html, ...names) => {
   return "";
 };
 
-const decode = (s) => String(s)
+const decodeOnce = (s) => String(s)
   .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
   .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&nbsp;/g, " ")
   .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(+d));
+// X serves &amp;amp; — decode until it stops changing (bounded)
+const decode = (s) => {
+  let out = String(s ?? "");
+  for (let i = 0; i < 3; i++) { const next = decodeOnce(out); if (next === out) break; out = next; }
+  return out;
+};
+
+// An X/Twitter status link gets rendered as a quoted post rather than a link card.
+const X_STATUS = /^https?:\/\/(?:www\.)?(?:x|twitter|fxtwitter|vxtwitter)\.com\/([A-Za-z0-9_]{1,15})\/status(?:es)?\/(\d+)/i;
+const AUTHOR_LINE = /^(.*?)\s*\(@([A-Za-z0-9_]{1,15})\)\s+on\s+X$/i;
 
 async function fetchMeta(url) {
   let current = url, hops = 0;
@@ -88,6 +98,22 @@ async function fetchMeta(url) {
     if (image) { try { image = new URL(decode(image), safe).href; } catch { image = ""; } }
     const card = pick(html, "twitter:card");
     if (!title && !image) return null;
+
+    const st = safe.href.match(X_STATUS);
+    if (st) {
+      const who = title.match(AUTHOR_LINE);
+      const hasVideo = !!(pick(html, "og:video", "og:video:url", "og:video:secure_url", "twitter:player"));
+      return {
+        url: `https://x.com/${st[1]}/status/${st[2]}`,
+        domain: "x.com",
+        type: "tweet",
+        author: who ? who[1] : st[1],
+        handle: "@" + (who ? who[2] : st[1]),
+        text: desc,
+        image,
+        video: hasVideo,
+      };
+    }
     return { url: safe.href, domain: safe.hostname.replace(/^www\./, ""), title, desc, image, large: card === "summary_large_image" };
   }
   return null;
