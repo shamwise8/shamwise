@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex, nofollow" />
 <title>Thread preview</title>
+<script src="/postbox/config.js?v=4"></script>
 <style>
   :root { --bg:#0d0d0f; --panel:#141417; --panel2:#1b1b1f; --line:#26262c;
           --text:#e9e9ee; --dim:#8a8a94; --bad:#f87171; --accent:#e84142; }
@@ -70,8 +71,7 @@ const fail = (m) => { $("thread").innerHTML = `<div class="msg">${esc(m)}</div>`
 const token = new URLSearchParams(location.search).get("t");
 if (!token) fail("No preview link given.");
 else {
-  await import("/postbox/config.js?v=3").catch(() => {});
-  const cfg = window.POSTBOX_CONFIG || {};
+  const cfg = window.PLANNER_CONFIG || window.POSTBOX_CONFIG || {};
   if (!cfg.supabaseUrl) fail("Preview is unavailable.");
   else {
     const sb = createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, {
