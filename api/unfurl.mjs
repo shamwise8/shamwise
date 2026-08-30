@@ -128,10 +128,10 @@ export default async function handler(req, res) {
   let meta = null;
   try { meta = await fetchMeta(target); } catch { /* returns null below */ }
   if (!meta) {
-    res.setHeader("Cache-Control", "public, max-age=300");
+    res.setHeader("Cache-Control", "public, max-age=120");
     res.statusCode = 404;
     return res.end(JSON.stringify({ error: "no preview" }));
   }
-  res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
+  res.setHeader("Cache-Control", "public, max-age=600, s-maxage=86400");
   res.end(JSON.stringify(meta));
 }

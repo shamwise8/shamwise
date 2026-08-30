@@ -2027,7 +2027,7 @@ async function fillLinkCards(root) {
     const u = el.dataset.card;
     if (!linkCards.has(u)) {
       try {
-        const r = await fetch("/api/unfurl?url=" + encodeURIComponent(u));
+        const r = await fetch("/api/unfurl?url=" + encodeURIComponent(u)) + "&v=2";
         linkCards.set(u, r.ok ? await r.json() : null);
       } catch { linkCards.set(u, null); }
     }
