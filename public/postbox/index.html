@@ -2049,6 +2049,7 @@ $("labelRow").addEventListener("click", async (e) => {
     await save();
     return;
   }
+  if (e.target.closest("[data-lmanage]")) { renderCatPanel(); $("catPanel").style.display = "flex"; return; }
   if (e.target.closest("[data-lnew]")) { await createLabelFlow(true); }
 });
 
