@@ -112,8 +112,13 @@ Deno.serve(async (req) => {
     // A wrong @mention tags a real stranger, so the roster is a closed list, not a hint.
     system += "\n\nThe ONLY X handles you may use are the ones listed here:\n" +
       String(ws.ai_handles).slice(0, 2000) +
-      "\nNever write an @handle that is not on that list or already in the author's text. " +
-      "If you want to credit someone who is not listed, use their plain name with no @.";
+      "\nA name may be written several ways on that list (real name, nickname, alias) — they all point at the " +
+      "one handle beside them.\n" +
+      "Never write an @handle that is not on that list or already in the author's text. " +
+      "If you want to credit someone who is not listed, use their plain name with no @.\n" +
+      "Tag each account AT MOST ONCE across the whole post or thread, at its first mention. " +
+      "Every mention after that uses the plain name with no @. If the author's own text already tags someone, " +
+      "that counts as the one mention — do not add another.";
   }
 
   // Teammate comments on the draft, passed through as editing direction.
