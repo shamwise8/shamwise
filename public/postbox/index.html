@@ -1019,7 +1019,21 @@ if (TEAM_MODE) {
     renderPreview();
     toast("Logo saved");
   });
-  $("brandTheme").addEventListener("change", () => applyTheme($("brandTheme").value));
+  // Theme applies instantly, so it has to persist instantly too — otherwise it
+  // looks saved, and Save feels redundant right up until the next refresh.
+  $("brandTheme").addEventListener("change", async () => {
+    const theme = $("brandTheme").value, before = brand.theme;
+    applyTheme(theme);
+    const { error } = await store.sb.from("workspaces").update({ theme }).eq("id", WS);
+    if (error) {
+      applyTheme(before);
+      $("brandTheme").value = before;
+      toast("Theme not saved: " + error.message);
+      return;
+    }
+    brand.theme = theme;
+    toast("Theme saved");
+  });
   $("brandSave").addEventListener("click", async () => {
     const handle = $("brandHandle").value.trim();
     const name = $("brandName").value.trim();
