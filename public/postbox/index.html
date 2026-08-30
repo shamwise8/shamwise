@@ -341,6 +341,7 @@
       <div id="bulkBar" style="display:none; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); background:var(--panel2)">
         <span id="bulkCount" style="font-size:12.5px; color:var(--muted); flex:1"></span>
         <button class="small ghost" id="bulkAll">All</button>
+        <button class="small" id="bulkReview" title="Share selected for review behind an access key">🔐 Review link</button>
         <button class="small ghost" id="bulkDel" title="Delete selected">🗑 Delete</button>
         <button class="small ghost" id="bulkCancel">Done</button>
       </div>
@@ -415,6 +416,35 @@
   </div>
 </div>
 
+<div id="revPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:50; align-items:center; justify-content:center; padding:16px">
+  <div class="card" style="max-width:460px; width:100%">
+    <h1 style="font-size:17px; margin-bottom:4px">🔐 Review link</h1>
+    <p style="font-size:13px">Share <b id="revCount"></b> behind an access key. Whoever opens it needs the key — it is not a public link.</p>
+    <div id="revForm">
+      <input type="text" id="revName" placeholder="What is this? e.g. Launch campaign — HQ review" style="width:100%; margin-bottom:8px" />
+      <input type="text" id="revKey" placeholder="Access key (share this separately)" autocomplete="off" style="width:100%" />
+      <div style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap">
+        <select id="revTtl" style="font-size:13px">
+          <option value="">No expiry</option>
+          <option value="7">Expires in 7 days</option>
+          <option value="30" selected>Expires in 30 days</option>
+          <option value="90">Expires in 90 days</option>
+        </select>
+        <button class="small ghost" id="revGen" title="Suggest a key">🎲 Suggest</button>
+        <button class="primary" id="revCreate" style="margin-left:auto">Create link</button>
+      </div>
+    </div>
+    <div id="revDone" style="display:none">
+      <input type="text" id="revUrl" readonly style="width:100%; font-size:12.5px" />
+      <p style="font-size:12.5px; color:var(--muted); margin:10px 0 0">Send the key by a different channel than the link. Anyone with both can read these posts.</p>
+      <div style="display:flex; gap:8px; margin-top:10px">
+        <button class="small" id="revCopyUrl">Copy link</button>
+        <button class="small" id="revCopyBoth">Copy link + key</button>
+      </div>
+    </div>
+    <div style="text-align:right; margin-top:14px"><button class="small ghost" id="revClose">Close</button></div>
+  </div>
+</div>
 <div id="fsPanel">
   <div id="fsBar">
     <b style="font-size:14px">Preview</b>
@@ -746,6 +776,7 @@ function localStore() {
       localStorage.setItem(LS_DRAFTS, JSON.stringify(ds));
     },
     async listComments(draftId) { return (read(LS_COMMENTS)[draftId] || []); },
+    async createReviewSet() { throw new Error("Review links need a shared workspace"); },
     async markRead() {},
     async myMentions() { return []; },
     async addComment(draftId, body, mentions = []) {
@@ -863,6 +894,12 @@ async function supabaseStore() {
     async addComment(draftId, body, mentions = []) {
       const { error } = await sb.from("comments").insert({ workspace_id: WS, draft_id: draftId, author: me, body, mentions });
       if (error) throw error;
+    },
+    async createReviewSet(name, key, ids, ttl) {
+      const { data, error } = await sb.rpc("create_review_set",
+        { ws: WS, nm: name, key, ids, ttl_days: ttl });
+      if (error) throw error;
+      return data;
     },
     async markRead(draftId) {
       await sb.from("comment_reads").upsert({ draft_id: draftId, email: me, read_at: new Date().toISOString() });
@@ -2128,6 +2165,54 @@ $("bulkAll").addEventListener("click", () => {
   rows.forEach((d) => allOn ? selected.delete(d.id) : selected.add(d.id));
   renderBulk(); renderList();
 });
+// Review links — a batch of drafts behind a key the sharer sets.
+let revIds = [];
+$("bulkReview").addEventListener("click", (e) => {
+  e.preventDefault();
+  if (!selected.size) { toast("Select some drafts first"); return; }
+  revIds = [...selected];
+  $("revCount").textContent = `${revIds.length} post${revIds.length === 1 ? "" : "s"}`;
+  $("revName").value = "";
+  $("revKey").value = "";
+  $("revForm").style.display = "";
+  $("revDone").style.display = "none";
+  $("revPanel").style.display = "flex";
+});
+const closeRev = () => { $("revPanel").style.display = "none"; };
+$("revClose").addEventListener("click", (e) => { e.preventDefault(); closeRev(); });
+$("revPanel").addEventListener("click", (e) => { if (e.target === $("revPanel")) closeRev(); });
+$("revGen").addEventListener("click", (e) => {
+  e.preventDefault();
+  const words = ["amber","harbor","cobalt","willow","ember","quartz","tundra","lantern","marble","cedar"];
+  const pick = () => words[crypto.getRandomValues(new Uint32Array(1))[0] % words.length];
+  $("revKey").value = `${pick()}-${pick()}-${crypto.getRandomValues(new Uint32Array(1))[0] % 900 + 100}`;
+});
+$("revCreate").addEventListener("click", async (e) => {
+  e.preventDefault();
+  const key = $("revKey").value.trim();
+  if (key.length < 4) { toast("Access key must be at least 4 characters"); return; }
+  $("revCreate").disabled = true;
+  let tok;
+  try {
+    tok = await store.createReviewSet($("revName").value.trim() || "Review", key, revIds,
+      $("revTtl").value ? +$("revTtl").value : null);
+  } catch (err) { toast("Could not create: " + err.message); $("revCreate").disabled = false; return; }
+  $("revCreate").disabled = false;
+  $("revUrl").value = `${location.origin}/postbox/r/?t=${tok}`;
+  $("revForm").style.display = "none";
+  $("revDone").style.display = "";
+  selected.clear(); selecting = false; renderBulk(); renderList();
+});
+$("revCopyUrl").addEventListener("click", async (e) => {
+  e.preventDefault();
+  await navigator.clipboard.writeText($("revUrl").value); toast("Link copied");
+});
+$("revCopyBoth").addEventListener("click", async (e) => {
+  e.preventDefault();
+  await navigator.clipboard.writeText(`${$("revUrl").value}\nAccess key: ${$("revKey").value.trim()}`);
+  toast("Link and key copied");
+});
+
 $("bulkDel").addEventListener("click", async () => {
   if (!selected.size) { toast("Nothing selected"); return; }
   const lockedHit = [...selected].filter((id) => (drafts.find((d) => d.id === id) || {}).locked);
