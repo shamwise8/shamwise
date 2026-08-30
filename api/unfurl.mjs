@@ -97,7 +97,9 @@ async function fetchMeta(url) {
     let image = pick(html, "og:image:secure_url", "og:image", "twitter:image");
     if (image) { try { image = new URL(decode(image), safe).href; } catch { image = ""; } }
     const card = pick(html, "twitter:card");
-    if (!title && !image) return null;
+    // A blank or whitespace-only title is no title — KBank serves "<title> </title>"
+    // with no OG tags, which used to render as an empty card.
+    if (!title.trim() && !image) return null;
 
     const st = safe.href.match(X_STATUS);
     if (st) {
@@ -123,7 +125,9 @@ async function fetchMeta(url) {
         video: hasVideo,
       };
     }
-    return { url: safe.href, domain: safe.hostname.replace(/^www\./, ""), title, desc, image, large: card === "summary_large_image" };
+    if (!title.trim() && !desc.trim() && !image) return null;
+    return { url: safe.href, domain: safe.hostname.replace(/^www\./, ""),
+             title: title.trim(), desc: desc.trim(), image, large: card === "summary_large_image" };
   }
   return null;
 }
