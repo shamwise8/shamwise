@@ -419,7 +419,9 @@
   <div id="fsBar">
     <b style="font-size:14px">Preview</b>
     <span id="fsMeta" style="color:var(--dim); font-size:12.5px"></span>
-    <button class="small ghost" id="fsClose" style="margin-left:auto">Close</button>
+    <button class="small" id="fsShare" style="margin-left:auto">🔗 Public link</button>
+    <button class="small ghost" id="fsUnshare" style="display:none">Turn off</button>
+    <button class="small ghost" id="fsClose">Close</button>
   </div>
   <div id="fsScroll"><div id="fsThread"></div></div>
 </div>
@@ -1179,7 +1181,7 @@ function renderList() {
   $("list").innerHTML = rows.map((d) => `
     <div class="item ${current && current.id === d.id ? "on" : ""} ${isMine(d) ? "mine" : ""}" data-id="${d.id}">
       ${selecting ? `<input type="checkbox" data-sel="${d.id}" ${selected.has(d.id) ? "checked" : ""} style="float:right; margin-left:8px" />` : ""}
-      <div class="t">${(Array.isArray(d.labels) && d.labels.length ? `<span class="ldots">${d.labels.map((id) => { const l = labelById(id); return l ? `<span class="ldot" style="background:${colorOf(l)}" title="${esc(l.name)}"></span>` : ""; }).join("")}</span>` : "")}${mentionDrafts.has(d.id) ? `<span title="You were mentioned in a comment" style="margin-right:4px">🔔</span>` : ""}${d.locked ? `<span title="Locked" style="margin-right:4px">🔒</span>` : ""}${esc(d.title || firstLine(d.content) || "Untitled")}</div>
+      <div class="t">${(Array.isArray(d.labels) && d.labels.length ? `<span class="ldots">${d.labels.map((id) => { const l = labelById(id); return l ? `<span class="ldot" style="background:${colorOf(l)}" title="${esc(l.name)}"></span>` : ""; }).join("")}</span>` : "")}${mentionDrafts.has(d.id) ? `<span title="You were mentioned in a comment" style="margin-right:4px">🔔</span>` : ""}${d.public_token ? `<span title="Has a public preview link" style="margin-right:4px">🌐</span>` : ""}${d.locked ? `<span title="Locked" style="margin-right:4px">🔒</span>` : ""}${esc(d.title || firstLine(d.content) || "Untitled")}</div>
       <div class="m">
         <span class="dot s-${d.status}"></span>
         <span>${d.status}</span>
@@ -1866,12 +1868,54 @@ function renderFullPreview() {
   }).join("") || `<div style="color:var(--dim); text-align:center; padding:40px">Nothing to preview yet.</div>`;
 }
 const closeFs = () => { $("fsPanel").style.display = "none"; };
+const shareUrl = (tok) => `${location.origin}/postbox/p/?t=${tok}`;
+
+function renderShareState() {
+  const on = !!(current && current.public_token);
+  $("fsShare").textContent = on ? "🔗 Copy public link" : "🔗 Public link";
+  $("fsUnshare").style.display = on ? "" : "none";
+}
+
 function openFs(e) {
   if (e) e.preventDefault();
   renderFullPreview();
+  renderShareState();
   $("fsPanel").style.display = "flex";
   $("fsScroll").scrollTop = 0;
 }
+
+$("fsShare").addEventListener("click", async (e) => {
+  e.preventDefault();
+  if (!current) return;
+  if (!TEAM_MODE) { toast("Public links need a shared workspace"); return; }
+  let tok = current.public_token;
+  if (!tok) {
+    // the link is only worth sharing once the draft it points at is saved
+    if (dirty) { clearTimeout(saveTimer); await save(); }
+    tok = crypto.randomUUID();
+    try { await store.updateDraft(current.id, { public_token: tok }); }
+    catch (err) { toast("Could not create link: " + err.message); return; }
+    current.public_token = tok;
+    const i = drafts.findIndex((d) => d.id === current.id);
+    if (i > -1) drafts[i].public_token = tok;
+  }
+  try { await navigator.clipboard.writeText(shareUrl(tok)); toast("Public link copied — anyone with it can read this thread"); }
+  catch { prompt("Copy this link:", shareUrl(tok)); }
+  renderShareState();
+});
+
+$("fsUnshare").addEventListener("click", async (e) => {
+  e.preventDefault();
+  if (!current || !current.public_token) return;
+  if (!confirm("Turn off the public link? Anyone holding it will stop being able to open this thread.")) return;
+  try { await store.updateDraft(current.id, { public_token: null }); }
+  catch (err) { toast("Could not turn it off: " + err.message); return; }
+  current.public_token = null;
+  const i = drafts.findIndex((d) => d.id === current.id);
+  if (i > -1) drafts[i].public_token = null;
+  renderShareState();
+  toast("Public link turned off");
+});
 $("fsBtn").addEventListener("click", openFs);
 $("fsBtn2").addEventListener("click", openFs);
 $("fsClose").addEventListener("click", (e) => { e.preventDefault(); closeFs(); });
