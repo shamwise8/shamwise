@@ -361,8 +361,9 @@
       </div>
       <div class="comments">
         <div class="clist" id="clist"></div>
-        <form id="commentForm">
-          <input type="text" id="commentBody" placeholder="Leave a note for the team…" autocomplete="off" />
+        <form id="commentForm" style="position:relative">
+          <div id="mentionPop" style="display:none; position:absolute; bottom:100%; left:0; margin-bottom:6px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:4px; min-width:190px; max-height:190px; overflow-y:auto; z-index:12"></div>
+          <input type="text" id="commentBody" placeholder="Leave a note — @name to flag someone" autocomplete="off" />
           <button class="small" type="submit">Send</button>
         </form>
       </div>
@@ -703,7 +704,9 @@ function localStore() {
       localStorage.setItem(LS_DRAFTS, JSON.stringify(ds));
     },
     async listComments(draftId) { return (read(LS_COMMENTS)[draftId] || []); },
-    async addComment(draftId, body) {
+    async markRead() {},
+    async myMentions() { return []; },
+    async addComment(draftId, body, mentions = []) {
       const c = read(LS_COMMENTS);
       (c[draftId] = c[draftId] || []).push({ id: uuid(), author: "you", body, created_at: new Date().toISOString() });
       write(LS_COMMENTS, c);
@@ -815,9 +818,20 @@ async function supabaseStore() {
       if (error) throw error;
       return data;
     },
-    async addComment(draftId, body) {
-      const { error } = await sb.from("comments").insert({ workspace_id: WS, draft_id: draftId, author: me, body });
+    async addComment(draftId, body, mentions = []) {
+      const { error } = await sb.from("comments").insert({ workspace_id: WS, draft_id: draftId, author: me, body, mentions });
       if (error) throw error;
+    },
+    async markRead(draftId) {
+      await sb.from("comment_reads").upsert({ draft_id: draftId, email: me, read_at: new Date().toISOString() });
+    },
+    async myMentions() {
+      const { data: cs } = await sb.from("comments")
+        .select("draft_id, created_at").eq("workspace_id", WS).contains("mentions", [me]);
+      if (!cs || !cs.length) return [];
+      const { data: rs } = await sb.from("comment_reads").select("draft_id, read_at").eq("email", me);
+      const seen = Object.fromEntries((rs || []).map((r) => [r.draft_id, r.read_at]));
+      return [...new Set(cs.filter((c) => !seen[c.draft_id] || c.created_at > seen[c.draft_id]).map((c) => c.draft_id))];
     },
     onChange(cb) {
       sb.channel("postbox")
@@ -1125,7 +1139,7 @@ function renderList() {
   $("list").innerHTML = rows.map((d) => `
     <div class="item ${current && current.id === d.id ? "on" : ""} ${isMine(d) ? "mine" : ""}" data-id="${d.id}">
       ${selecting ? `<input type="checkbox" data-sel="${d.id}" ${selected.has(d.id) ? "checked" : ""} style="float:right; margin-left:8px" />` : ""}
-      <div class="t">${(Array.isArray(d.labels) && d.labels.length ? `<span class="ldots">${d.labels.map((id) => { const l = labelById(id); return l ? `<span class="ldot" style="background:${colorOf(l)}" title="${esc(l.name)}"></span>` : ""; }).join("")}</span>` : "")}${d.locked ? `<span title="Locked" style="margin-right:4px">🔒</span>` : ""}${esc(d.title || firstLine(d.content) || "Untitled")}</div>
+      <div class="t">${(Array.isArray(d.labels) && d.labels.length ? `<span class="ldots">${d.labels.map((id) => { const l = labelById(id); return l ? `<span class="ldot" style="background:${colorOf(l)}" title="${esc(l.name)}"></span>` : ""; }).join("")}</span>` : "")}${mentionDrafts.has(d.id) ? `<span title="You were mentioned in a comment" style="margin-right:4px">🔔</span>` : ""}${d.locked ? `<span title="Locked" style="margin-right:4px">🔒</span>` : ""}${esc(d.title || firstLine(d.content) || "Untitled")}</div>
       <div class="m">
         <span class="dot s-${d.status}"></span>
         <span>${d.status}</span>
@@ -1883,17 +1897,86 @@ async function loadComments() {
   if (!current) return;
   let rows;
   try { rows = await store.listComments(current.id); } catch { return; }
+  if (mentionDrafts.has(current.id)) {
+    mentionDrafts.delete(current.id);
+    store.markRead(current.id).then(renderList).catch(() => {});
+  } else { store.markRead(current.id).catch(() => {}); }
   $("clist").innerHTML = rows.map((c) => `
-    <div class="comment"><span class="who">${esc(String(c.author).split("@")[0])}</span>${esc(c.body)}
+    <div class="comment"><span class="who">${esc(String(c.author).split("@")[0])}</span>${hiMentions(c.body)}
     <span class="when">${fmtWhen(c.created_at)}</span></div>`).join("");
   $("clist").scrollTop = $("clist").scrollHeight;
 }
+// @mentions — a handle is the member's name (or email local part) with spaces removed.
+const mHandle = (m) => (m.name || String(m.email).split("@")[0]).replace(/\s+/g, "");
+let mentionDrafts = new Set();
+
+function hiMentions(body) {
+  return esc(body || "").replace(/@([A-Za-z0-9._-]+)/g, (full, h) => {
+    const m = members.find((x) => mHandle(x).toLowerCase() === h.toLowerCase());
+    if (!m) return full;
+    const me = m.email.toLowerCase() === String(myEmail).toLowerCase();
+    return `<b style="color:${me ? "var(--accent)" : "var(--muted)"}">${full}</b>`;
+  });
+}
+const parseMentions = (body) => [...new Set(
+  [...(body || "").matchAll(/@([A-Za-z0-9._-]+)/g)]
+    .map(([, h]) => members.find((x) => mHandle(x).toLowerCase() === h.toLowerCase()))
+    .filter(Boolean).map((m) => m.email))];
+
+async function refreshMentions() {
+  try { mentionDrafts = new Set(await store.myMentions()); } catch { mentionDrafts = new Set(); }
+  renderList();
+}
+
+let mIdx = 0;
+function mentionQuery() {
+  const el = $("commentBody"), upto = el.value.slice(0, el.selectionStart ?? el.value.length);
+  const m = upto.match(/(?:^|\s)@([A-Za-z0-9._-]*)$/);
+  return m ? m[1] : null;
+}
+function renderMentionPop() {
+  const q = mentionQuery(), pop = $("mentionPop");
+  if (q === null) { pop.style.display = "none"; return; }
+  const hits = members.filter((m) => !m.hidden && mHandle(m).toLowerCase().startsWith(q.toLowerCase())).slice(0, 6);
+  if (!hits.length) { pop.style.display = "none"; return; }
+  if (mIdx >= hits.length) mIdx = 0;
+  pop.innerHTML = hits.map((m, i) => `
+    <button type="button" data-mention="${esc(m.email)}" style="display:block; width:100%; text-align:left; background:${i === mIdx ? "var(--panel)" : "transparent"}; border:0; padding:6px 8px; border-radius:6px; font-size:13px; color:var(--text)">
+      @${esc(mHandle(m))} <span style="color:var(--dim)">${esc(m.name || m.email.split("@")[0])}</span>
+    </button>`).join("");
+  pop.style.display = "block";
+}
+function applyMention(email) {
+  const m = members.find((x) => x.email === email); if (!m) return;
+  const el = $("commentBody"), pos = el.selectionStart ?? el.value.length;
+  const before = el.value.slice(0, pos).replace(/@[A-Za-z0-9._-]*$/, "@" + mHandle(m) + " ");
+  el.value = before + el.value.slice(pos);
+  el.setSelectionRange(before.length, before.length);
+  $("mentionPop").style.display = "none";
+  el.focus();
+}
+$("commentBody").addEventListener("input", () => { mIdx = 0; renderMentionPop(); });
+$("commentBody").addEventListener("keydown", (e) => {
+  if ($("mentionPop").style.display === "none") return;
+  const btns = [...$("mentionPop").querySelectorAll("[data-mention]")];
+  if (e.key === "ArrowDown") { e.preventDefault(); mIdx = (mIdx + 1) % btns.length; renderMentionPop(); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); mIdx = (mIdx - 1 + btns.length) % btns.length; renderMentionPop(); }
+  else if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); applyMention(btns[mIdx].dataset.mention); }
+  else if (e.key === "Escape") { $("mentionPop").style.display = "none"; }
+});
+$("mentionPop").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-mention]"); if (b) applyMention(b.dataset.mention);
+});
+
 $("commentForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const body = $("commentBody").value.trim();
   if (!body || !current) return;
   $("commentBody").value = "";
-  try { await store.addComment(current.id, body); } catch (err) { toast("Comment failed: " + err.message); return; }
+  const mentioned = parseMentions(body);
+  try { await store.addComment(current.id, body, mentioned); }
+  catch (err) { toast("Comment failed: " + err.message); return; }
+  if (mentioned.length) toast(`Flagged ${mentioned.map(memberName).join(", ")}`);
   loadComments();
 });
 
@@ -1979,6 +2062,7 @@ $("sortBy").addEventListener("change", () => {
 
 async function loadMembers() {
   try { members = await store.listMembers(); } catch (e) { members = []; }
+  refreshMentions();
   $("assignee").innerHTML = `<option value="">👤 Unassigned</option>` +
     members.map((m) => `<option value="${esc(m.email)}">${esc(m.name || m.email.split("@")[0])}</option>`).join("");
   if (current) $("assignee").value = current.assignee || "";
@@ -2274,7 +2358,7 @@ document.addEventListener("click", (e) => { if (!e.target.closest("#reschedPop")
 await loadLabels();
 await loadMembers();
 await refresh();
-try { store.onChange(() => { refresh(); if (current) loadComments(); }); }
+try { store.onChange(() => { refresh(); refreshMentions(); if (current) loadComments(); }); }
 catch (e) { console.warn("realtime unavailable:", e); }
 // open a shared draft if one was linked
 if (window.__sharedDenied) {

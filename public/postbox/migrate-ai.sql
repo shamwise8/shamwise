@@ -53,3 +53,20 @@ alter table postbox.workspaces add column if not exists ai_handles text;
 
 -- Protect finished drafts from deletion; a category is cheap to recreate, a thread is not.
 alter table postbox.drafts add column if not exists locked boolean not null default false;
+
+-- @mentions in comments, plus per-user read state so the badge can clear.
+alter table postbox.comments add column if not exists mentions text[] not null default '{}';
+create index if not exists comments_mentions on postbox.comments using gin (mentions);
+
+create table if not exists postbox.comment_reads (
+  draft_id uuid not null references postbox.drafts(id) on delete cascade,
+  email    text not null,
+  read_at  timestamptz not null default now(),
+  primary key (draft_id, email)
+);
+alter table postbox.comment_reads enable row level security;
+grant all on postbox.comment_reads to anon, authenticated, service_role;
+drop policy if exists reads_own on postbox.comment_reads;
+create policy reads_own on postbox.comment_reads for all to authenticated
+  using (lower(email) = lower(auth.jwt() ->> 'email'))
+  with check (lower(email) = lower(auth.jwt() ->> 'email'));
