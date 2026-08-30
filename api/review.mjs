@@ -97,8 +97,11 @@ const CSS = `
   .qt .qa img { width:100%; height:100%; object-fit:cover; display:block; }
   .qt .qn { font-weight:700; }
   .qt .qd { color:var(--dim); }
-  .qt .qx { padding:4px 12px 10px; font-size:14px; line-height:1.4; white-space:pre-wrap;
-            overflow:hidden; display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; }
+  /* padding lives on the wrapper: with it on the clamped box, a 7th line bleeds
+     into the padding and gets sliced in half by the media below */
+  .qt .qxw { padding:4px 12px 10px; }
+  .qt .qx { font-size:14px; line-height:1.4; white-space:pre-wrap; overflow:hidden;
+            display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; }
   .qt .qm { position:relative; }
   .qt .qm img { width:100%; display:block; max-height:400px; object-fit:cover; }
   .qt .qp { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
@@ -159,7 +162,7 @@ const shell = (title, theme, body) => `<!doctype html>
         el.outerHTML = '<a class="qt" href="' + esc(m.url) + '" target="_blank" rel="noopener noreferrer">' +
           '<div class="qh">' + (m.avatar ? '<span class="qa"><img src="' + esc(m.avatar) + '" alt="" onerror="this.parentNode.remove()" /></span>' : "") +
           '<span class="qn">' + esc(m.author) + '</span><span class="qd">' + esc(m.handle) + '</span></div>' +
-          (m.text ? '<div class="qx">' + esc(m.text) + '</div>' : "") +
+          (m.text ? '<div class="qxw"><div class="qx">' + esc(m.text) + '</div></div>' : "") +
           (m.image ? '<div class="qm"><img src="' + esc(m.image) + '" alt="" loading="lazy" onerror="this.parentNode.remove()" />' +
             (m.video ? '<span class="qp"><i>&#9654;</i></span>' : "") + '</div>' : "") + '</a>';
       } else {
