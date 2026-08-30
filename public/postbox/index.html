@@ -16,7 +16,7 @@
   :root {
     --bg: #0f0f10; --panel: #17171a; --panel2: #1e1e22; --line: #2a2a2f;
     --ink: #f2f2f2; --muted: #9a9aa2; --dim: #66666e;
-    --accent: #e84142; --on-accent: #fff; --ok: #34d399; --warn: #fbbf24; --bad: #f87171;
+    --accent: #e84142; --on-accent: #fff; --link: #1d9bf0; --ok: #34d399; --warn: #fbbf24; --bad: #f87171;
     --idea: #9a9aa2; --draft: #60a5fa; --review: #fbbf24; --approved: #34d399; --posted: #a78bfa;
   }
   /* ---------- themes ---------- */
@@ -133,6 +133,9 @@
                align-items: center; justify-content: center; background: rgba(0,0,0,.72); border: 0;
                color: #fff; border-radius: 99px; font-size: 12px; line-height: 1; padding: 0; cursor: pointer; }
   .media .rm:hover { background: rgba(0,0,0,.9); }
+
+  .tl { color: var(--link); text-decoration: none; }
+  .tl:hover { text-decoration: underline; }
 
   /* link card — X shows one for the last link, and none when media is attached */
   .lcard { margin-top:12px; border:1px solid var(--line); border-radius:16px; overflow:hidden;
@@ -1890,7 +1893,7 @@ function renderPreview() {
 
     return `<div class="tweet ${over ? "over" : ""}" draggable="true" data-seg="${i}">
       <div class="who">${avMark()}<span class="nm">${esc(avName())}</span>${avHandle() ? `<span class="hd">${esc(avHandle())}</span>` : ""}<span class="hd">${segs.length > 1 ? "· " + (i + 1) + "/" + segs.length : ""}</span></div>
-      <div class="body">${esc(s)}</div>
+      <div class="body">${linkify(s)}</div>
       ${thumbs ? `<div class="media n${Math.min(mine.length, 4)}">${thumbs}</div>`
         : (lastLink(s) ? `<div data-card="${esc(lastLink(s))}"></div>` : "")}
       <div class="foot">
@@ -1904,6 +1907,26 @@ function renderPreview() {
   }).join("") || `<div style="color:var(--dim)">Start typing to preview.</div>`;
   fillLinkCards($("tweets"));
 }
+// @handles, #hashtags and URLs render the way X shows them: blue and clickable.
+function linkify(text) {
+  const re = /(https?:\/\/[^\s<]+)|(^|[^\w@#\/])([@#])([A-Za-z0-9_]{1,30})/g;
+  let out = "", last = 0, m;
+  while ((m = re.exec(text))) {
+    const [full, url, pre, sigil, word] = m;
+    out += esc(text.slice(last, m.index));
+    if (url) {
+      const clean = url.replace(/[.,;:!?)\]]+$/, "");
+      out += `<a class="tl" href="${esc(clean)}" target="_blank" rel="noopener noreferrer">${esc(clean)}</a>`
+           + esc(url.slice(clean.length));
+    } else {
+      const href = sigil === "@" ? `https://x.com/${word}` : `https://x.com/hashtag/${word}`;
+      out += esc(pre) + `<a class="tl" href="${href}" target="_blank" rel="noopener noreferrer">${sigil}${esc(word)}</a>`;
+    }
+    last = m.index + full.length;
+  }
+  return out + esc(text.slice(last));
+}
+
 // Link cards. X shows one card, for the last link in the tweet, and none at all
 // when the tweet has media — so we mirror that rather than carding every URL.
 const linkCards = new Map();   // url -> meta | null (null = no card available)
@@ -1957,7 +1980,7 @@ function renderFullPreview() {
       <div class="fs-rail">${avMark()}${i < segs.length - 1 ? `<div class="fs-line"></div>` : ""}</div>
       <div class="fs-main">
         <div class="fs-who"><span class="nm">${esc(avName())}</span>${avHandle() ? `<span class="hd">${esc(avHandle())}</span>` : ""}</div>
-        <div class="fs-body">${esc(seg)}</div>
+        <div class="fs-body">${linkify(seg)}</div>
         ${cells ? `<div class="media n${mine.length}">${cells}</div>`
           : (lastLink(seg) ? `<div data-card="${esc(lastLink(seg))}"></div>` : "")}
         ${n > 280 ? `<div class="fs-over">${n}/280 — too long to post</div>` : ""}

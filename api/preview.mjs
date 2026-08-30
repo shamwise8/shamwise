@@ -6,6 +6,27 @@ const SB_ANON = "sb_publishable_4KO7yLJE3bX-CisShQbokw_3Ny0cS5a";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// @handles, #hashtags and URLs, rendered the way X shows them.
+function linkify(text) {
+  const re = /(https?:\/\/[^\s<]+)|(^|[^\w@#\/])([@#])([A-Za-z0-9_]{1,30})/g;
+  let out = "", last = 0, m;
+  while ((m = re.exec(text))) {
+    const [full, url, pre, sigil, word] = m;
+    out += esc(text.slice(last, m.index));
+    if (url) {
+      const clean = url.replace(/[.,;:!?)\]]+$/, "");
+      out += `<a class="tl" href="${esc(clean)}" target="_blank" rel="noopener noreferrer">${esc(clean)}</a>`
+           + esc(url.slice(clean.length));
+    } else {
+      const href = sigil === "@" ? `https://x.com/${word}` : `https://x.com/hashtag/${word}`;
+      out += esc(pre) + `<a class="tl" href="${href}" target="_blank" rel="noopener noreferrer">${sigil}${esc(word)}</a>`;
+    }
+    last = m.index + full.length;
+  }
+  return out + esc(text.slice(last));
+}
+
 const segments = (t) => String(t || "")
   .split(/\n\s*---\s*\n|\n[ \t]*\n[ \t]*\n+/).map((x) => x.trim()).filter(Boolean);
 const clip = (s, n) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
@@ -30,7 +51,7 @@ ${image ? `<meta property="og:image" content="${esc(image)}" />
 <meta name="twitter:description" content="${esc(desc)}" />
 <meta name="description" content="${esc(desc)}" />
 <style>
-  :root { --bg:#0d0d0f; --panel2:#1b1b1f; --line:#26262c; --text:#e9e9ee; --dim:#8a8a94; --accent:#e84142; }
+  :root { --bg:#0d0d0f; --panel2:#1b1b1f; --line:#26262c; --text:#e9e9ee; --dim:#8a8a94; --link:#1d9bf0; --accent:#e84142; }
   html[data-theme="solana"]    { --accent:#9945ff; --bg:#0c0a12; --panel2:#1b1622; --line:#2a2136; }
   html[data-theme="bitcoin"]   { --accent:#f7931a; }
   html[data-theme="ethereum"]  { --accent:#627eea; }
@@ -55,6 +76,8 @@ ${image ? `<meta property="og:image" content="${esc(image)}" />
   .who { display:flex; gap:5px; align-items:baseline; flex-wrap:wrap; }
   .who .nm { font-weight:700; }
   .who .hd { color:var(--dim); }
+  .tl { color:var(--link); text-decoration:none; }
+  .tl:hover { text-decoration:underline; }
   .body { white-space:pre-wrap; word-wrap:break-word; margin-top:2px; }
   .media { margin-top:12px; border-radius:16px; overflow:hidden; border:1px solid var(--line);
            display:grid; gap:2px; background:var(--line); }
@@ -129,7 +152,7 @@ export default async function handler(req, res) {
       <div class="rail">${mark}${i < segs.length - 1 ? `<div class="line"></div>` : ""}</div>
       <div class="main">
         <div class="who"><span class="nm">${esc(name)}</span>${data.handle ? `<span class="hd">${esc(data.handle)}</span>` : ""}</div>
-        <div class="body">${esc(seg)}</div>
+        <div class="body">${linkify(seg)}</div>
         ${cells ? `<div class="media n${mine.length}">${cells}</div>` : ""}
       </div></div>`;
   }).join("");
