@@ -388,7 +388,7 @@
       <div class="lrow" id="labelRow"></div>
       <div class="ed-body">
         <div class="write">
-          <textarea id="content" placeholder="Write your post…&#10;&#10;Split a thread with --- on its own line."></textarea>
+          <textarea id="content" placeholder="Write your post…&#10;&#10;Press ＋ Tweet (or ⌘↵) to start the next tweet in a thread."></textarea>
         </div>
         <div class="preview">
           <h3 style="display:flex; align-items:center; gap:8px">Preview <span id="threadInfo"></span>
@@ -1822,8 +1822,8 @@ $("content").addEventListener("keydown", (e) => {
 (function setHint() {
   const touch = window.matchMedia("(max-width: 720px)").matches || ("ontouchstart" in window);
   $("hintText").innerHTML = touch
-    ? "or leave <b>2 empty lines</b> to start the next tweet · links = 23 chars · red = over 280"
-    : "or press <b>⌘↵</b> / leave <b>2 empty lines</b> · links count as 23 chars · red = over 280";
+    ? "＋ Tweet or <b>2 empty lines</b> starts the next tweet · links = 23 chars · red = over 280"
+    : "＋ Tweet, <b>⌘↵</b> or <b>2 empty lines</b> starts the next tweet · links count as 23 chars · red = over 280";
 })();
 
 for (const [id, field] of [["title", "title"], ["content", "content"]]) {
