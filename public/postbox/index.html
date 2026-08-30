@@ -118,10 +118,21 @@
   .tweet .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: var(--dim); }
   .tweet .count.over { color: var(--bad); font-weight: 700; }
   .tweet.over { border-color: var(--bad); }
-  .thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .thumb { position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
-  .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .thumb .rm { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,.7); border: 0; color: #fff; border-radius: 5px; font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; }
+  /* media grid — mirrors how X lays out 1-4 attachments */
+  .media { margin-top: 12px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line);
+           display: grid; gap: 2px; background: var(--line); }
+  .media.n1 { grid-template-columns: 1fr; }
+  .media.n2 { grid-template-columns: 1fr 1fr; aspect-ratio: 16 / 9; }
+  .media.n3, .media.n4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; aspect-ratio: 16 / 9; }
+  .media.n3 .cell:first-child { grid-row: span 2; }
+  .media .cell { position: relative; overflow: hidden; background: var(--panel2); min-height: 0; }
+  .media .cell img, .media .cell video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* a lone image keeps its own proportions, the way X shows it */
+  .media.n1 .cell img, .media.n1 .cell video { height: auto; max-height: 510px; }
+  .media .rm { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; display: flex;
+               align-items: center; justify-content: center; background: rgba(0,0,0,.72); border: 0;
+               color: #fff; border-radius: 99px; font-size: 12px; line-height: 1; padding: 0; cursor: pointer; }
+  .media .rm:hover { background: rgba(0,0,0,.9); }
 
   /* comments */
   .comments { border-top: 1px solid var(--line); background: var(--panel); max-height: 30%; display: flex; flex-direction: column; }
@@ -1777,16 +1788,18 @@ function renderPreview() {
   const segMedia = (i) => media.filter((m) => Math.min(m.seg, segs.length - 1) === i);
   $("tweets").innerHTML = segs.map((s, i) => {
     const n = tweetLen(s), over = n > 280;
-    const thumbs = segMedia(i).map((m) => `
-      <span class="thumb">${m.type === "video"
-        ? `<video src="${m.url}" muted></video>`
+    const mine = segMedia(i);
+    const thumbs = mine.slice(0, 4).map((m) => `
+      <span class="cell">${m.type === "video"
+        ? `<video src="${m.url}" muted playsinline></video>`
         : `<img src="${m.url}" alt="" loading="lazy" />`}
         <button class="rm" data-rmmedia="${esc(m.id)}" title="Remove">✕</button>
       </span>`).join("");
+
     return `<div class="tweet ${over ? "over" : ""}" draggable="true" data-seg="${i}">
       <div class="who">${avMark()}<span class="nm">${esc(avName())}</span>${avHandle() ? `<span class="hd">${esc(avHandle())}</span>` : ""}<span class="hd">${segs.length > 1 ? "· " + (i + 1) + "/" + segs.length : ""}</span></div>
       <div class="body">${esc(s)}</div>
-      ${thumbs ? `<div class="thumbs">${thumbs}</div>` : ""}
+      ${thumbs ? `<div class="media n${Math.min(mine.length, 4)}">${thumbs}</div>` : ""}
       <div class="foot">
         <span></span>
         <span style="display:flex;gap:10px;align-items:center">
