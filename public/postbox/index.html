@@ -418,6 +418,7 @@
       <div class="hint" id="actionBar" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
         <button class="small" id="addTweet" title="Start the next tweet">＋ Tweet</button>
         <button class="small" id="aiBtn" title="Rewrite with AI">✨ Rewrite</button>
+        <button class="small" id="xPost" title="Publish this thread to X" style="display:none">𝕏 Post</button>
         <button class="small ghost m-only" id="togglePreview" title="Preview">👁 Preview</button>
         <button class="small ghost" id="fsBtn" title="Full-screen preview of the whole thread">⛶ Full preview</button>
         <button class="small m-only" id="mCopy" title="Copy thread">📋</button>
@@ -570,6 +571,12 @@
       <textarea id="brandCtx" rows="3" placeholder="How this account sounds. e.g. Plain English, no hype words. We report what shipped, not what might. Never use rocket or fire emoji." style="width:100%; font-size:13px; line-height:1.45"></textarea>
       <textarea id="brandHandles" rows="2" placeholder="Handles the AI may tag, one per line &#10;Avalanche @avax&#10;team1 @AvaxTeam1&#10;Sirada/Canny @sirada_l" style="width:100%; font-size:13px; line-height:1.45; margin-top:6px"></textarea>
       <p style="font-size:12px; color:var(--dim); margin:6px 0 0">The AI can only tag handles on this list. Anyone else gets their plain name, never a guessed @.</p>
+      <div style="font-size:12px; color:var(--dim); letter-spacing:.08em; text-transform:uppercase; margin:14px 0 6px">X account — posts publish as this</div>
+      <div id="xBox" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13px">
+        <span id="xState" style="color:var(--muted)">Checking…</span>
+        <button class="small" id="xConnect" style="display:none">Connect X</button>
+        <button class="small ghost" id="xDisconnect" style="display:none">Disconnect</button>
+      </div>
     </div>
     <input type="file" id="brandLogoFile" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" />
     <h1 style="font-size:17px; margin-bottom:4px">Team</h1>
@@ -1666,6 +1673,109 @@ function insertThreadBreak() {
 }
 $("addTweet").addEventListener("click", (e) => { e.preventDefault(); insertThreadBreak(); });
 
+// ------------------------------------------------------------------ X posting
+let xAcc = null;   // {handle,name,avatar_url} or null
+const FN = (name) => cfg.supabaseUrl + "/functions/v1/" + name;
+
+async function fnCall(name, body) {
+  const { data: { session } } = await store.sb.auth.getSession();
+  const r = await fetch(FN(name), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` },
+    body: JSON.stringify(body),
+  });
+  const data = await r.json().catch(() => ({}));
+  return { ok: r.ok, status: r.status, data };
+}
+
+async function loadXAccount() {
+  if (!TEAM_MODE) return;
+  try {
+    const { data } = await store.sb.rpc("x_connection", { ws: WS });
+    xAcc = data || null;
+  } catch { xAcc = null; }
+  renderXState();
+}
+function renderXState() {
+  const st = $("xState"), isAdmin = myRole === "admin";
+  if (st) {
+    st.textContent = xAcc ? `Connected: ${xAcc.handle}` : "No X account connected";
+    st.style.color = xAcc ? "var(--ok)" : "var(--muted)";
+    $("xConnect").style.display = !xAcc && isAdmin ? "" : "none";
+    $("xConnect").textContent = "Connect X";
+    $("xDisconnect").style.display = xAcc && isAdmin ? "" : "none";
+  }
+  $("xPost").style.display = xAcc ? "" : "none";
+}
+
+$("xConnect") && $("xConnect").addEventListener("click", async (e) => {
+  e.preventDefault();
+  $("xConnect").disabled = true;
+  const { ok, data } = await fnCall("x-connect", { workspace: WS });
+  $("xConnect").disabled = false;
+  if (!ok || !data.url) { toast(data.error || "Could not start the X connection"); return; }
+  location.href = data.url;
+});
+$("xDisconnect") && $("xDisconnect").addEventListener("click", async (e) => {
+  e.preventDefault();
+  if (!confirm(`Disconnect ${xAcc.handle}? Drafts can no longer be posted from this workspace until you reconnect.`)) return;
+  try { await store.sb.rpc("x_disconnect", { ws: WS }); } catch (err) { toast("Failed: " + err.message); return; }
+  xAcc = null; renderXState(); toast("X account disconnected");
+});
+
+// X bills per post, and more for posts with links — so say the price before sending.
+const estCost = (segs) => {
+  const linky = segs.filter((t) => /(https?:\/\/[^\s]+)|(^|\s)(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/\S*)?/i.test(t)).length;
+  return { linky, plain: segs.length - linky, usd: linky * 0.20 + (segs.length - linky) * 0.015 };
+};
+
+$("xPost").addEventListener("click", async (e) => {
+  e.preventDefault();
+  if (!current) return;
+  if (dirty) { clearTimeout(saveTimer); await save(); }
+  const segs = segments($("content").value);
+  if (!segs.length) { toast("Nothing to post"); return; }
+  const over = segs.filter((t) => tweetLen(t) > 280).length;
+  if (over) { toast(`${over} tweet(s) over 280 — fix those first`); return; }
+  const c = estCost(segs);
+  const msg = `Post this ${segs.length}-tweet thread to X as ${xAcc.handle}?\n\n` +
+    `${c.linky} with links at $0.20, ${c.plain} without at $0.015\n` +
+    `Estimated cost: $${c.usd.toFixed(2)}\n\nThis cannot be undone.`;
+  if (!confirm(msg)) return;
+
+  $("xPost").disabled = true;
+  $("xPost").textContent = "Posting…";
+  const { ok, status, data } = await fnCall("x-post", { draft_id: current.id });
+  $("xPost").disabled = false;
+  $("xPost").textContent = "𝕏 Post";
+
+  if (status === 409) {
+    if (!confirm(`This draft was already posted on ${fmtWhen(data.posted_at)}. Post it again anyway?`)) return;
+    const again = await fnCall("x-post", { draft_id: current.id, confirm_repost: true });
+    if (!again.ok) { toast(again.data.error || "Posting failed"); return; }
+    toast("Posted again"); refresh(); return;
+  }
+  if (!ok) {
+    const partial = data.posted && data.posted.length ? ` — ${data.posted.length} tweet(s) did go out` : "";
+    toast((data.error || "Posting failed") + partial);
+    return;
+  }
+  toast(`Posted ${data.tweets} tweet(s) · ~$${data.est_cost_usd}`);
+  current.status = "posted"; $("status").value = "posted";
+  refresh();
+  if (confirm("Posted. Open it on X?")) window.open(data.url, "_blank", "noopener");
+});
+
+// the OAuth callback sends the browser back here with a result
+(() => {
+  const q = new URLSearchParams(location.search);
+  if (!q.has("x")) return;
+  const msg = q.get("m") || (q.get("x") === "ok" ? "Connected" : "Connection failed");
+  setTimeout(() => toast(msg), 400);
+  q.delete("x"); q.delete("m");
+  history.replaceState({}, "", location.pathname + (q.toString() ? "?" + q : ""));
+})();
+
 // ---------------------------------------------------------------- AI rewrite
 // Calls a Supabase Edge Function; the API key lives there, never in this page.
 const AI_URL = TEAM_MODE ? cfg.supabaseUrl + "/functions/v1/rewrite" : null;
@@ -2564,6 +2674,7 @@ $("sortBy").addEventListener("change", () => {
 async function loadMembers() {
   try { members = await store.listMembers(); } catch (e) { members = []; }
   refreshMentions();
+  loadXAccount();
   $("assignee").innerHTML = `<option value="">👤 Unassigned</option>` +
     members.map((m) => `<option value="${esc(m.email)}">${esc(m.name || m.email.split("@")[0])}</option>`).join("");
   if (current) $("assignee").value = current.assignee || "";
