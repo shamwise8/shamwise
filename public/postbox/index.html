@@ -2949,7 +2949,9 @@ function openReschedPop(d, x, y) {
 $("reschedPop").addEventListener("click", async (e) => {
   const b = e.target.closest("[data-rp]"); if (!b || !popDraft) return;
   const act = b.dataset.rp, d = popDraft;
-  if (act === "open") { closePop(); calOn = false; updateViews(); openDraft(d); return; }
+  // openDraft sets `current`, and updateViews reads it to decide whether the
+  // editor is visible — so it has to run after, not before.
+  if (act === "open") { closePop(); calOn = false; openDraft(d); updateViews(); return; }
   if (act === "clear") { closePop(); await applyReschedule(d, null); return; }
   const base = d.planned_at ? new Date(d.planned_at) : new Date();
   if (act === "mo") base.setMonth(base.getMonth() + 1);
