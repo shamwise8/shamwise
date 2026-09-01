@@ -358,6 +358,9 @@
         <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); cursor:pointer">
           <input type="checkbox" id="mineOnly" /> 👤 Assigned to me
         </label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); cursor:pointer" title="Hide drafts whose planned date has passed. The calendar still shows them.">
+          <input type="checkbox" id="hidePast" /> 🕓 Hide past
+        </label>
         <span id="mineCount" style="font-size:11.5px; color:var(--dim); margin-left:auto"></span>
       </div>
       <div class="filters" id="sortRow" style="gap:6px">
@@ -1264,6 +1267,7 @@ const firstLine = (s) => (s || "").split("\n").find((l) => l.trim()) || "";
 function renderList() {
   const rows = sortDrafts(drafts.filter((d) => (filter === "all" || d.status === filter)
     && (!mineOnly || isMine(d))
+    && (!hidePast || !isPast(d))
     && (!labelFilter || (Array.isArray(d.labels) && d.labels.includes(labelFilter)))));
   const mineTotal = drafts.filter(isMine).length;
   $("mineCount").textContent = mineTotal ? `${mineTotal} assigned to you` : "";
@@ -2635,6 +2639,10 @@ $("bulkDel").addEventListener("click", async () => {
 let labelFilter = null;
 let sortBy = localStorage.getItem("postbox.sortBy") || "planned";
 let mineOnly = localStorage.getItem("postbox.mineOnly") === "1";
+let hidePast = localStorage.getItem("postbox.hidePast") === "1";
+// midnight today — a draft planned for earlier today still counts as current
+const startOfToday = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; };
+const isPast = (d) => !!d.planned_at && new Date(d.planned_at) < startOfToday();
 const STATUS_ORDER = { idea: 0, draft: 1, review: 2, approved: 3, posted: 4 };
 function sortDrafts(rows) {
   const t = (v) => (v ? new Date(v).getTime() : null);
@@ -2659,6 +2667,12 @@ function sortDrafts(rows) {
   });
 }
 $("mineOnly").checked = mineOnly;
+$("hidePast").checked = hidePast;
+$("hidePast").addEventListener("change", () => {
+  hidePast = $("hidePast").checked;
+  try { localStorage.setItem("postbox.hidePast", hidePast ? "1" : "0"); } catch (_) {}
+  renderList();
+});
 $("mineOnly").addEventListener("change", () => {
   mineOnly = $("mineOnly").checked;
   try { localStorage.setItem("postbox.mineOnly", mineOnly ? "1" : "0"); } catch (_) {}
