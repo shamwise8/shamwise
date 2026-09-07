@@ -55,6 +55,11 @@
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 15px; padding: 22px; }
   .card h3 { margin-bottom: 7px; }
   .card p { color: var(--muted); font-size: 14px; }
+  .card.photo { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .card.photo img { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; }
+  .card.photo .body { padding: 18px 20px 20px; }
+  .card.photo .res { margin-top: 10px; font-size: 14px; }
+  .card.photo .res b { color: var(--red); }
   .card .tag { color: var(--red); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; font-weight: 500; }
 
   .photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin-top: 24px; }
@@ -99,26 +104,60 @@
       <div class="stat"><div class="n">129</div><div class="l">members in the Avalanche Thailand community Telegram</div></div>
     </div>
     <div class="grid3">
-      <div class="card">
-        <div class="tag">Mar–Apr 2026</div>
-        <h3>AVAX Builders Bootcamp</h3>
-        <p>A three-week hands-on builder programme in Bangkok. ~45 builders per session.</p>
+      <div class="card photo">
+        <img src="/mediakit/assets/padel-rave-bangkok.jpeg" alt="Padel Rave Bangkok" loading="lazy" />
+        <div class="body">
+          <div class="tag">Aug 2026 · Bel Padel</div>
+          <h3>Padel Rave Bangkok</h3>
+          <p>Padel, live DJ sets and brand activations with Superteam Thailand and Pudgy Penguins.</p>
+          <div class="res"><b>200+</b> attendees · co-host</div>
+        </div>
       </div>
-      <div class="card">
-        <div class="tag">Jun 2026</div>
-        <h3>Team1 × TU Blockchain Club</h3>
-        <p>“Breaking Into Blockchain &amp; AI” — a free bilingual student session with Thammasat University's blockchain club.</p>
+      <div class="card photo">
+        <img src="/Team1KickOff/assets/money2020.jpg" alt="Money 20/20 side event, Bangkok" loading="lazy" />
+        <div class="body">
+          <div class="tag">Apr 2026 · Bangkok</div>
+          <h3>Money 20/20 Side Event</h3>
+          <p>The unofficial side event of Money 20/20 Asia — 270 RSVPs from 370+ requests.</p>
+          <div class="res"><b>140+</b> attendees · <b>4.86/5</b> feedback</div>
+        </div>
       </div>
-      <div class="card">
-        <div class="tag">Apr–Aug 2026</div>
-        <h3>Community &amp; industry events</h3>
-        <p>Money 20/20 side event (140+ attendees, 4.86/5), SEA Blockchain Week panel, and partner activations with Binance TH, Bitkub and Pudgy Penguins.</p>
+      <div class="card photo">
+        <img src="/Team1KickOff/assets/padel-group.jpg" alt="Team1 × Pudgy Padel Night at Sterling, Bangkok" loading="lazy" />
+        <div class="body">
+          <div class="tag">May 2026 · Sterling, SEABW</div>
+          <h3>team1 × Pudgy Padel Night</h3>
+          <p>Invite-only creator night co-hosted with Pudgy Penguins, supported by Bitkub.</p>
+          <div class="res"><b>60+</b> attendees · <b>4.91/5</b> feedback</div>
+        </div>
       </div>
-    </div>
-    <div class="photos">
-      <img src="/Team1KickOff/assets/avalanche-bootcamp.jpg" alt="AVAX Builders Bangkok Bootcamp session" loading="lazy" />
-      <img src="/Team1TUBC/assets/avalanche-speaker.jpg" alt="Workshop speaker session" loading="lazy" />
-      <img src="/Team1KickOff/assets/seabw-panel.jpg" alt="SEA Blockchain Week panel" loading="lazy" />
+      <div class="card photo">
+        <img src="/Team1KickOff/assets/avalanche-bootcamp.jpg" alt="AVAX Builders Bangkok Bootcamp session" loading="lazy" />
+        <div class="body">
+          <div class="tag">Mar–Apr 2026 · Bangkok</div>
+          <h3>AVAX Builders Bootcamp</h3>
+          <p>Three weeks of hands-on builder workshops in Bangkok.</p>
+          <div class="res"><b>~45</b> builders per session</div>
+        </div>
+      </div>
+      <div class="card photo">
+        <img src="/Team1KickOff/assets/seabw-panel.jpg" alt="SEA Blockchain Week panel" loading="lazy" />
+        <div class="body">
+          <div class="tag">May 2026 · SEA Blockchain Week</div>
+          <h3>SEABW Featured Panel</h3>
+          <p>Representing team1 on stage during Southeast Asia's biggest blockchain week.</p>
+          <div class="res">Panel speaker</div>
+        </div>
+      </div>
+      <div class="card photo">
+        <img src="/Team1KickOff/assets/venue-1.jpg" alt="team1 Thailand Kickoff at TUBA Bar" loading="lazy" />
+        <div class="body">
+          <div class="tag">Jun 2026 · TUBA Bar</div>
+          <h3>team1 Thailand Kickoff</h3>
+          <p>Invite-only builder pitch night — 5–6 Bangkok builders on the floor, curated crowd of 40.</p>
+          <div class="res"><b>40</b> spots · invite-only</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
