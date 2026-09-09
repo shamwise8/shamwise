@@ -54,13 +54,26 @@ async function resolveCategory(workspace, name) {
 const server = new McpServer({ name: "postbox", version: "1.0.0" });
 
 server.registerTool("list_workspaces", {
-  description: "List Postbox workspaces (chapters) this server may write to.",
+  description: "List Postbox workspaces (chapters) this server may write to. Use get_workspace for a chapter's house style and handle roster.",
   inputSchema: {},
 }, async () => {
   const { data, error } = await sb.from("workspaces").select("id,name").order("name");
   if (error) throw error;
   const rows = ALLOWED.length ? data.filter((w) => ALLOWED.includes(w.id)) : data;
   return text(rows);
+});
+
+server.registerTool("get_workspace", {
+  description:
+    "Get a workspace's house style (ai_context) and handle roster (ai_handles). " +
+    "Read this before tagging anyone: only use handles from the roster, never invent one.",
+  inputSchema: { workspace: z.string().describe("Workspace id, e.g. team1th") },
+}, async ({ workspace }) => {
+  guard(workspace);
+  const { data, error } = await sb.from("workspaces")
+    .select("id,name,handle,ai_context,ai_handles").eq("id", workspace).single();
+  if (error) throw error;
+  return text(data);
 });
 
 server.registerTool("list_drafts", {

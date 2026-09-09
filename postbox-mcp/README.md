@@ -37,6 +37,7 @@ Leave it unset to allow all (not recommended).
 | Tool | What it does |
 |---|---|
 | `list_workspaces` | Chapters this server may write to |
+| `get_workspace` | A chapter's house style (`ai_context`) and handle roster (`ai_handles`) — read before tagging anyone |
 | `list_drafts` | Drafts in a workspace, each with per-tweet character counts |
 | `get_draft` | One draft in full — read before rewriting |
 | `create_draft` | New draft (defaults to **review** status) |
