@@ -96,6 +96,32 @@
   .dot { width: 8px; height: 8px; border-radius: 99px; flex: none; }
   .s-idea { background: var(--idea); } .s-draft { background: var(--draft); } .s-review { background: var(--review); }
   .s-approved { background: var(--approved); } .s-posted { background: var(--posted); }
+  /* multi-select in the sidebar: a real checklist, not a floated tick */
+  #list .item { display: flex; gap: 10px; align-items: flex-start; }
+  #list .item .ibody { flex: 1; min-width: 0; }
+  #list .item .selbox { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); flex: none; cursor: pointer; }
+  #list .item.picked { background: rgba(232,65,66,.10); box-shadow: inset 3px 0 0 var(--accent); }
+  /* post picker: shared by "new review link" and "add posts" */
+  .pk-top { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  .pk-top input[type="search"] { flex: 1; min-width: 160px; font-size: 13px; }
+  .pk-top label { display: flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .pk-top label input { width: 16px; height: 16px; accent-color: var(--accent); }
+  .pk-n { font-size: 12.5px; color: var(--dim); margin-left: auto; white-space: nowrap; }
+  .pk-list { overflow-y: auto; max-height: 44vh; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+  .pk-row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .pk-row:last-child { border-bottom: 0; }
+  .pk-row:hover { background: var(--panel2); }
+  .pk-row.on { background: rgba(232,65,66,.08); }
+  .pk-row input[type="checkbox"] { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); flex: none; }
+  .pk-body { flex: 1; min-width: 0; }
+  .pk-t { font-weight: 500; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pk-meta { display: flex; gap: 8px; align-items: center; color: var(--dim); font-size: 12px; margin-top: 2px; flex-wrap: wrap; }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  .pk-prev { color: var(--muted); font-size: 12.5px; line-height: 1.45; margin-top: 4px; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .pk-eye { flex: none; padding: 3px 8px; font-size: 12px; }
+  .pk-empty { color: var(--dim); font-size: 12.5px; padding: 14px 12px; }
+  .rv-post { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; margin: 6px 0; }
+  .rv-post .acts { display: flex; gap: 4px; flex: none; }
 
   /* editor */
   #editor { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -374,8 +400,8 @@
         </select>
       </div>
       <div class="filters" id="labelFilters"></div>
-      <div id="bulkBar" style="display:none; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); background:var(--panel2)">
-        <span id="bulkCount" style="font-size:12.5px; color:var(--muted); flex:1"></span>
+      <div id="bulkBar" style="display:none; align-items:center; gap:6px 8px; padding:8px 12px; border-bottom:1px solid var(--line); background:var(--panel2); flex-wrap:wrap">
+        <span id="bulkCount" style="font-size:12.5px; color:var(--muted); flex:1 1 100%"></span>
         <button class="small ghost" id="bulkAll">All</button>
         <button class="small" id="bulkReview" title="Share selected for review behind an access key">🔐 Review link</button>
         <button class="small ghost" id="bulkDel" title="Delete selected">🗑 Delete</button>
@@ -454,18 +480,22 @@
 </div>
 
 <div id="linksPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:52; align-items:center; justify-content:center; padding:16px">
-  <div class="card" style="max-width:560px; width:100%; max-height:88vh; display:flex; flex-direction:column">
-    <h1 style="font-size:17px; margin-bottom:4px">🔐 Review links</h1>
+  <div class="card" style="max-width:720px; width:100%; max-height:90vh; display:flex; flex-direction:column">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px">
+      <h1 style="font-size:17px; margin:0">🔐 Review links</h1>
+      <button class="small primary" id="newRevBtn" style="margin-left:auto">＋ New review link</button>
+    </div>
     <p style="font-size:13px">Everything currently shared from this workspace. Changes take effect immediately.</p>
     <div id="linksList" style="flex:1; overflow-y:auto; min-height:0"></div>
     <div style="text-align:right; margin-top:14px"><button class="small ghost" id="linksClose">Close</button></div>
   </div>
 </div>
-<div id="revPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:50; align-items:center; justify-content:center; padding:16px">
-  <div class="card" style="max-width:460px; width:100%">
+<div id="revPanel" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:53; align-items:center; justify-content:center; padding:16px">
+  <div class="card" style="max-width:720px; width:100%; max-height:90vh; overflow-y:auto">
     <h1 style="font-size:17px; margin-bottom:4px">🔐 Review link</h1>
-    <p style="font-size:13px">Share <b id="revCount"></b> behind an access key. Whoever opens it needs the key — it is not a public link.</p>
+    <p style="font-size:13px; margin-bottom:10px">Share <b id="revCount"></b> behind an access key. Whoever opens it needs the key — it is not a public link.</p>
     <div id="revForm">
+      <div id="revPick" style="margin-bottom:12px"></div>
       <input type="text" id="revName" placeholder="What is this? e.g. Launch campaign — HQ review" style="width:100%; margin-bottom:8px" />
       <input type="text" id="revKey" placeholder="Access key (share this separately)" autocomplete="off" style="width:100%" />
       <div style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap">
@@ -1272,14 +1302,16 @@ function renderList() {
   const mineTotal = drafts.filter(isMine).length;
   $("mineCount").textContent = mineTotal ? `${mineTotal} assigned to you` : "";
   $("list").innerHTML = rows.map((d) => `
-    <div class="item ${current && current.id === d.id ? "on" : ""} ${isMine(d) ? "mine" : ""}" data-id="${d.id}">
-      ${selecting ? `<input type="checkbox" data-sel="${d.id}" ${selected.has(d.id) ? "checked" : ""} style="float:right; margin-left:8px" />` : ""}
+    <div class="item ${current && current.id === d.id ? "on" : ""} ${isMine(d) ? "mine" : ""} ${selecting && selected.has(d.id) ? "picked" : ""}" data-id="${d.id}">
+      ${selecting ? `<input type="checkbox" class="selbox" data-sel="${d.id}" ${selected.has(d.id) ? "checked" : ""} />` : ""}
+      <div class="ibody">
       <div class="t">${(Array.isArray(d.labels) && d.labels.length ? `<span class="ldots">${d.labels.map((id) => { const l = labelById(id); return l ? `<span class="ldot" style="background:${colorOf(l)}" title="${esc(l.name)}"></span>` : ""; }).join("")}</span>` : "")}${mentionDrafts.has(d.id) ? `<span title="You were mentioned in a comment" style="margin-right:4px">🔔</span>` : ""}${d.public_token ? `<span title="Has a public preview link" style="margin-right:4px">🌐</span>` : ""}${d.locked ? `<span title="Locked" style="margin-right:4px">🔒</span>` : ""}${esc(d.title || firstLine(d.content) || "Untitled")}</div>
       <div class="m">
         <span class="dot s-${d.status}"></span>
         <span>${d.status}</span>
         ${d.planned_at ? `<span>· 📅 ${fmtWhen(d.planned_at)}</span>` : ""}
         <span style="margin-left:auto; ${isMine(d) ? "color:var(--accent); font-weight:600" : ""}">${d.assignee ? "👤 " + esc(memberName(d.assignee)) : esc(String(d.updated_by || d.author || "").split("@")[0])}</span>
+      </div>
       </div>
     </div>`).join("") || `<div style="padding:16px;color:var(--dim)">Nothing here yet.</div>`;
 }
@@ -2155,14 +2187,12 @@ async function fillLinkCards(root) {
 }
 
 // Full-screen thread preview: the whole thread, no editing chrome.
-function renderFullPreview() {
-  const text = $("content").value;
+function renderFullPreview(text = $("content").value, media = (current && current.media) || [], label = "") {
   const segs = segments(text);
-  const media = (current && current.media) || [];
   const segMedia = (i) => media.filter((m) => Math.min(m.seg, segs.length - 1) === i);
   const over = segs.filter((x) => tweetLen(x) > 280).length;
   $("fsMeta").textContent =
-    `${segs.length} tweet${segs.length === 1 ? "" : "s"}${over ? ` · ⚠ ${over} over 280` : ""}`;
+    `${label ? label + " · " : ""}${segs.length} tweet${segs.length === 1 ? "" : "s"}${over ? ` · ⚠ ${over} over 280` : ""}`;
   $("fsThread").innerHTML = segs.map((seg, i) => {
     const mine = segMedia(i).slice(0, 4);
     const cells = mine.map((m) => `<span class="cell">${m.type === "video"
@@ -2182,7 +2212,19 @@ function renderFullPreview() {
   }).join("") || `<div style="color:var(--dim); text-align:center; padding:40px">Nothing to preview yet.</div>`;
   fillLinkCards($("fsThread"));
 }
-const closeFs = () => { $("fsPanel").style.display = "none"; };
+let fsPeek = false; // previewing a draft from a picker, not the one in the editor
+const closeFs = () => {
+  $("fsPanel").style.display = "none";
+  if (fsPeek) { fsPeek = false; $("fsShare").style.display = ""; renderShareState(); }
+};
+// Preview any draft in the full-screen thread view, without opening it in the editor.
+function openFsFor(d) {
+  fsPeek = true;
+  renderFullPreview(d.content || "", d.media || [], d.title || firstLine(d.content) || "Untitled");
+  $("fsShare").style.display = "none"; $("fsUnshare").style.display = "none";
+  $("fsPanel").style.display = "flex";
+  $("fsScroll").scrollTop = 0;
+}
 const shareUrl = (tok) => `${location.origin}/postbox/p/?t=${tok}`;
 
 function renderShareState() {
@@ -2429,7 +2471,7 @@ const selected = new Set();
 function renderBulk() {
   $("bulkBar").style.display = selecting ? "flex" : "none";
   $("selMode").style.borderColor = selecting ? "var(--accent)" : "";
-  $("bulkCount").textContent = selected.size ? `${selected.size} selected` : "Select drafts to delete";
+  $("bulkCount").textContent = selected.size ? `${selected.size} selected` : "Tick drafts, then share or delete";
 }
 $("selMode").addEventListener("click", () => {
   selecting = !selecting;
@@ -2443,6 +2485,75 @@ $("bulkAll").addEventListener("click", () => {
   rows.forEach((d) => allOn ? selected.delete(d.id) : selected.add(d.id));
   renderBulk(); renderList();
 });
+// ---------- post picker: one list for "new review link" and "add posts" ----------
+// Rows are big enough to hit, show status/date/tweet count and the first tweet,
+// and 👁 opens the whole thread without leaving the dialog.
+const draftName = (d) => d.title || firstLine(d.content) || "Untitled";
+const draftPeek = (d) => segments(d.content || "")[0] || "";
+function pickerRow(d, checked) {
+  const n = segments(d.content || "").length;
+  return `<label class="pk-row ${checked ? "on" : ""}">
+    <input type="checkbox" value="${d.id}" ${checked ? "checked" : ""} />
+    <div class="pk-body">
+      <div class="pk-t">${d.locked ? "🔒 " : ""}${esc(draftName(d))}</div>
+      <div class="pk-meta"><span class="dot s-${d.status}"></span><span>${d.status}</span>
+        <span>${n} tweet${n === 1 ? "" : "s"}</span>
+        <span>${d.planned_at ? "📅 " + esc(fmtWhen(d.planned_at)) : "undated"}</span>
+        ${d.assignee ? `<span>👤 ${esc(memberName(d.assignee))}</span>` : ""}</div>
+      <div class="pk-prev">${esc(draftPeek(d)) || "<i>empty</i>"}</div>
+    </div>
+    <button class="small ghost pk-eye" data-peek="${d.id}" title="Preview the whole thread">👁</button>
+  </label>`;
+}
+function pickerHtml(scope, list, checkedIds = []) {
+  const on = new Set(checkedIds);
+  return `<div class="pk" data-pk="${scope}">
+    <div class="pk-top">
+      <input type="search" class="pk-q" placeholder="Search title or text…" />
+      <label><input type="checkbox" class="pk-all" /> All shown</label>
+      <span class="pk-n">${checkedIds.length} selected</span>
+    </div>
+    <div class="pk-list">${list.map((d) => pickerRow(d, on.has(d.id))).join("") || `<div class="pk-empty">Nothing to pick from.</div>`}</div>
+  </div>`;
+}
+const pickerRoot = (scope) => document.querySelector(`[data-pk="${scope}"]`);
+const pickerPicked = (scope) => [...(pickerRoot(scope) || document.createElement("div")).querySelectorAll(".pk-row input:checked")].map((c) => c.value);
+function pickerSync(root) {
+  const rows = [...root.querySelectorAll(".pk-row")];
+  let n = 0;
+  rows.forEach((r) => { const on = r.querySelector("input").checked; r.classList.toggle("on", on); if (on) n++; });
+  root.querySelector(".pk-n").textContent = `${n} selected`;
+  const shown = rows.filter((r) => r.style.display !== "none");
+  root.querySelector(".pk-all").checked = shown.length > 0 && shown.every((r) => r.querySelector("input").checked);
+  root.dispatchEvent(new CustomEvent("pk:change", { bubbles: true, detail: { n } }));
+}
+document.addEventListener("input", (e) => {
+  const q = e.target.closest(".pk-q"); if (!q) return;
+  const root = q.closest(".pk"); const needle = q.value.trim().toLowerCase();
+  root.querySelectorAll(".pk-row").forEach((r) => {
+    const d = drafts.find((x) => x.id === r.querySelector("input").value);
+    const hay = d ? (draftName(d) + "\n" + (d.content || "")).toLowerCase() : "";
+    r.style.display = !needle || hay.includes(needle) ? "" : "none";
+  });
+  pickerSync(root);
+});
+document.addEventListener("change", (e) => {
+  const all = e.target.closest(".pk-all");
+  if (all) {
+    const root = all.closest(".pk");
+    root.querySelectorAll(".pk-row").forEach((r) => { if (r.style.display !== "none") r.querySelector("input").checked = all.checked; });
+    pickerSync(root); return;
+  }
+  const box = e.target.closest(".pk-row input");
+  if (box) pickerSync(box.closest(".pk"));
+});
+document.addEventListener("click", (e) => {
+  const eye = e.target.closest("[data-peek]"); if (!eye) return;
+  e.preventDefault(); e.stopPropagation();
+  const d = drafts.find((x) => x.id === eye.dataset.peek);
+  if (d) openFsFor(d);
+});
+
 // Managing links after the fact: drop posts, shorten the window, kill it now.
 let revSets = [];
 async function loadReviewSets() {
@@ -2458,34 +2569,43 @@ const expLabel = (e) => {
   if (days <= 0) return `<span style="color:var(--bad)">expired</span>`;
   return `expires in ${days} day${days === 1 ? "" : "s"}`;
 };
+function rvPostRow(id, r) {
+  const d = drafts.find((x) => x.id === id);
+  if (!d) return `<div class="rv-post"><div class="pk-body" style="color:var(--dim); font-size:12.5px">(deleted draft)</div>
+    <div class="acts"><button class="small ghost" data-rvdrop="${r.id}:${id}" title="Remove from this link">✕</button></div></div>`;
+  const n = segments(d.content || "").length;
+  return `<div class="rv-post">
+    <div class="pk-body">
+      <div class="pk-t">${esc(draftName(d))}</div>
+      <div class="pk-meta"><span class="dot s-${d.status}"></span><span>${d.status}</span>
+        <span>${n} tweet${n === 1 ? "" : "s"}</span>
+        <span>${d.planned_at ? "📅 " + esc(fmtWhen(d.planned_at)) : "undated"}</span></div>
+      <div class="pk-prev">${esc(draftPeek(d)) || "<i>empty</i>"}</div>
+    </div>
+    <div class="acts">
+      <button class="small ghost" data-peek="${d.id}" title="Preview the whole thread">👁</button>
+      <button class="small ghost" data-rvdrop="${r.id}:${id}" title="Remove from this link">✕</button>
+    </div>
+  </div>`;
+}
 function renderReviewSets() {
   if (!revSets.length) {
-    $("linksList").innerHTML = `<div style="color:var(--dim); font-size:13px; padding:14px 0">No review links yet. Select drafts in the list, then 🔐 Review link.</div>`;
+    $("linksList").innerHTML = `<div style="color:var(--dim); font-size:13px; padding:14px 0">No review links yet. Click ＋ New review link to pick posts and share them behind a key.</div>`;
     return;
   }
   $("linksList").innerHTML = revSets.map((r) => {
-    const posts = (r.draft_ids || []).map((id) => {
-      const d = drafts.find((x) => x.id === id);
-      return `<div style="display:flex; align-items:center; gap:6px; padding:2px 0; font-size:12.5px">
-        <span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted)">${esc(d ? (d.title || firstLine(d.content) || "Untitled") : "(deleted draft)")}</span>
-        <button class="small ghost" data-rvdrop="${r.id}:${id}" title="Remove from this link" style="padding:1px 6px; font-size:11px">✕</button>
-      </div>`;
-    }).join("") || `<div style="font-size:12.5px; color:var(--bad); padding:2px 0">No posts left — this link shows an empty set.</div>`;
+    const ids = r.draft_ids || [];
+    const posts = ids.map((id) => rvPostRow(id, r)).join("")
+      || `<div style="font-size:12.5px; color:var(--bad); padding:2px 0">No posts left — this link shows an empty set.</div>`;
+    const candidates = sortDrafts(drafts.filter((d) => !ids.includes(d.id)));
     return `<div style="border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:10px">
       <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap">
         <b style="font-size:13.5px">${esc(r.name)}</b>
-        <span style="color:var(--dim); font-size:12px">${(r.draft_ids || []).length} post${(r.draft_ids || []).length === 1 ? "" : "s"} · ${expLabel(r.expires_at)}</span>
+        <span style="color:var(--dim); font-size:12px">${ids.length} post${ids.length === 1 ? "" : "s"} · ${expLabel(r.expires_at)}</span>
       </div>
       <div style="margin:8px 0">${posts}</div>
-      <div id="rvadd-${r.id}" style="display:none; border-top:1px solid var(--line); padding-top:8px; margin-bottom:8px">
-        <div style="max-height:150px; overflow-y:auto">${
-          drafts.filter((d) => !(r.draft_ids || []).includes(d.id)).map((d) => `
-            <label style="display:flex; gap:7px; align-items:center; padding:2px 0; font-size:12.5px; cursor:pointer">
-              <input type="checkbox" data-rvpick="${r.id}" value="${d.id}" style="flex:none" />
-              <span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${esc(d.title || firstLine(d.content) || "Untitled")}</span>
-              <span style="color:var(--dim); flex:none">${d.planned_at ? esc(fmtWhen(d.planned_at)) : "undated"}</span>
-            </label>`).join("") || `<div style="color:var(--dim); font-size:12.5px">Every draft is already in this link.</div>`
-        }</div>
+      <div id="rvadd-${r.id}" style="display:none; border-top:1px solid var(--line); padding-top:10px; margin-bottom:8px">
+        ${candidates.length ? pickerHtml("add-" + r.id, candidates) : `<div class="pk-empty">Every draft is already in this link.</div>`}
         <button class="small primary" data-rvaddgo="${r.id}" style="margin-top:8px">Add selected</button>
       </div>
       <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
@@ -2539,7 +2659,7 @@ $("linksList").addEventListener("click", async (e) => {
   const go = e.target.closest("[data-rvaddgo]");
   if (go) {
     const setId = go.dataset.rvaddgo;
-    const picks = [...document.querySelectorAll(`[data-rvpick="${setId}"]:checked`)].map((c) => c.value);
+    const picks = pickerPicked("add-" + setId);
     if (!picks.length) { toast("Nothing ticked"); return; }
     const r = revSets.find((x) => x.id === setId);
     const next = [...new Set([...(r.draft_ids || []), ...picks])];
@@ -2568,18 +2688,25 @@ $("linksList").addEventListener("change", async (e) => {
 });
 
 // Review links — a batch of drafts behind a key the sharer sets.
-let revIds = [];
-$("bulkReview").addEventListener("click", (e) => {
-  e.preventDefault();
-  if (!selected.size) { toast("Select some drafts first"); return; }
-  revIds = [...selected];
-  $("revCount").textContent = `${revIds.length} post${revIds.length === 1 ? "" : "s"}`;
+// The dialog carries its own picker, so it can start from the sidebar selection
+// (pre-ticked) or from nothing via ＋ New review link.
+function syncRevCount() {
+  const n = pickerPicked("create").length;
+  $("revCount").textContent = `${n} post${n === 1 ? "" : "s"}`;
+  $("revCreate").disabled = n === 0;
+}
+function openRev(preIds = []) {
+  $("revPick").innerHTML = pickerHtml("create", sortDrafts(drafts), preIds);
   $("revName").value = "";
   $("revKey").value = "";
   $("revForm").style.display = "";
   $("revDone").style.display = "none";
+  syncRevCount();
   $("revPanel").style.display = "flex";
-});
+}
+$("revPick").addEventListener("pk:change", syncRevCount);
+$("bulkReview").addEventListener("click", (e) => { e.preventDefault(); openRev([...selected]); });
+$("newRevBtn").addEventListener("click", (e) => { e.preventDefault(); openRev([]); });
 const closeRev = () => { $("revPanel").style.display = "none"; };
 $("revClose").addEventListener("click", (e) => { e.preventDefault(); closeRev(); });
 $("revPanel").addEventListener("click", (e) => { if (e.target === $("revPanel")) closeRev(); });
@@ -2592,11 +2719,13 @@ $("revGen").addEventListener("click", (e) => {
 $("revCreate").addEventListener("click", async (e) => {
   e.preventDefault();
   const key = $("revKey").value.trim();
+  const ids = pickerPicked("create");
+  if (!ids.length) { toast("Tick at least one post"); return; }
   if (key.length < 4) { toast("Access key must be at least 4 characters"); return; }
   $("revCreate").disabled = true;
   let tok;
   try {
-    tok = await store.createReviewSet($("revName").value.trim() || "Review", key, revIds,
+    tok = await store.createReviewSet($("revName").value.trim() || "Review", key, ids,
       $("revTtl").value ? +$("revTtl").value : null);
   } catch (err) { toast("Could not create: " + err.message); $("revCreate").disabled = false; return; }
   $("revCreate").disabled = false;
@@ -2604,6 +2733,7 @@ $("revCreate").addEventListener("click", async (e) => {
   $("revForm").style.display = "none";
   $("revDone").style.display = "";
   selected.clear(); selecting = false; renderBulk(); renderList();
+  if ($("linksPanel").style.display === "flex") loadReviewSets();
 });
 $("revCopyUrl").addEventListener("click", async (e) => {
   e.preventDefault();
