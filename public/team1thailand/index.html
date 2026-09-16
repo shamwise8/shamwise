@@ -48,6 +48,10 @@
   th { text-align: left; color: var(--dim); font-weight: 500; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 0 12px 9px 0; border-bottom: 1px solid var(--line); }
   td { padding: 12px 12px 12px 0; border-bottom: 1px solid var(--line); color: var(--muted); vertical-align: top; }
   td:first-child { color: var(--ink); font-weight: 500; white-space: nowrap; }
+  /* an event with an RSVP page: the name is the link, the arrow is the only signal */
+  td a.ev { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color .15s; }
+  td a.ev:hover { color: var(--ink); border-bottom-color: var(--dim); }
+  td a.ev .x { color: var(--red); font-size: 12px; margin-left: 5px; }
   .tbl-scroll { overflow-x: auto; }
 
   .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; margin-top: 22px; }
@@ -166,7 +170,7 @@
   <div class="wrap">
     <div class="eyebrow">Most recent</div>
     <h2>Chulalongkorn, 5 September.</h2>
-    <p class="sub">A hands-on builder session on campus. Students came from six different universities — and they are coming back for the Genesis Hackathon at Chulalongkorn on 26 September.</p>
+    <p class="sub">A hands-on builder session on campus. Students came from six different universities — and they are coming back for <a href="https://luma.com/nd66d2eg" target="_blank" rel="noopener" style="color:var(--ink)">Team1 Hackathon: Chula Edition</a> on 26 September.</p>
     <div class="grid2" style="align-items:start">
       <img src="/Team1KickOff/assets/chula-workshop-sep-2026.jpg" alt="team1 Thailand university workshop at Chulalongkorn, September 2026" loading="lazy" style="border-radius:14px; aspect-ratio:4/3; object-fit:cover; width:100%" />
       <blockquote class="twitter-tweet" data-theme="dark" data-media-max-width="520" style="margin:0">
@@ -187,9 +191,9 @@
         <thead><tr><th>Campus</th><th>Anchor</th><th>Timing</th></tr></thead>
         <tbody>
           <tr><td>Chulalongkorn University</td><td>Acre, Scott</td><td>5 September 2026</td></tr>
-          <tr><td>Mahidol University (MUIC)</td><td>Beere</td><td>Early October 2026 — TBC</td></tr>
-          <tr><td>Kasetsart University</td><td>Butter</td><td>Early October 2026 — TBC</td></tr>
-          <tr><td>Thammasat Rangsit</td><td>Evelyn</td><td>30 September 2026</td></tr>
+          <tr><td>Kasetsart University</td><td>Butter</td><td>27 September 2026</td></tr>
+          <tr><td>Thammasat Rangsit</td><td>Evelyn</td><td>7 October 2026</td></tr>
+          <tr><td>Mahidol University (MUIC)</td><td>Beere</td><td>Mid October 2026 — TBC</td></tr>
         </tbody>
       </table>
     </div>
@@ -233,10 +237,11 @@
           <tr><td>5 Sep</td><td>Team1 × Chulalongkorn University — builder workshop</td><td>Bangkok</td></tr>
           <tr><td>17 Sep</td><td>Team1 Pickleball Rally</td><td>Chiang Mai</td></tr>
           <tr><td>18 Sep</td><td>Team1 developer event with 4seas (ETH Chiang Mai)</td><td>Chiang Mai</td></tr>
-          <tr><td>26 Sep</td><td>Genesis Hackathon at Chulalongkorn University</td><td>Bangkok</td></tr>
-          <tr><td>30 Sep</td><td>Team1 × Thammasat University — builder workshop with TUBC</td><td>Bangkok</td></tr>
-          <tr><td>Early Oct — TBC</td><td>Team1 × Kasetsart University — dev workshop</td><td>Bangkok</td></tr>
-          <tr><td>Early Oct — TBC</td><td>Team1 × Mahidol MUIC — dev workshop</td><td>Salaya</td></tr>
+          <tr><td>26 Sep</td><td><a class="ev" href="https://luma.com/nd66d2eg" target="_blank" rel="noopener">Team1 Hackathon: Chula Edition<span class="x">↗</span></a></td><td>Bangkok</td></tr>
+          <tr><td>27 Sep</td><td><a class="ev" href="https://luma.com/k5ox4ths" target="_blank" rel="noopener">Team1 × Kasetsart University — Introduction to Blockchain<span class="x">↗</span></a></td><td>Bangkok</td></tr>
+          <tr><td>3 Oct</td><td>Mat Pilates &amp; Sound Bath at Limber Studio</td><td>Thonglor</td></tr>
+          <tr><td>7 Oct</td><td><a class="ev" href="https://luma.com/h3vn2r29" target="_blank" rel="noopener">Team1 × Thammasat Rangsit — with TUBC<span class="x">↗</span></a></td><td>Rangsit</td></tr>
+          <tr><td>Mid Oct — TBC</td><td>Team1 × Mahidol MUIC — dev workshop</td><td>Salaya</td></tr>
           <tr><td>Biweekly</td><td>Builders Brunch — open builder support</td><td>Bangkok</td></tr>
         </tbody>
       </table>
