@@ -10,7 +10,6 @@ Single static page, no build step. Lives at `public/halloween/index.html`, serve
 | Venue photo or walkthrough video | "The venue" section, wide `.ph.wide` block | 1920 × 1080 (16:9); a JPG, or an MP4 under ~8 MB with a poster JPG | For video use `<video autoplay muted loop playsinline poster="…">`. |
 | Main stage LED photo | "The venue" section, first small `.ph` | 1400 × 1050 (4:3) | |
 | The room photo | "The venue" section, second small `.ph` | 1400 × 1050 (4:3) | |
-| Email address | the Email button in the footer CTA | — | Search for `EMAIL_PLACEHOLDER` (2 occurrences in one link: the `mailto:` and the visible label). |
 
 ## Logos
 
