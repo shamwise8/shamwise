@@ -65,7 +65,8 @@
   #topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(10,10,10,.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); transform: translateY(-100%); transition: transform .25s ease; }
   #topbar.on { transform: translateY(0); }
   #topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 58px; }
-  #topbar .t { font-family: var(--display); font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #topbar .t { font-family: var(--display); font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 14px; min-width: 0; }
+  #topbar .t img { height: 18px; width: auto; flex: none; }
   #topbar .t span { color: var(--red); }
   #topbar .btn { padding: 9px 16px; font-size: 14px; white-space: nowrap; flex: none; }
 
@@ -87,7 +88,7 @@
   .hosts { display: flex; align-items: center; gap: 18px 30px; flex-wrap: wrap; margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); }
   .hosts span { color: var(--dim); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; font-weight: 500; }
   .hosts img { height: 30px; width: auto; }
-  .hosts img[alt="team1"] { height: 25px; }
+  .hosts img[alt="team1 Thailand"] { height: 24px; }
   .hosts img[alt="Avalanche"] { height: 22px; }
   /* Avalanche is the ecosystem, not a host: its own labelled slot, pushed to the far end of the row */
   .hosts .eco { display: flex; align-items: center; gap: 18px; margin-left: auto; padding-left: 30px; border-left: 1px solid var(--line); }
@@ -200,7 +201,7 @@
 
 <div id="topbar" aria-hidden="true">
   <div class="wrap">
-    <div class="t">Avalanche Halloween <span>Bitkub × team1 Thailand</span></div>
+    <div class="t"><img src="/halloween/assets/team1-thailand.svg" alt="team1 Thailand" width="1870" height="208" />Avalanche Halloween <span>Bitkub × team1 Thailand</span></div>
     <a class="btn" href="#packages" tabindex="-1">Become a partner</a>
   </div>
 </div>
@@ -220,7 +221,7 @@
       <span>Hosted by</span>
       <img src="/halloween/assets/bitkub.svg" alt="Bitkub" width="600" height="165" />
       <img src="/halloween/assets/bitkub-academy.svg" alt="Bitkub Academy" width="600" height="165" />
-      <img src="/halloween/assets/team1.svg" alt="team1" width="1027" height="289" />
+      <img src="/halloween/assets/team1-thailand.svg" alt="team1 Thailand" width="1870" height="208" />
       <span class="eco"><span>Ecosystem</span><img src="/halloween/assets/avalanche.svg" alt="Avalanche" width="1835" height="271" /></span>
     </div>
   </div>
@@ -405,7 +406,10 @@
 </main>
 
 <footer class="foot">
-  <div class="wrap"><b>Bitkub × team1 Thailand</b> · Avalanche</div>
+  <div class="wrap">
+    <img src="/halloween/assets/team1-thailand.svg" alt="team1 Thailand" width="1870" height="208" style="height:26px; width:auto; margin:0 auto 14px" />
+    <div><b>Bitkub × team1 Thailand</b> · Avalanche</div>
+  </div>
 </footer>
 
 <script>

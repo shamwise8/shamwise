@@ -26,7 +26,7 @@ X and Telegram cache previews per URL; after replacing the image, re-check with 
 
 - `assets/avalanche.svg` is Ava Labs' `AvalancheLogo_Horizontal_1C_Red`, the current one-colour wordmark. It sits in its own "Ecosystem" slot in the hero row and on the share image, deliberately outside "Hosted by": Avalanche is not a host of the event and must not be presented as one.
 - `assets/bitkub.svg` and `assets/bitkub-academy.svg` are the "02" horizontal variants from Bitkub's packs (green mark, white wordmark), the ones for dark backgrounds. The full packs, including the light-background "01" and all-white "03" variants and the vertical lockups, are parked untracked in `team1kickoff-raw/halloween/logos/`.
-- `assets/team1.svg` is `Team1_MAIN_WHITE` from `avalancheteam1/common`, the wordmark the brand guide specifies for dark backgrounds.
+- `assets/team1-thailand.svg` is the team1 Thailand chapter lockup (horizontal, red mark and white text), used in the host row, the sticky bar, the footer and the share image. `assets/team1-thailand-stacked.svg` is the vertical version, unused for now. The PNG exports are parked in `team1kickoff-raw/halloween/logos/team1-thailand/`.
 
 ## Paths
 
