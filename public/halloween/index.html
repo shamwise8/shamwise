@@ -19,11 +19,13 @@
 <link rel="icon" href="/favicon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" media="print" onload="this.media='all'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" /></noscript>
 <style>
   :root {
     --bg: #0a0a0a; --panel: #131313; --panel2: #1a1a1a; --line: #262626;
-    --ink: #f5f5f5; --muted: #a0a0a0; --dim: #6a6a6a; --red: #E84142;
+    --ink: #f5f5f5; --muted: #a0a0a0; --dim: #8a8a8a; --red: #E84142;
     /* team1 brand guide: Kanit only. Medium (500) for headings and display, Light (300) for body. */
     --display: "Kanit", system-ui, sans-serif;
     --body: "Kanit", system-ui, sans-serif;
@@ -282,7 +284,7 @@
           <li>Staffed by 1–2 Team1 Thailand collaborators alongside your team</li>
           <li>Bring your product, demo or quest; we bring the traffic</li>
         </ul>
-        <a class="btn ghost full" href="https://t.me/shamwise8" target="_blank" rel="noopener" aria-label="Choose Booth Partner — message on Telegram">Choose this tier</a>
+        <a class="btn ghost full" href="https://t.me/shamwise8" target="_blank" rel="noopener" aria-label="Choose this tier: Booth Partner, on Telegram">Choose this tier</a>
       </article>
       <article class="tier hot">
         <span class="tag">Recommended</span>
@@ -296,7 +298,7 @@
           <li>A full-screen slide in the LED rotation, and your item on screen at the box reveal</li>
           <li>A quest can point at your project where it fits: a follow, a post, a task at your table. Settled when the quests are set</li>
         </ul>
-        <a class="btn full" href="https://t.me/shamwise8" target="_blank" rel="noopener" aria-label="Choose Merch Partner — message on Telegram">Choose this tier</a>
+        <a class="btn full" href="https://t.me/shamwise8" target="_blank" rel="noopener" aria-label="Choose this tier: Merch Partner, on Telegram">Choose this tier</a>
       </article>
       <article class="tier">
         <h3>Stage Partner</h3>
@@ -308,7 +310,7 @@
           <li>Full-screen takeover of the main stage LED during your slot</li>
           <li>One Stage Partner slot per project; limited availability</li>
         </ul>
-        <a class="btn ghost full" href="https://t.me/shamwise8" target="_blank" rel="noopener" aria-label="Choose Stage Partner — message on Telegram">Choose this tier</a>
+        <a class="btn ghost full" href="https://t.me/shamwise8" target="_blank" rel="noopener" aria-label="Choose this tier: Stage Partner, on Telegram">Choose this tier</a>
       </article>
     </div>
     <p class="sub" style="margin-top:16px; font-size:14px; max-width:none">Not building on Avalanche? Booth presence is $700: a table, your logo in the partner loop and on Luma, your own roll-up and your own team. No merch slot, no stage.</p>
