@@ -7,9 +7,6 @@ Single static page, no build step. Lives at `public/halloween/index.html`, serve
 | What | Where | Recommended size | Notes |
 |---|---|---|---|
 | OG / share image | `assets/og-image.jpg` (referenced in `<head>`, file does not exist yet) | 1200 × 630, JPG under 300 KB | Used by X, Telegram, LINE previews. |
-| Venue photo or walkthrough video | "The venue" section, wide `.ph.wide` block | 1920 × 1080 (16:9); a JPG, or an MP4 under ~8 MB with a poster JPG | For video use `<video autoplay muted loop playsinline poster="…">`. |
-| Main stage LED photo | "The venue" section, first small `.ph` | 1400 × 1050 (4:3) | |
-| The room photo | "The venue" section, second small `.ph` | 1400 × 1050 (4:3) | |
 
 ## Logos
 
@@ -24,7 +21,8 @@ The page is served at `/halloween` without a trailing slash, so every asset must
 
 - `assets/merch-box.jpg` — the concept box, labelled "Concept shown" on the page. Swap the file when the final box exists; keep the name.
 - `assets/chiang-mai.jpg` — Chiang Mai meetup tile.
-- Originals (the phone JPEG and HEIC) are parked untracked in `team1kickoff-raw/halloween/`.
+- Venue set from Bitkub: `assets/venue-wide.jpg` (floor, 1280 × 960), `assets/venue-crowd.jpg` (full room, 1200 × 900), `assets/venue-tall.jpg` (main screen, 960 × 1280), and `assets/venue-walk.mp4` (8-second vertical walkthrough, re-encoded H.264 without audio, 526 × 960, under 1 MB) with `assets/venue-walk.jpg` as its poster. Laid out 2:1, landscape left, portrait right.
+- Originals (phone JPEG, HEIC, MP4) are parked untracked in `team1kickoff-raw/halloween/` and `team1kickoff-raw/halloween/venue/`.
 
 ## Already real, no action needed
 

@@ -83,9 +83,11 @@
   .hosts img[alt="team1"] { height: 25px; }
 
   /* venue */
-  .venue { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
-  .venue .ph { aspect-ratio: 4 / 3; }
-  .venue .wide { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+  .venue { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 24px; }
+  .venue .cell { position: relative; border-radius: 14px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); min-height: 0; }
+  .venue .land { aspect-ratio: 4 / 3; }
+  .venue .cell img, .venue .cell video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .venue .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 14px 12px; font-size: 13.5px; font-weight: 400; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.78)); }
 
   /* why */
   .why { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 26px; }
@@ -168,6 +170,7 @@
     .merch { grid-template-columns: 1fr; }
     .merch .ph { max-width: 320px; }
     .venue { grid-template-columns: 1fr; }
+    .venue .port { aspect-ratio: 4 / 5; }
     .hosts img { height: 24px; }
     .incl ul { columns: 1; }
   }
@@ -246,9 +249,10 @@
     <h2>Zilla Space, by Bitkub.</h2>
     <p class="sub">Thailand's best-known web3 event space. LED displays run across the room and the main stage, so a partner logo is on every screen all night, and a Stage Partner takes over the biggest one for their slot.</p>
     <div class="venue">
-      <div class="ph wide" role="img" aria-label="Placeholder: venue photo or walkthrough video"><div><b>Venue photo or walkthrough video</b><small>16:9 · 1920 × 1080</small></div></div>
-      <div class="ph" role="img" aria-label="Placeholder: main stage LED"><div><b>Main stage LED</b><small>4:3 · 1400 × 1050</small></div></div>
-      <div class="ph" role="img" aria-label="Placeholder: the room"><div><b>The room</b><small>4:3 · 1400 × 1050</small></div></div>
+      <div class="cell land"><img src="/halloween/assets/venue-wide.jpg" alt="The Zilla Space floor: string lights, the LED band along the mezzanine, and the main screen" width="1280" height="960" loading="lazy" /><div class="cap">The floor. The LED band runs the length of the mezzanine.</div></div>
+      <div class="cell port"><video src="/halloween/assets/venue-walk.mp4" poster="/halloween/assets/venue-walk.jpg" autoplay muted loop playsinline aria-label="Walkthrough of Zilla Space"></video><div class="cap">Walkthrough</div></div>
+      <div class="cell land"><img src="/halloween/assets/venue-crowd.jpg" alt="A full room at Zilla Space during KUB Global Bangkok, with a panel on stage" width="1200" height="900" loading="lazy" /><div class="cap">Full house at KUB Global Bangkok.</div></div>
+      <div class="cell port"><img src="/halloween/assets/venue-tall.jpg" alt="The main screen with the LED band above it" width="960" height="1280" loading="lazy" /><div class="cap">Main screen and the LED band.</div></div>
     </div>
   </div>
 </section>
