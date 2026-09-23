@@ -17,8 +17,14 @@ sips -s format jpeg -s formatOptions 88 og.png --out assets/og-image.jpg
 
 X and Telegram cache previews per URL; after replacing the image, re-check with a cache-busting query on the page URL or X's card validator.
 
+## Brand
+
+- The accent is Avalanche red `#E6212F`, taken from the colour page of Ava Labs' "Avalanche Messaging and Identity" deck and matching the one-colour logo file. The deck is parked untracked at `team1kickoff-raw/halloween/brand/`. Darker and lighter steps in the deck, if ever needed: `#B20F2A`, `#FF394A`.
+- The team1 brand guide (`avalancheteam1/common`) uses the same `#E6212F` as Ava Red.
+
 ## Logos
 
+- `assets/avalanche.svg` is Ava Labs' `AvalancheLogo_Horizontal_1C_Red`, the current one-colour wordmark.
 - `assets/bitkub.svg` and `assets/bitkub-academy.svg` are the "02" horizontal variants from Bitkub's packs (green mark, white wordmark), the ones for dark backgrounds. The full packs, including the light-background "01" and all-white "03" variants and the vertical lockups, are parked untracked in `team1kickoff-raw/halloween/logos/`.
 - `assets/team1.svg` is `Team1_MAIN_WHITE` from `avalancheteam1/common`, the wordmark the brand guide specifies for dark backgrounds.
 
