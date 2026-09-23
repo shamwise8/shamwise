@@ -9,6 +9,10 @@ Single static page, no build step. Lives at `public/halloween/index.html`, serve
 | OG / share image | `assets/og-image.jpg` (referenced in `<head>`, file does not exist yet) | 1200 × 630, JPG under 300 KB | Used by X, Telegram, LINE previews. |
 | Email address | the Email button in the footer CTA | — | Search for `EMAIL_PLACEHOLDER` (2 occurrences in one link: the `mailto:` and the visible label). |
 
+## Paths
+
+The page is served at `/halloween` without a trailing slash, so every asset must use an absolute path (`/halloween/assets/…`). A relative `assets/…` resolves to the site root and 404s in production.
+
 ## Photos in place
 
 - `assets/merch-box.jpg` — the concept box, labelled "Concept shown" on the page. Swap the file when the final box exists; keep the name.
