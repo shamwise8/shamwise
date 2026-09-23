@@ -89,6 +89,8 @@
   .hosts img { height: 30px; width: auto; }
   .hosts img[alt="team1"] { height: 25px; }
   .hosts img[alt="Avalanche"] { height: 22px; }
+  /* Avalanche is the ecosystem, not a host: its own labelled slot, pushed to the far end of the row */
+  .hosts .eco { display: flex; align-items: center; gap: 18px; margin-left: auto; padding-left: 30px; border-left: 1px solid var(--line); }
 
   /* venue */
   .venue { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 24px; }
@@ -189,7 +191,8 @@
     #topbar .btn { padding: 8px 12px; font-size: 13px; }
     /* fixed wrapping on phones so nothing reflows when the web font lands */
     .hero .ctas .btn { flex: 1 1 100%; }
-    .hosts span { flex: 1 1 100%; }
+    .hosts > span { flex: 1 1 100%; }
+    .hosts .eco { margin-left: 0; padding-left: 0; border-left: 0; padding-top: 14px; border-top: 1px solid var(--line); }
   }
 </style>
 </head>
@@ -217,8 +220,8 @@
       <span>Hosted by</span>
       <img src="/halloween/assets/bitkub.svg" alt="Bitkub" width="600" height="165" />
       <img src="/halloween/assets/bitkub-academy.svg" alt="Bitkub Academy" width="600" height="165" />
-      <img src="/halloween/assets/avalanche.svg" alt="Avalanche" width="1835" height="271" />
       <img src="/halloween/assets/team1.svg" alt="team1" width="1027" height="289" />
+      <span class="eco"><span>Ecosystem</span><img src="/halloween/assets/avalanche.svg" alt="Avalanche" width="1835" height="271" /></span>
     </div>
   </div>
 </header>
