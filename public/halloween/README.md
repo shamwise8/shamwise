@@ -4,9 +4,18 @@ Single static page, no build step. Lives at `public/halloween/index.html`, serve
 
 ## Placeholders to replace
 
-| What | Where | Recommended size | Notes |
-|---|---|---|---|
-| OG / share image | `assets/og-image.jpg` (referenced in `<head>`, file does not exist yet) | 1200 × 630, JPG under 300 KB | Used by X, Telegram, LINE previews. |
+None left. The share image is generated, see below.
+
+## Share image
+
+`assets/og-image.jpg` (1200 × 630) is rendered from a small HTML file in the page's own style: kicker, title, date line, host logos. To regenerate after a copy change, write the same HTML to a scratch file and run headless Chrome:
+
+```
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars --force-device-scale-factor=1 --window-size=1200,630 --virtual-time-budget=10000 --screenshot=og.png file:///path/to/og.html
+sips -s format jpeg -s formatOptions 88 og.png --out assets/og-image.jpg
+```
+
+X and Telegram cache previews per URL; after replacing the image, re-check with a cache-busting query on the page URL or X's card validator.
 
 ## Logos
 
