@@ -1,6 +1,6 @@
 # Avalanche Halloween by Team1 & Bitkub — partner page
 
-Single static page, no build step. Lives at `public/halloween/index.html`, served as **shamwise.com/halloween**. Inline CSS and a 12-line script, one Google Font (Kanit: Medium 500 for headings, Light 300 for body, per the team1 brand guide in `avalancheteam1/common`), no tracking.
+Single static page, no build step. Lives at `public/halloween/index.html`, served as **shamwise.com/halloween**. Inline CSS and a small script, Kanit self-hosted in `assets/fonts/` (latin woff2 for 300, 400 and 500, about 10 KB each, OFL) so nothing render-blocking leaves the origin. Medium 500 for headings, Light 300 for body, per the team1 brand guide in `avalancheteam1/common`. No tracking, no other external requests.
 
 ## Placeholders to replace
 
