@@ -99,7 +99,9 @@
   .incl li, .tier li { padding: 5px 0 5px 24px; position: relative; break-inside: avoid; }
   .incl li::before, .tier li::before { content: "→"; position: absolute; left: 0; color: var(--red); }
   .incl ul { columns: 2; column-gap: 28px; }
-  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; align-items: stretch; }
+  .tiers { display: grid; grid-template-columns: 1fr 1.35fr 1fr; gap: 14px; margin-top: 18px; align-items: stretch; }
+  .tier .lead { color: var(--dim); font-size: 13.5px; margin-bottom: 6px; }
+  .tier li { padding: 6px 0 6px 24px; line-height: 1.5; }
   .tier { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 26px 22px 22px; display: flex; flex-direction: column; }
   .tier.hot { border-color: rgba(232,65,66,.7); box-shadow: 0 0 0 1px rgba(232,65,66,.25), 0 24px 60px -30px rgba(232,65,66,.45); background: linear-gradient(180deg, rgba(232,65,66,.07), transparent 40%), var(--panel); }
   .tier.hot::before { content: ""; position: absolute; top: 0; left: 22px; right: 22px; height: 3px; background: var(--red); border-radius: 0 0 3px 3px; }
@@ -251,21 +253,21 @@
         <span class="tag">Recommended</span>
         <h3>Merch Partner</h3>
         <div class="price">$750</div>
+        <p class="lead">Everything in Booth Partner, plus</p>
         <ul>
-          <li>Everything in Booth Partner</li>
           <li>One item of your brand inside the limited-edition Team1 Thailand Merch Box</li>
           <li>60 numbered boxes, claimed through on-site quests and content, and kept long after the night</li>
           <li>Your item goes home with every box</li>
-          <li>A full-screen slide for your project in the LED rotation, and your item on screen at the merch box reveal</li>
-          <li>A quest can point at your project where it fits the night: a follow, a post, a task at your table. Settled with you when the quests are set</li>
+          <li>A full-screen slide in the LED rotation, and your item on screen at the box reveal</li>
+          <li>A quest can point at your project where it fits: a follow, a post, a task at your table. Settled when the quests are set</li>
         </ul>
         <a class="btn full" href="https://t.me/shamwise8" target="_blank" rel="noopener" aria-label="Choose Merch Partner — message on Telegram">Choose this tier</a>
       </article>
       <article class="tier">
         <h3>Stage Partner</h3>
         <div class="price">$1,000</div>
+        <p class="lead">Everything in Merch Partner, plus</p>
         <ul>
-          <li>Everything in Merch Partner</li>
           <li>A stage slot in the main programme to introduce your project to the full room</li>
           <li>Between the Team1 keynote and the panel</li>
           <li>Full-screen takeover of the main stage LED during your slot</li>
