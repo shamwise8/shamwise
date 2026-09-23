@@ -24,12 +24,16 @@
   @font-face { font-family: "Kanit"; font-style: normal; font-weight: 300; font-display: swap; src: url(/halloween/assets/fonts/kanit-300.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
   @font-face { font-family: "Kanit"; font-style: normal; font-weight: 400; font-display: swap; src: url(/halloween/assets/fonts/kanit-400.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
   @font-face { font-family: "Kanit"; font-style: normal; font-weight: 500; font-display: swap; src: url(/halloween/assets/fonts/kanit-500.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  /* Fallback scaled to Kanit's metrics (upm 1000, ascent 1100, descent 395, avg width 551–562 vs Arial 904/2048) so the swap does not rewrap text */
+  @font-face { font-family: "Kanit Fallback"; font-weight: 300; src: local("Arial"), local("Roboto"), local("Helvetica Neue"); size-adjust: 124.83%; ascent-override: 88.12%; descent-override: 31.64%; line-gap-override: 0%; }
+  @font-face { font-family: "Kanit Fallback"; font-weight: 400; src: local("Arial"), local("Roboto"), local("Helvetica Neue"); size-adjust: 125.96%; ascent-override: 87.33%; descent-override: 31.36%; line-gap-override: 0%; }
+  @font-face { font-family: "Kanit Fallback"; font-weight: 500; src: local("Arial"), local("Roboto"), local("Helvetica Neue"); size-adjust: 127.32%; ascent-override: 86.40%; descent-override: 31.02%; line-gap-override: 0%; }
   :root {
     --bg: #0a0a0a; --panel: #131313; --panel2: #1a1a1a; --line: #262626;
     --ink: #f5f5f5; --muted: #a0a0a0; --dim: #8a8a8a; --red: #E84142;
     /* team1 brand guide: Kanit only. Medium (500) for headings and display, Light (300) for body. */
-    --display: "Kanit", system-ui, sans-serif;
-    --body: "Kanit", system-ui, sans-serif;
+    --display: "Kanit", "Kanit Fallback", system-ui, sans-serif;
+    --body: "Kanit", "Kanit Fallback", system-ui, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; }
   html { scroll-behavior: smooth; }
