@@ -24,10 +24,10 @@
   @font-face { font-family: "Kanit"; font-style: normal; font-weight: 300; font-display: swap; src: url(/halloween/assets/fonts/kanit-300.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
   @font-face { font-family: "Kanit"; font-style: normal; font-weight: 400; font-display: swap; src: url(/halloween/assets/fonts/kanit-400.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
   @font-face { font-family: "Kanit"; font-style: normal; font-weight: 500; font-display: swap; src: url(/halloween/assets/fonts/kanit-500.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-  /* Fallback scaled to Kanit's metrics (upm 1000, ascent 1100, descent 395, avg width 551–562 vs Arial 904/2048) so the swap does not rewrap text */
-  @font-face { font-family: "Kanit Fallback"; font-weight: 300; src: local("Arial"), local("Roboto"), local("Helvetica Neue"); size-adjust: 124.83%; ascent-override: 88.12%; descent-override: 31.64%; line-gap-override: 0%; }
-  @font-face { font-family: "Kanit Fallback"; font-weight: 400; src: local("Arial"), local("Roboto"), local("Helvetica Neue"); size-adjust: 125.96%; ascent-override: 87.33%; descent-override: 31.36%; line-gap-override: 0%; }
-  @font-face { font-family: "Kanit Fallback"; font-weight: 500; src: local("Arial"), local("Roboto"), local("Helvetica Neue"); size-adjust: 127.32%; ascent-override: 86.40%; descent-override: 31.02%; line-gap-override: 0%; }
+  /* Fallback scaled to Kanit's Latin metrics (frequency-weighted lowercase widths vs Arial; ascent 1100, descent 395 on upm 1000) so the swap does not rewrap text */
+  @font-face { font-family: "Kanit Fallback"; font-weight: 300; src: local("Arial"), local("Roboto"), local("Helvetica Neue"); size-adjust: 101.19%; ascent-override: 108.71%; descent-override: 39.04%; line-gap-override: 0%; }
+  @font-face { font-family: "Kanit Fallback"; font-weight: 400; src: local("Arial"), local("Roboto"), local("Helvetica Neue"); size-adjust: 102.69%; ascent-override: 107.12%; descent-override: 38.47%; line-gap-override: 0%; }
+  @font-face { font-family: "Kanit Fallback"; font-weight: 500; src: local("Arial"), local("Roboto"), local("Helvetica Neue"); size-adjust: 103.98%; ascent-override: 105.79%; descent-override: 37.99%; line-gap-override: 0%; }
   :root {
     --bg: #0a0a0a; --panel: #131313; --panel2: #1a1a1a; --line: #262626;
     --ink: #f5f5f5; --muted: #a0a0a0; --dim: #8a8a8a; --red: #E84142;
@@ -75,7 +75,7 @@
     background: radial-gradient(520px 520px at 88% 8%, rgba(232,65,66,.22), transparent 62%), radial-gradient(700px 400px at 0% 100%, rgba(232,65,66,.07), transparent 60%); }
   .hero::after { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .05; pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-  .hero .date-mark { position: absolute; right: -10px; top: 40px; z-index: -1; font-family: var(--display); font-weight: 500; font-size: clamp(120px, 26vw, 300px); line-height: .8; color: transparent; -webkit-text-stroke: 1px rgba(232,65,66,.28); user-select: none; pointer-events: none; }
+  .hero .date-mark { position: absolute; right: -10px; top: 40px; z-index: -1; width: 1.2em; text-align: right; font-family: var(--display); font-weight: 500; font-size: clamp(120px, 26vw, 300px); line-height: .8; color: transparent; -webkit-text-stroke: 1px rgba(232,65,66,.28); user-select: none; pointer-events: none; }
   .hero .mark { height: 40px; width: auto; margin-bottom: 28px; }
   .hero .kicker { color: var(--red); font-size: 12.5px; letter-spacing: .22em; text-transform: uppercase; font-weight: 500; margin-bottom: 16px; }
   .hero h1 { font-size: clamp(30px, 5.4vw, 56px); line-height: 1.06; text-wrap: balance; max-width: 820px; }
@@ -186,6 +186,9 @@
   @media (max-width: 520px) {
     .grid { grid-template-columns: 1fr 1fr; }
     #topbar .btn { padding: 8px 12px; font-size: 13px; }
+    /* fixed wrapping on phones so nothing reflows when the web font lands */
+    .hero .ctas .btn { flex: 1 1 100%; }
+    .hosts span { flex: 1 1 100%; }
   }
 </style>
 </head>
