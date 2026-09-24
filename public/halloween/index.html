@@ -67,6 +67,7 @@
   #topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 58px; }
   #topbar .t { font-family: var(--display); font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 14px; min-width: 0; }
   #topbar .t img { height: 18px; width: auto; flex: none; }
+  #topbar .t .tt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   #topbar .t span { color: var(--red); }
   #topbar .btn { padding: 9px 16px; font-size: 14px; white-space: nowrap; flex: none; }
 
@@ -213,6 +214,7 @@
   @media (max-width: 520px) {
     .grid { grid-template-columns: 1fr 1fr; }
     #topbar .btn { padding: 8px 12px; font-size: 13px; }
+    #topbar .t .tt { display: none; }   /* phones: lockup and button only */
     /* fixed wrapping on phones so nothing reflows when the web font lands */
     .hero .ctas .btn { flex: 1 1 100%; }
     .hosts > span { flex: 1 1 100%; }
@@ -227,7 +229,7 @@
 
 <div id="topbar" aria-hidden="true">
   <div class="wrap">
-    <div class="t"><img src="/halloween/assets/team1-thailand.svg" alt="team1 Thailand" width="1870" height="208" />Avalanche Halloween <span>Bitkub × team1 Thailand</span></div>
+    <div class="t"><img src="/halloween/assets/team1-thailand.svg" alt="team1 Thailand" width="1870" height="208" /><span class="tt">Avalanche Halloween <span>Bitkub × team1 Thailand</span></span></div>
     <a class="btn" href="#packages" tabindex="-1">Become a partner</a>
   </div>
 </div>
