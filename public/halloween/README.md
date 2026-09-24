@@ -22,6 +22,16 @@ X and Telegram cache previews per URL; after replacing the image, re-check with 
 - The accent is Avalanche red `#E6212F`, taken from the colour page of Ava Labs' "Avalanche Messaging and Identity" deck and matching the one-colour logo file. The deck is parked untracked at `team1kickoff-raw/halloween/brand/`. Darker and lighter steps in the deck, if ever needed: `#B20F2A`, `#FF394A`.
 - The team1 brand guide (`avalancheteam1/common`) uses the same `#E6212F` as Ava Red.
 
+## The Grotto (featured IP, not a sponsor)
+
+`assets/grotto/` holds web exports of The Grotto brand kit (kit and README parked untracked in `team1kickoff-raw/halloween/logos/the-grotto-brand-kit/`; the same rules are at https://www.enterthegrotto.xyz/brand):
+
+- `mark.png` and `wordmark.png` in the hero row under a "Featuring" label, `wordmark.png` again in the band, `dungeon-banner.jpg` as the band background, `reaper-emblem.jpg` (flattened onto black) and `analog-distortions-key-art.jpg` as the two tiles.
+- Every Grotto mark links to https://www.enterthegrotto.xyz/, as their kit asks.
+- Their rules: use files as supplied, never recolour or add effects to the marks, keep clear space of a tenth of the mark's width, write "The Grotto" and "Analog Distortions" exactly, credit Analog Distortions as a series by Wrath. Their orange stays inside their artwork; the page accent remains Avalanche red.
+- "Built as an Avalanche L1" is Sam's description; their brand page does not mention Avalanche. Confirm with them, and show them the band before it goes wide, since their kit says to ask before uses beyond referring to the brand.
+- Lootboxes: 100 promised, mechanics to follow. The quest bullet in Merch Partner and the 19:15 programme line are waiting on those details.
+
 ## Logos
 
 - `assets/avalanche.svg` is Ava Labs' `AvalancheLogo_Horizontal_1C_Red`, the current one-colour wordmark. It sits in its own "Ecosystem" slot in the hero row and on the share image, deliberately outside "Hosted by": Avalanche is not a host of the event and must not be presented as one.

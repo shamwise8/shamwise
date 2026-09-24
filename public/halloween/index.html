@@ -91,7 +91,27 @@
   .hosts img[alt="team1 Thailand"] { height: 24px; }
   .hosts img[alt="Avalanche"] { height: 22px; }
   /* Avalanche is the ecosystem, not a host: its own labelled slot, pushed to the far end of the row */
-  .hosts .eco { display: flex; align-items: center; gap: 18px; margin-left: auto; padding-left: 30px; border-left: 1px solid var(--line); }
+  .hosts .side { display: flex; align-items: center; gap: 30px; margin-left: auto; flex-wrap: wrap; }
+  .hosts .eco { display: flex; align-items: center; gap: 18px; padding-left: 30px; border-left: 1px solid var(--line); }
+  /* The Grotto: featured IP, its own labelled slot after Ecosystem, marks link to their site */
+  .hosts .feat a { display: inline-flex; align-items: center; gap: 10px; }
+  .hosts .feat img { height: 26px; }
+
+  /* featured IP band */
+  .ip { position: relative; isolation: isolate; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: #000 url(/halloween/assets/grotto/dungeon-banner.jpg) center / cover no-repeat; padding: 44px 34px; margin-top: 24px; }
+  .ip::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(0,0,0,.88) 0%, rgba(0,0,0,.74) 50%, rgba(0,0,0,.30) 100%); }
+  .ip .wm { height: 56px; width: auto; margin-bottom: 18px; }
+  .ip p { color: #f5f2f0; max-width: 560px; font-size: 16px; }
+  .ip .box { display: inline-flex; align-items: baseline; gap: 12px; margin-top: 22px; padding: 12px 16px; border: 1px solid rgba(255,224,178,.28); border-radius: 10px; background: rgba(0,0,0,.55); }
+  .ip .box .num { font-size: 30px; line-height: 1; color: #fff; }
+  .ip .box .l { color: #cfc8c1; font-size: 13.5px; }
+  .ip .link { margin-top: 18px; font-size: 13.5px; }
+  .ip .link a { color: var(--ink); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.35); }
+  .ipgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .ipgrid .cell { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: #000; aspect-ratio: 16 / 9; }
+  .ipgrid .cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ipgrid .cell.emblem img { object-fit: contain; padding: 6%; }
+  .ipgrid .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 14px 12px; font-size: 13.5px; font-weight: 400; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.78)); }
 
   /* venue */
   .venue { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 24px; }
@@ -111,7 +131,7 @@
 
   /* room stats */
   .room { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 34px 0; }
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
   .stat { text-align: center; padding: 10px 6px; }
   .stat .num { font-size: clamp(28px, 4vw, 44px); color: var(--red); line-height: 1; }
   .stat .l { color: var(--muted); font-size: 13.5px; margin-top: 8px; line-height: 1.35; }
@@ -178,8 +198,11 @@
     section { padding: 52px 0; }
     .hero { padding: 80px 0 52px; }
     .why, .tiers { grid-template-columns: 1fr; }
-    .stats, .proof { grid-template-columns: repeat(2, 1fr); }
+    .proof { grid-template-columns: repeat(2, 1fr); }
+    .stats { grid-template-columns: repeat(3, 1fr); }
     .grid { grid-template-columns: repeat(2, 1fr); }
+    .ipgrid { grid-template-columns: 1fr; }
+    .ip { padding: 32px 22px; }
     .merch { grid-template-columns: 1fr; }
     .merch .ph { max-width: 320px; }
     .venue { grid-template-columns: 1fr; }
@@ -193,7 +216,10 @@
     /* fixed wrapping on phones so nothing reflows when the web font lands */
     .hero .ctas .btn { flex: 1 1 100%; }
     .hosts > span { flex: 1 1 100%; }
-    .hosts .eco { margin-left: 0; padding-left: 0; border-left: 0; padding-top: 14px; border-top: 1px solid var(--line); }
+    .hosts .side { flex: 1 1 100%; gap: 0; }
+    .hosts .eco { padding-left: 0; border-left: 0; padding-top: 14px; border-top: 1px solid var(--line); flex: 1 1 100%; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stats .stat:last-child { grid-column: 1 / -1; }
   }
 </style>
 </head>
@@ -222,7 +248,10 @@
       <img src="/halloween/assets/bitkub.svg" alt="Bitkub" width="600" height="165" />
       <img src="/halloween/assets/bitkub-academy.svg" alt="Bitkub Academy" width="600" height="165" />
       <img src="/halloween/assets/team1-thailand.svg" alt="team1 Thailand" width="1870" height="208" />
-      <span class="eco"><span>Ecosystem</span><img src="/halloween/assets/avalanche.svg" alt="Avalanche" width="1835" height="271" /></span>
+      <span class="side">
+        <span class="eco"><span>Ecosystem</span><img src="/halloween/assets/avalanche.svg" alt="Avalanche" width="1835" height="271" /></span>
+        <span class="eco feat"><span>Featuring</span><a href="https://www.enterthegrotto.xyz/" target="_blank" rel="noopener" aria-label="The Grotto"><img src="/halloween/assets/grotto/mark.png" alt="" width="256" height="256" /><img src="/halloween/assets/grotto/wordmark.png" alt="The Grotto" width="512" height="217" /></a></span>
+      </span>
     </div>
   </div>
 </header>
@@ -244,7 +273,7 @@
       </div>
       <div class="b">
         <h3>The content</h3>
-        <p>Halloween theme + Team1 Thailand merch box + LED visuals. Built to be photographed and posted.</p>
+        <p>Halloween theme + Team1 Thailand merch box + LED visuals + The Grotto's characters on the screens. Built to be photographed and posted.</p>
       </div>
     </div>
   </div>
@@ -257,6 +286,7 @@
       <div class="stat"><div class="num">60</div><div class="l">limited-edition merch boxes</div></div>
       <div class="stat"><div class="num">3</div><div class="l">stage slots</div></div>
       <div class="stat"><div class="num">1</div><div class="l">night</div></div>
+      <div class="stat"><div class="num">100</div><div class="l">lootboxes from The Grotto</div></div>
     </div>
   </div>
 </section>
@@ -271,6 +301,23 @@
       <div class="cell port"><video src="/halloween/assets/venue-walk.mp4" poster="/halloween/assets/venue-walk.jpg" autoplay muted loop playsinline aria-label="Walkthrough of Zilla Space"></video><div class="cap">Walkthrough</div></div>
       <div class="cell land"><img src="/halloween/assets/venue-crowd.jpg" alt="A full room at Zilla Space during KUB Global Bangkok, with a panel on stage" width="1200" height="900" loading="lazy" /><div class="cap">Full house at KUB Global Bangkok.</div></div>
       <div class="cell port"><img src="/halloween/assets/venue-tall.jpg" alt="The main screen with the LED band above it" width="960" height="1280" loading="lazy" /><div class="cap">Main screen and the LED band.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="ip">
+  <div class="wrap">
+    <div class="eyebrow">Featuring</div>
+    <h2>The Grotto, on every screen.</h2>
+    <div class="ip">
+      <a href="https://www.enterthegrotto.xyz/" target="_blank" rel="noopener"><img class="wm" src="/halloween/assets/grotto/wordmark.png" alt="The Grotto" width="512" height="217" loading="lazy" /></a>
+      <p>The Grotto is the all-in-one platform for indie game developers and digital creators to build, share and monetize their creations, built as an Avalanche L1. Its characters and worlds are the look of the night: on the LED across the room and the main stage, on the visuals, and in the lootboxes handed out on the floor.</p>
+      <div class="box"><span class="num">100</span><span class="l">lootboxes to give away on the night. Details to follow.</span></div>
+      <div class="link"><a href="https://www.enterthegrotto.xyz/" target="_blank" rel="noopener">enterthegrotto.xyz ↗</a></div>
+    </div>
+    <div class="ipgrid">
+      <a class="cell emblem" href="https://www.enterthegrotto.xyz/" target="_blank" rel="noopener"><img src="/halloween/assets/grotto/reaper-emblem.jpg" alt="The Grotto reaper emblem" width="640" height="640" loading="lazy" /><div class="cap">The Grotto reaper</div></a>
+      <a class="cell" href="https://www.enterthegrotto.xyz/" target="_blank" rel="noopener"><img src="/halloween/assets/grotto/analog-distortions-key-art.jpg" alt="Analog Distortions key art: a hooded wanderer against a pink and cyan skyline" width="800" height="800" loading="lazy" /><div class="cap">Analog Distortions, a series by Wrath</div></a>
     </div>
   </div>
 </section>
