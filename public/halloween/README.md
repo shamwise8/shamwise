@@ -46,7 +46,7 @@ The page is served at `/halloween` without a trailing slash, so every asset must
 
 - `assets/merch-box.jpg` — the concept box, labelled "Concept shown" on the page. Swap the file when the final box exists; keep the name.
 - `assets/chiang-mai.jpg` — Chiang Mai meetup tile.
-- Venue set from Bitkub: `assets/venue-wide.jpg` (floor, 1280 × 960), `assets/venue-crowd.jpg` (full room, 1200 × 900), `assets/venue-tall.jpg` (main screen, 960 × 1280), and `assets/venue-walk.mp4` (8-second vertical walkthrough, re-encoded H.264 without audio, 526 × 960, under 1 MB) with `assets/venue-walk.jpg` as its poster. Laid out 2:1, landscape left, portrait right.
+- Venue set from Bitkub: `assets/venue-wide.jpg` (floor, 1280 × 960), `assets/venue-walk.mp4` (8-second vertical walkthrough, re-encoded H.264 without audio, 526 × 960, under 1 MB) with `assets/venue-walk.jpg` as its poster, then a second row of `assets/venue-crowd.jpg` (full room, 1200 × 900) and `assets/venue-room.jpg` (main stage with the LED wall, 1280 × 853). Row one is 2:1 landscape plus portrait; row two is two landscape cells at 3:2.
 - Originals (phone JPEG, HEIC, MP4) are parked untracked in `team1kickoff-raw/halloween/` and `team1kickoff-raw/halloween/venue/`.
 
 ## Already real, no action needed

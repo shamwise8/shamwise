@@ -122,6 +122,8 @@
   /* portrait cells take the row height from the landscape photos; their media fills without adding height */
   .venue .port img, .venue .port video { position: absolute; inset: 0; }
   .venue .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 14px 12px; font-size: 13.5px; font-weight: 400; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.78)); }
+  .venue.two { grid-template-columns: 1fr 1fr; margin-top: 12px; }
+  .venue.two .land { aspect-ratio: 3 / 2; }
 
   /* why */
   .why { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 26px; }
@@ -303,8 +305,10 @@
     <div class="venue">
       <div class="cell land"><img src="/halloween/assets/venue-wide.jpg" alt="The Zilla Space floor: string lights, the LED band along the mezzanine, and the main screen" width="1280" height="960" loading="lazy" /><div class="cap">The floor. The LED band runs the length of the mezzanine.</div></div>
       <div class="cell port"><video src="/halloween/assets/venue-walk.mp4" poster="/halloween/assets/venue-walk.jpg" autoplay muted loop playsinline aria-label="Walkthrough of Zilla Space"></video><div class="cap">Walkthrough</div></div>
+    </div>
+    <div class="venue two">
       <div class="cell land"><img src="/halloween/assets/venue-crowd.jpg" alt="A full room at Zilla Space during KUB Global Bangkok, with a panel on stage" width="1200" height="900" loading="lazy" /><div class="cap">Full house at KUB Global Bangkok.</div></div>
-      <div class="cell port"><img src="/halloween/assets/venue-tall.jpg" alt="The main screen with the LED band above it" width="960" height="1280" loading="lazy" /><div class="cap">Main screen and the LED band.</div></div>
+      <div class="cell land"><img src="/halloween/assets/venue-room.jpg" alt="The main stage at Zilla Space during a panel, with the LED wall behind it" width="1280" height="853" loading="lazy" /><div class="cap">The main stage. Stage Partners take over that wall.</div></div>
     </div>
   </div>
 </section>
