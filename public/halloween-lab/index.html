@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>X lab · Avalanche Halloween</title>
+<meta name="robots" content="noindex,nofollow" />
+<meta name="theme-color" content="#0a0a0a" />
+<link rel="icon" href="/favicon.svg" />
+<style>
+  :root { --bg:#0a0a0a; --panel:#131313; --panel2:#1b1b1b; --line:#2a2a2a; --ink:#f5f5f5; --muted:#a8a8a8; --dim:#8a8a8a;
+          --red:#E6212F; --ok:#3ecf8e; --bad:#ff6b6b; --warn:#ffb84d; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 18px 16px calc(40px + env(safe-area-inset-bottom)); }
+  h1 { font-size: 22px; line-height: 1.2; font-weight: 700; }
+  h2 { font-size: 17px; font-weight: 650; display: flex; align-items: center; gap: 10px; }
+  h2 .n { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--panel2); border: 1px solid var(--line); font-size: 13px; display: grid; place-items: center; color: var(--muted); }
+  h2 .n.done { background: var(--ok); border-color: var(--ok); color: #04130c; }
+  p, li { color: var(--muted); font-size: 14.5px; }
+  .kicker { color: var(--red); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; margin-bottom: 6px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-top: 12px; }
+  .card > p { margin-top: 6px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  button, .btn { appearance: none; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); font: inherit; font-weight: 600; font-size: 15px;
+    min-height: 48px; padding: 0 16px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+  button.primary, .btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+  .grow { flex: 1 1 160px; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  button:focus-visible, .btn:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+  label { display: block; font-size: 13px; color: var(--dim); margin: 12px 0 5px; }
+  input[type="text"], input[type="password"], textarea { width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--ink); font: inherit; border-radius: 10px; padding: 12px; }
+  textarea { min-height: 92px; resize: vertical; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; font-size: 12.5px; color: var(--muted); }
+  .pill.ok { color: var(--ok); border-color: rgba(62,207,142,.4); } .pill.bad { color: var(--bad); border-color: rgba(255,107,107,.4); } .pill.warn { color: var(--warn); border-color: rgba(255,184,77,.4); }
+  .res { margin-top: 10px; font-size: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .res a { color: var(--ink); }
+  .banner { border: 1px solid rgba(255,184,77,.45); background: rgba(255,184,77,.07); border-radius: 14px; padding: 14px 16px; margin-top: 12px; }
+  .banner b { color: var(--warn); } .banner p { color: #e6d3b3; margin-top: 4px; }
+  .env { margin-top: 10px; font-size: 12.5px; color: var(--dim); word-break: break-word; }
+  .copyline { display: flex; gap: 8px; align-items: stretch; margin-top: 8px; }
+  .copyline code { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px; overflow-wrap: anywhere; color: var(--ink); }
+  .copyline button { min-height: 0; flex: none; }
+  .thumb { margin-top: 10px; max-height: 180px; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  .count { font-size: 12.5px; color: var(--dim); text-align: right; margin-top: 4px; }
+  .count.bad { color: var(--bad); }
+  .hide { display: none !important; }
+
+  /* log */
+  .logbar { display: flex; align-items: center; gap: 8px; margin-top: 22px; }
+  .logbar h2 { flex: 1; }
+  .logbar button { min-height: 38px; font-size: 13.5px; padding: 0 12px; }
+  .entry { border: 1px solid var(--line); border-radius: 12px; margin-top: 10px; overflow: hidden; background: var(--panel); }
+  .entry > .head { padding: 10px 12px; display: flex; gap: 8px; align-items: baseline; font-size: 14px; font-weight: 600; border-bottom: 1px solid var(--line); }
+  .entry > .head .t { margin-left: auto; color: var(--dim); font-weight: 400; font-size: 12px; white-space: nowrap; }
+  .entry.ok > .head { color: var(--ok); } .entry.bad > .head { color: var(--bad); }
+  .step { padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  .step:last-child { border-bottom: 0; }
+  .step .l { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 13.5px; color: var(--ink); }
+  .step .st { font-family: ui-monospace, Menlo, monospace; font-weight: 700; }
+  .step .st.ok { color: var(--ok); } .step .st.bad { color: var(--bad); } .step .st.note { color: var(--warn); }
+  .step .meta { color: var(--dim); font-size: 12px; overflow-wrap: anywhere; }
+  .step pre { margin-top: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: 12px/1.45 ui-monospace, Menlo, monospace; color: #d6d6d6; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow: auto; }
+  .step details summary { cursor: pointer; color: var(--dim); font-size: 12.5px; margin-top: 4px; }
+  .empty { color: var(--dim); font-size: 14px; margin-top: 10px; }
+  .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #222; border: 1px solid #3a3a3a; color: #fff; padding: 10px 16px; border-radius: 999px; font-size: 14px; z-index: 9; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Avalanche Halloween · test bench</div>
+  <h1>X lab</h1>
+  <p style="margin-top:6px">Proves the X steps the guest app depends on, on a real phone: log in, follow, repost, post with a photo, read it back. Every call's result is logged below so a failure can be screenshotted.</p>
+  <div class="env" id="envline"></div>
+
+  <div id="inapp" class="banner hide"></div>
+  <div id="cross" class="banner hide"></div>
+
+  <!-- gate -->
+  <div id="gate" class="card hide">
+    <h2>Passcode</h2>
+    <p>This lab spends X API credits, so it sits behind a passcode.</p>
+    <label for="pass">Passcode</label>
+    <input type="password" id="pass" autocomplete="off" />
+    <div class="row"><button class="primary grow" id="passGo">Unlock</button></div>
+    <div class="res" id="passRes"></div>
+  </div>
+
+  <!-- not configured -->
+  <div id="setup" class="card hide">
+    <h2>Setup needed</h2>
+    <p id="setupMsg"></p>
+    <label>Callback URL to register in the X developer portal (exact match)</label>
+    <div class="copyline"><code id="cbUrl"></code><button data-copy="cbUrl">Copy</button></div>
+    <label>Scopes this lab asks for</label>
+    <div class="copyline"><code id="scopes"></code></div>
+  </div>
+
+  <div id="lab" class="hide">
+    <!-- 1 login -->
+    <div class="card">
+      <h2><span class="n" id="n1">1</span>Log in with X</h2>
+      <p id="loginMsg">OAuth 2.0 with PKCE. Nothing is posted, followed or reposted until you tap a button below.</p>
+      <div class="res" id="who"></div>
+      <div class="row">
+        <a class="btn primary grow" id="loginBtn" href="/api/xlab/login">Log in with X</a>
+        <button id="refreshBtn" class="hide">Refresh token</button>
+        <button id="logoutBtn" class="hide">Log out</button>
+      </div>
+    </div>
+
+    <!-- 2 follow -->
+    <div class="card">
+      <h2><span class="n" id="n2">2</span>Follow an account</h2>
+      <label for="handle">Handle</label>
+      <input type="text" id="handle" autocapitalize="off" autocomplete="off" spellcheck="false" />
+      <div class="row">
+        <button class="primary grow" id="followBtn">Follow</button>
+        <button id="unfollowBtn">Undo</button>
+      </div>
+      <div class="res" id="followRes"></div>
+    </div>
+
+    <!-- 3 repost -->
+    <div class="card">
+      <h2><span class="n" id="n3">3</span>Repost a post</h2>
+      <label for="postRef">Post URL or id</label>
+      <input type="text" id="postRef" inputmode="url" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="https://x.com/team1TH/status/…" />
+      <div class="row">
+        <button class="primary grow" id="repostBtn">Repost</button>
+        <button id="unrepostBtn">Undo</button>
+      </div>
+      <div class="res" id="repostRes"></div>
+    </div>
+
+    <!-- 4 post -->
+    <div class="card">
+      <h2><span class="n" id="n4">4</span>Post with a photo</h2>
+      <p>Take a photo, post it, then the lab reads the post back by id and checks the hashtag and the photo are really there.</p>
+      <div class="row">
+        <label class="btn grow" for="cam" style="margin:0;color:var(--ink);font-size:15px">Take a photo</label>
+        <label class="btn grow" for="lib" style="margin:0;color:var(--ink);font-size:15px">Choose from library</label>
+      </div>
+      <input type="file" id="cam" accept="image/*" capture="environment" class="hide" />
+      <input type="file" id="lib" accept="image/*" class="hide" />
+      <div class="res" id="photoRes"></div>
+      <img id="thumb" class="thumb hide" alt="Photo to post" />
+      <label for="caption">Caption (no links, ever)</label>
+      <textarea id="caption"></textarea>
+      <div class="count" id="count"></div>
+      <label for="tag">Hashtag the read-back must find</label>
+      <input type="text" id="tag" autocapitalize="off" autocomplete="off" spellcheck="false" />
+      <div class="row">
+        <button class="primary grow" id="postBtn">Post to X</button>
+        <button id="deleteBtn" disabled>Delete it</button>
+      </div>
+      <div class="res" id="postRes"></div>
+    </div>
+  </div>
+
+  <div class="logbar">
+    <h2>Log <span class="pill" id="calls">0 X calls</span></h2>
+    <button id="copyLog">Copy log</button>
+    <button id="clearLog">Clear</button>
+  </div>
+  <div id="log"></div>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const show = (id, on) => $(id).classList.toggle("hide", !on);
+  const toast = (m) => { const d = document.createElement("div"); d.className = "toast"; d.textContent = m; document.body.appendChild(d); setTimeout(() => d.remove(), 2200); };
+  const HAS_LINK = /(https?:\/\/[^\s]+)|(^|\s)(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/\S*)?/i;
+
+  /* ---------- which browser is this? ---------- */
+  function detect() {
+    const ua = navigator.userAgent || "";
+    const android = /Android/.test(ua);
+    const iOS = !android && (/iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
+    let inApp = "";
+    if (/\bLine\//i.test(ua)) inApp = "LINE";
+    else if (/Twitter/i.test(ua)) inApp = "X";
+    else if (/Instagram/i.test(ua)) inApp = "Instagram";
+    else if (/FBAN|FBAV|FB_IAB/i.test(ua)) inApp = "Facebook";
+    else if (/TikTok|musical_ly|Bytedance/i.test(ua)) inApp = "TikTok";
+    else if (/Telegram/i.test(ua)) inApp = "Telegram";
+    else if (android && /; wv\)/.test(ua)) inApp = "an Android app";
+    else if (iOS && !/Safari\//.test(ua)) inApp = "an iOS app";
+    let name = "a desktop browser";
+    if (inApp) name = inApp + "'s in-app browser";
+    else if (iOS) name = /CriOS/.test(ua) ? "Chrome on iOS" : /FxiOS/.test(ua) ? "Firefox on iOS" : /EdgiOS/.test(ua) ? "Edge on iOS" : "Safari on iOS";
+    else if (android) name = /SamsungBrowser/.test(ua) ? "Samsung Internet" : /Firefox/.test(ua) ? "Firefox on Android" : /EdgA/.test(ua) ? "Edge on Android" : "Chrome on Android";
+    return { ua, iOS, android, inApp, name };
+  }
+  const B = detect();
+  $("envline").innerHTML = `Detected: <b style="color:var(--ink)">${esc(B.name)}</b><br><span class="mono">${esc(B.ua)}</span>`;
+
+  const here = location.origin + location.pathname;
+  function externalUrl() {
+    if (B.inApp === "LINE") return here + "?openExternalBrowser=1";
+    if (B.android) return `intent://${location.host}${location.pathname}#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(here)};end`;
+    if (B.iOS) return "x-safari-" + here;
+    return here;
+  }
+  if (B.inApp) {
+    const target = B.iOS ? "Safari" : "Chrome";
+    $("inapp").innerHTML = `<b>You are inside ${esc(B.name)}.</b>
+      <p>X login often breaks here: the X app can take over the login and hand you back to a different browser. The guest app will show a screen like this one. For the test, try both: log in right here, then open in ${target} and log in there.</p>
+      <div class="row"><a class="btn primary grow" href="${esc(externalUrl())}">Open in ${target}</a><button id="copyHere">Copy link</button></div>`;
+    show("inapp", true);
+    $("copyHere").onclick = () => copy(here);
+  }
+
+  /* ---------- log ---------- */
+  let LOG = [];
+  try { LOG = JSON.parse(sessionStorage.getItem("xlab_log") || "[]"); } catch (_) {}
+  const persist = () => { try { sessionStorage.setItem("xlab_log", JSON.stringify(LOG.slice(0, 60))); } catch (_) {} };
+  const hhmmss = (t) => new Date(t).toTimeString().slice(0, 8);
+  function addEntry(title, ok, steps) {
+    LOG.unshift({ at: Date.now(), title, ok: !!ok, steps: steps || [] });
+    persist(); renderLog();
+  }
+  function stepHtml(s) {
+    const isNote = s.method === "NOTE";
+    const good = isNote ? s.status === 200 : s.status >= 200 && s.status < 300;
+    const body = typeof s.body === "string" ? s.body : JSON.stringify(s.body, null, 2);
+    const rate = s.rate ? ` · rate ${esc(s.rate.remaining)}/${esc(s.rate.limit)}${s.rate.reset ? ", resets " + hhmmss(+s.rate.reset * 1000) : ""}` : "";
+    const head = isNote
+      ? `<span class="st ${good ? "note" : "bad"}">${good ? "NOTE" : "FAIL"}</span><span>${esc(s.label)}</span>`
+      : `<span class="st ${good ? "ok" : "bad"}">${s.status || "ERR"}</span><span>${esc(s.label)}</span>`;
+    const meta = isNote ? "" : `<div class="meta">${esc(s.method)} ${esc(s.url)} · ${s.ms} ms${rate}</div>`;
+    const pre = body ? (good && !isNote ? `<details><summary>Response body</summary><pre>${esc(body)}</pre></details>` : `<pre>${esc(body)}</pre>`) : "";
+    return `<div class="step"><div class="l">${head}</div>${meta}${pre}</div>`;
+  }
+  function renderLog() {
+    const calls = LOG.reduce((n, e) => n + e.steps.filter((s) => s.method !== "NOTE").length, 0);
+    $("calls").textContent = calls + (calls === 1 ? " X call" : " X calls");
+    $("log").innerHTML = LOG.length ? LOG.map((e) => `<div class="entry ${e.ok ? "ok" : "bad"}">
+        <div class="head"><span>${e.ok ? "✓" : "✗"} ${esc(e.title)}</span><span class="t">${hhmmss(e.at)}</span></div>
+        ${e.steps.map(stepHtml).join("")}</div>`).join("")
+      : `<p class="empty">Nothing yet. Each button adds an entry here with X's status code and response.</p>`;
+  }
+  function logText() {
+    const lines = [`X lab log · ${new Date().toISOString()}`, `Browser: ${B.name}`, `UA: ${B.ua}`, ""];
+    for (const e of [...LOG].reverse()) {
+      lines.push(`[${hhmmss(e.at)}] ${e.ok ? "OK  " : "FAIL"} ${e.title}`);
+      for (const s of e.steps) {
+        lines.push(s.method === "NOTE" ? `    note: ${s.label}` : `    ${s.status || "ERR"} ${s.method} ${s.url} (${s.ms} ms) ${s.label}`);
+        const b = typeof s.body === "string" ? s.body : JSON.stringify(s.body);
+        if (b) lines.push("        " + b);
+      }
+    }
+    return lines.join("\n");
+  }
+  async function copy(text) {
+    try { await navigator.clipboard.writeText(text); toast("Copied"); }
+    catch (_) {
+      const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); toast("Copied"); } catch (e) { prompt("Copy this:", text); }
+      ta.remove();
+    }
+  }
+  $("copyLog").onclick = () => copy(logText());
+  $("clearLog").onclick = () => { LOG = []; persist(); renderLog(); };
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-copy]"); if (b) copy($(b.dataset.copy).textContent); });
+
+  // Login and callback are full-page redirects, so the server leaves their steps in a short-lived cookie.
+  (function readFlash() {
+    const m = document.cookie.match(/(?:^|;\s*)xlab_log=([^;]+)/);
+    if (!m) return;
+    document.cookie = "xlab_log=; Max-Age=0; Path=/";
+    try {
+      const b64 = decodeURIComponent(m[1]).replace(/-/g, "+").replace(/_/g, "/");
+      const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      const entry = JSON.parse(new TextDecoder().decode(bytes));
+      addEntry(entry.title + ` · ${B.name}`, entry.ok, entry.steps);
+    } catch (err) { addEntry("Login result could not be read", false, [{ label: "Flash cookie", method: "NOTE", status: 0, body: String(err) }]); }
+  })();
+
+  /* ---------- api ---------- */
+  async function api(action, body, title) {
+    let j = {}, status = 0;
+    try {
+      const r = await fetch("/api/xlab/" + action, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}), credentials: "same-origin" });
+      status = r.status; j = await r.json().catch(() => ({}));
+    } catch (err) { j = { error: "The request never reached the lab: " + err.message }; }
+    const steps = j.steps || [];
+    if (j.error) steps.push({ label: j.error, method: "NOTE", status: 0, body: "" });
+    if (status === 413) steps.push({ label: "The upload was too large for the server (HTTP 413).", method: "NOTE", status: 0, body: "" });
+    addEntry(title, !!j.ok, steps);
+    if (status === 401 && !j.locked) setTimeout(boot, 50);
+    return j;
+  }
+  const busy = (btn, on, label) => { btn.disabled = on; if (label) { btn.dataset.l = btn.dataset.l || btn.textContent; btn.textContent = on ? label : btn.dataset.l; } };
+  const pill = (ok, text) => `<span class="pill ${ok === true ? "ok" : ok === false ? "bad" : "warn"}">${ok === true ? "✓" : ok === false ? "✗" : "!"} ${esc(text)}</span>`;
+
+  /* ---------- state ---------- */
+  let ME = null, lastPostId = "", photo = null, tick = null;
+  async function boot(k) {
+    let r, j;
+    try { r = await fetch("/api/xlab/me" + (k ? "?k=" + encodeURIComponent(k) : ""), { credentials: "same-origin" }); j = await r.json(); }
+    catch (err) { addEntry("Could not reach the lab", false, [{ label: "GET /api/xlab/me", method: "NOTE", status: 0, body: String(err) }]); return; }
+    if (j.locked) {
+      show("gate", true); show("lab", false); show("setup", false);
+      $("passRes").innerHTML = j.wrongPasscode ? pill(false, "Wrong passcode") : "";
+      return;
+    }
+    ME = j; show("gate", false);
+    $("cbUrl").textContent = j.redirectUri; $("scopes").textContent = j.scopesRequested;
+    if (!j.configured) {
+      $("setupMsg").innerHTML = `The lab is deployed but has no X credentials yet. Add <code>${j.missing.map(esc).join("</code> and <code>")}</code> to the Vercel project's environment variables, redeploy, and register the callback URL below on the X app.`;
+      show("setup", true); show("lab", false); return;
+    }
+    show("setup", false); show("lab", true);
+    if (!$("handle").value) $("handle").value = j.defaults.followHandle;
+    if (!$("postRef").value) $("postRef").value = j.defaults.repostId || "";
+    if (!$("tag").value) $("tag").value = j.defaults.hashtag;
+    if (!$("caption").value) { $("caption").value = `Testing the Avalanche Halloween app 🎃 #${j.defaults.hashtag}`; countCaption(); }
+    renderSession();
+  }
+  function renderSession() {
+    const s = ME && ME.session;
+    $("n1").classList.toggle("done", !!s); $("n1").textContent = s ? "✓" : "1";
+    show("refreshBtn", !!s); show("logoutBtn", !!s);
+    $("loginBtn").textContent = s ? "Log in again" : "Log in with X";
+    $("loginBtn").classList.toggle("primary", !s);
+    for (const id of ["followBtn", "unfollowBtn", "repostBtn", "unrepostBtn", "postBtn"]) $(id).disabled = !s;
+    clearInterval(tick);
+    if (!s) { $("who").innerHTML = ""; return; }
+    const granted = (s.scope || "").split(/\s+/).filter(Boolean);
+    const wanted = ME.scopesRequested.split(" ");
+    const missing = wanted.filter((x) => !granted.includes(x));
+    const paint = () => {
+      const mins = Math.round((s.expiresAt - Date.now()) / 60000);
+      $("who").innerHTML = pill(true, "@" + s.user.username) + `<span class="pill">id ${esc(s.user.id)}</span>`
+        + pill(mins > 5 ? true : null, mins > 0 ? `token good for ${mins} min` : "token expired")
+        + pill(s.hasRefresh ? true : false, s.hasRefresh ? "refresh token held" : "no refresh token")
+        + (granted.length ? pill(missing.length ? false : true, missing.length ? "missing scopes: " + missing.join(", ") : "all 7 scopes granted") : "");
+    };
+    paint(); tick = setInterval(paint, 30000);
+  }
+
+  /* ---------- actions ---------- */
+  $("passGo").onclick = () => boot($("pass").value.trim());
+  $("pass").addEventListener("keydown", (e) => { if (e.key === "Enter") $("passGo").click(); });
+
+  $("refreshBtn").onclick = async (e) => { busy(e.target, true, "Refreshing…"); const j = await api("refresh", {}, "Refresh token"); busy(e.target, false, "x"); if (j.ok) { ME.session.expiresAt = j.expiresAt; ME.session.hasRefresh = j.hasRefresh; renderSession(); } };
+  $("logoutBtn").onclick = async (e) => { busy(e.target, true, "Logging out…"); await api("logout", {}, "Log out"); busy(e.target, false, "x"); ME.session = null; renderSession(); };
+
+  $("followBtn").onclick = async (e) => {
+    busy(e.target, true, "Following…");
+    const h = $("handle").value.trim(); const j = await api("follow", { handle: h }, "Follow @" + h.replace(/^@/, ""));
+    busy(e.target, false, "x");
+    $("followRes").innerHTML = j.ok ? pill(true, j.pending ? "Follow requested (protected account)" : "X confirmed the follow") : pill(false, "Follow failed, see the log");
+    $("n2").classList.toggle("done", !!j.ok); if (j.ok) $("n2").textContent = "✓";
+  };
+  $("unfollowBtn").onclick = async (e) => {
+    busy(e.target, true, "Undoing…");
+    const h = $("handle").value.trim(); const j = await api("unfollow", { handle: h }, "Unfollow @" + h.replace(/^@/, ""));
+    busy(e.target, false, "x");
+    $("followRes").innerHTML = j.ok ? pill(null, "Unfollowed") : pill(false, "Undo failed, see the log");
+  };
+  $("repostBtn").onclick = async (e) => {
+    busy(e.target, true, "Reposting…");
+    const j = await api("repost", { post: $("postRef").value.trim() }, "Repost");
+    busy(e.target, false, "x");
+    $("repostRes").innerHTML = j.ok ? pill(true, "X confirmed the repost") : pill(false, "Repost failed, see the log");
+    $("n3").classList.toggle("done", !!j.ok); if (j.ok) $("n3").textContent = "✓";
+  };
+  $("unrepostBtn").onclick = async (e) => {
+    busy(e.target, true, "Undoing…");
+    const j = await api("unrepost", { post: $("postRef").value.trim() }, "Undo repost");
+    busy(e.target, false, "x");
+    $("repostRes").innerHTML = j.ok ? pill(null, "Repost removed") : pill(false, "Undo failed, see the log");
+  };
+
+  /* photo: phones shoot 3 to 12 MB; the server accepts 4.5 MB per request, so shrink in the browser first */
+  async function prep(file) {
+    let src, w, h, url = "";
+    try { src = await createImageBitmap(file, { imageOrientation: "from-image" }); w = src.width; h = src.height; }
+    catch (_) {
+      url = URL.createObjectURL(file); src = new Image(); src.src = url; await src.decode(); w = src.naturalWidth; h = src.naturalHeight;
+    }
+    const k = Math.min(1, 1600 / Math.max(w, h));
+    const cv = document.createElement("canvas"); cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+    cv.getContext("2d").drawImage(src, 0, 0, cv.width, cv.height);
+    if (url) URL.revokeObjectURL(url);
+    const dataUrl = cv.toDataURL("image/jpeg", 0.82);
+    if (!dataUrl.startsWith("data:image/jpeg")) throw new Error("this browser could not encode a JPEG");
+    return { dataUrl, bytes: Math.round((dataUrl.length - 23) * 0.75), w: cv.width, h: cv.height, ow: w, oh: h, orig: file.size, type: file.type || "unknown" };
+  }
+  async function picked(e, how) {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) { addEntry(`Photo (${how})`, false, [{ label: "No file came back from the picker. The camera may be blocked in this browser.", method: "NOTE", status: 0, body: "" }]); return; }
+    try {
+      photo = await prep(f);
+      $("thumb").src = photo.dataUrl; show("thumb", true);
+      const kb = (n) => n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.round(n / 1024) + " KB";
+      $("photoRes").innerHTML = pill(true, `${photo.w}×${photo.h} · ${kb(photo.bytes)}`) + `<span class="pill">was ${photo.ow}×${photo.oh} · ${kb(photo.orig)}</span>`;
+      addEntry(`Photo ready (${how})`, true, [{ label: `Resized in the browser: ${photo.type}, ${photo.ow}×${photo.oh}, ${kb(photo.orig)} → JPEG ${photo.w}×${photo.h}, ${kb(photo.bytes)}`, method: "NOTE", status: 200, body: "" }]);
+    } catch (err) {
+      photo = null; show("thumb", false);
+      $("photoRes").innerHTML = pill(false, "Could not read that photo");
+      addEntry(`Photo (${how})`, false, [{ label: "The browser could not decode or resize the image", method: "NOTE", status: 0, body: `${f.type || "unknown type"}, ${f.size} bytes: ${err.message || err}` }]);
+    }
+  }
+  $("cam").addEventListener("change", (e) => picked(e, "camera"));
+  $("lib").addEventListener("change", (e) => picked(e, "library"));
+
+  function countCaption() {
+    const t = $("caption").value, link = HAS_LINK.test(t);
+    $("count").textContent = link ? "Remove the link: posts with links are billed far higher" : `${[...t].length} characters`;
+    $("count").classList.toggle("bad", link);
+    return !link;
+  }
+  $("caption").addEventListener("input", countCaption);
+
+  $("postBtn").onclick = async (e) => {
+    if (!countCaption()) { toast("Remove the link first"); return; }
+    if (!photo && !confirm("No photo attached. Post text only?")) return;
+    busy(e.target, true, "Posting to X…");
+    const j = await api("post", { text: $("caption").value, hashtag: $("tag").value, image: photo ? photo.dataUrl : "" }, "Post with photo");
+    busy(e.target, false, "x");
+    if (j.ok) {
+      lastPostId = j.id; $("deleteBtn").disabled = false;
+      $("postRes").innerHTML = `<a href="${esc(j.url)}" target="_blank" rel="noopener">Open the post ↗</a>`
+        + pill(j.readBack ? true : false, j.readBack ? "read back by id" : "read-back failed")
+        + (j.hashtagOk === null ? "" : pill(j.hashtagOk, j.hashtagOk ? "#" + j.hashtag + " found" : "#" + j.hashtag + " missing"))
+        + (j.mediaOk === null ? pill(null, "no photo sent") : pill(j.mediaOk, j.mediaOk ? "photo attached" : "photo missing"));
+      const all = j.readBack && j.hashtagOk !== false && j.mediaOk === true;
+      $("n4").classList.toggle("done", all); if (all) $("n4").textContent = "✓";
+    } else $("postRes").innerHTML = pill(false, "Post failed, see the log");
+  };
+  $("deleteBtn").onclick = async (e) => {
+    if (!lastPostId) return;
+    busy(e.target, true, "Deleting…");
+    const j = await api("delete", { id: lastPostId }, "Delete the test post");
+    busy(e.target, false, "x");
+    if (j.ok) { lastPostId = ""; e.target.disabled = true; $("postRes").innerHTML = pill(null, "Test post deleted"); }
+  };
+
+  /* ---------- go ---------- */
+  const qs = new URLSearchParams(location.search);
+  const k = qs.get("k") || "";
+  if (qs.get("cross")) {
+    $("cross").innerHTML = `<b>The login finished in a different browser than it started in.</b><p>You are logged in here, in ${esc(B.name)}, not in the browser where you tapped the button. This is the case the guest app has to handle with an "open in Safari or Chrome" screen.</p>`;
+    show("cross", true);
+  }
+  if (qs.get("login") === "locked") toast("Enter the passcode first");
+  if (location.search) history.replaceState(null, "", location.pathname);
+  renderLog();
+  boot(k);
+})();
+</script>
+</body>
+</html>
