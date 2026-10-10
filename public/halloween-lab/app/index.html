@@ -208,7 +208,7 @@ const custom={1:null,2:null,3:null,4:null,scene:null};
 /* ---------- test build: real X through /api/xlab ---------- */
 // Real when the server has X keys and the guest is logged in: login, both posts, the repost, the follow checks.
 // Simulated always: wallet, crews, wheel, trades, staff scans, the room.
-const X={configured:false,user:null,defaults:{},locked:false,redirectUri:'',photo:null,f:{},capMode:'test',cap:{},postId:'',anyway:false};
+const X={ready:false,configured:false,demo:false,user:null,defaults:{},locked:false,redirectUri:'',photo:null,f:{},capMode:'test',cap:{},postId:'',anyway:false};
 const live=()=>X.configured&&!!X.user;
 const HAS_LINK=/(https?:\/\/[^\s]+)|(^|\s)(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/\S*)?/i;
 const UA=navigator.userAgent||'';
@@ -247,8 +247,8 @@ async function xPrep(file){
   return {dataUrl};
 }
 // Progress survives a reload or a trip to the X app and back.
-function saveState(){try{sessionStorage.setItem('hw_state',JSON.stringify({G,U,tab,f:X.f,who:X.user?X.user.id:''}))}catch(_){}}
-function loadState(){try{const d=JSON.parse(sessionStorage.getItem('hw_state')||'null');if(!d||(d.who||'')!==(X.user?X.user.id:''))return false;G=d.G;U=d.U;tab=d.tab||'home';X.f=d.f||{};return true}catch(_){return false}}
+function saveState(){try{sessionStorage.setItem('hw_state',JSON.stringify({G,U,tab,f:X.f,demo:X.demo,who:X.user?X.user.id:''}))}catch(_){}}
+function loadState(){try{const d=JSON.parse(sessionStorage.getItem('hw_state')||'null');if(!d||(d.who||'')!==(X.user?X.user.id:''))return false;G=d.G;U=d.U;tab=d.tab||'home';X.f=d.f||{};X.demo=!!d.demo;return true}catch(_){return false}}
 function readFlash(){
   const m=document.cookie.match(/(?:^|;\s*)xlab_log=([^;]+)/);if(!m)return null;document.cookie='xlab_log=; Max-Age=0; Path=/';
   try{const b=decodeURIComponent(m[1]).replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b),c=>c.charCodeAt(0))))}catch(_){return null}
@@ -257,20 +257,25 @@ async function xCopy(t){try{await navigator.clipboard.writeText(t);toast('Copied
 function renderMode(){
   const el=$('#xmode');if(!el)return;el.className='xmode'+(live()?' live':'');
   el.innerHTML=X.locked?'<b>TEST BUILD</b><span class="w">Locked</span><u>Passcode</u>'
-    :!X.configured?'<b>TEST BUILD</b><span class="w">X is simulated · no X keys on the server yet</span><u>Why</u>'
+    :!X.ready?'<b>TEST BUILD</b><span class="w">Checking the X connection…</span>'
+    :!X.configured&&X.demo?'<b>PREVIEW</b><span class="w">Fake X · nothing is posted</span><u>Setup</u>'
+    :!X.configured?'<b>NOT CONNECTED TO X</b><span class="w">Login needs an X app\'s keys</span><u>Setup</u>'
     :live()?`<b>X IS REAL</b><span class="w">${esc(U.h)} · the rest is simulated</span><u>Details</u>`
     :'<b>X IS REAL</b><span class="w">after you log in · the rest is simulated</span><u>Details</u>';
 }
 function xInfo(){
   if(X.locked){passSheet();return}
-  if(!X.configured){sheet(`<h2 class="h">X is simulated for now</h2>
-    <p class="sm" style="margin:0">You can walk the whole guest flow, but every X step is faked, the same as the prototype. To make them real:</p>
-    <div class="list sm"><div class="li">1 · Register this callback URL on the X app</div><div class="li">2 · Add X_CLIENT_ID and X_CLIENT_SECRET to the Vercel project</div><div class="li">3 · Redeploy, then reload this page</div></div>
+  if(!X.configured){sheet(`<h2 class="h">X is not connected yet</h2>
+    <p class="sm" style="margin:0">Continue with X cannot send you to X until this page has an X app's keys. Two steps, once, and then every phone works:</p>
+    <div class="list sm"><div class="li"><div class="grow"><b>1 · X developer portal</b><div class="xs mu">Open your app's user authentication settings and add this callback URL</div></div></div></div>
     <div class="xlog">${esc(X.redirectUri||'')}</div>
-    <button class="btn ghost full" data-act="xcopycb">Copy the callback URL</button><button class="btn full" data-act="close">Close</button>`);return}
+    <button class="btn ghost full" data-act="xcopycb">Copy the callback URL</button>
+    <div class="list sm"><div class="li"><div class="grow"><b>2 · Vercel</b><div class="xs mu">Add X_CLIENT_ID and X_CLIENT_SECRET to the shamwise project's environment variables, then redeploy</div></div></div></div>
+    <button class="btn full" data-act="close">Close</button>
+    <button class="btn ghost full" data-act="xdemo">Preview the screens with fake X instead</button>`);return}
   sheet(`<h2 class="h">What is real here</h2>
     <div class="list sm"><div class="li"><div class="grow"><b>Real, on your X account</b><div class="xs mu">Login · both posts with your photo · the repost · the two follow checks</div></div></div>
-    <div class="li"><div class="grow"><b>Simulated</b><div class="xs mu">Wallet · crews · wheel · trades · staff scans · the room</div></div></div></div>
+    <div class="li"><div class="grow"><b>Simulated</b><div class="xs mu">Crews · wheel · trades · staff scans · the room. No wallet is created in this build.</div></div></div></div>
     <a class="btn ghost full" href="/halloween-lab" target="_blank" rel="noopener">Open the X lab ↗</a>
     ${X.user?'<button class="btn ghost full" data-act="xlogout">Log out of X</button>':''}<button class="btn full" data-act="close">Close</button>`);
 }
@@ -286,17 +291,18 @@ function inAppSheet(){
     <a class="btn full" href="${esc(ext)}">Open in ${target}</a><button class="btn ghost full" data-act="xcopy">Copy link</button><button class="btn ghost full" data-act="xanyway">Try here anyway</button>`);
 }
 function enter(cross){
-  const steps=[['✓',`Signed in as ${esc(U.h)}`],['✓',`Avalanche wallet created · ${U.wallet}`],['✓','Gas covered by Team1, so you never need AVAX'],['→','Next: post your arrival to unlock your tote']];
+  const steps=[['✓',`Signed in as ${esc(U.h)} on X`],['→','Next: post your arrival to unlock your tote']];
   if(cross)steps.unshift(['!','This login finished in a different browser than it started in']);
   sheet(`<h2 class="h">Entering Avalanche Halloween…</h2><div class="steps">${steps.map((st,i)=>`<div style="animation-delay:${i*.5}s"><b class="ok">${st[0]}</b>${st[1]}</div>`).join('')}</div>`);
-  setTimeout(()=>{U.in=true;tx('Wallet created');feed(`${U.h} joined Avalanche Halloween`);tab='home';closeSheet();render()},reduced?300:(cross?3200:2300));
+  setTimeout(()=>{U.in=true;feed(`${U.h} joined Avalanche Halloween`);tab='home';closeSheet();render()},reduced?300:(cross?2600:1600));
 }
 async function xBoot(k){
   const qs=new URLSearchParams(location.search),lg=qs.get('login'),cross=!!qs.get('cross');k=k||qs.get('k')||'';
   if(location.search)history.replaceState(null,'',location.pathname);
   let j={};try{j=await (await fetch('/api/xlab/me'+(k?'?k='+encodeURIComponent(k):''),{credentials:'same-origin'})).json()}catch(_){}
   if(j.locked){X.locked=true;renderMode();passSheet(j.wrongPasscode);return}
-  X.locked=false;X.configured=!!j.configured;X.defaults=j.defaults||{};X.redirectUri=j.redirectUri||'';X.user=j.session?j.session.user:null;
+  X.locked=false;X.ready=true;X.configured=!!j.configured;X.defaults=j.defaults||{};X.redirectUri=j.redirectUri||'';X.user=j.session?j.session.user:null;
+  if(X.configured)X.demo=false;
   closeSheet();
   if(!loadState()&&X.user)U.in=false;
   if(X.configured&&!X.user&&U.in)init();          // keys were added since a simulated run: start clean, real login required
@@ -380,7 +386,8 @@ function vLanding(){
     <p class="mu" style="margin:0">Get your crew piece. Trade with the other 3 crews. Finish the picture. Win the pants.</p>
     <div class="facedown">${[1,2,3,4].map(i=>`<div style="border-color:${CREW[i].c};color:${CREW[i].c};text-align:center;padding:4px">${CREW[i].n}</div>`).join('')}</div>
     <button class="btn full" data-act="login"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3zm-1.1 16.2h1.7L7.4 4.7H5.6z"/></svg>Continue with X</button>
-    <p class="xs mu" style="margin:0;text-align:center">Log in, post your arrival, then grab your tote and crew wristband. No wallet app needed: we create one for you, and Team1 covers the gas.</p>
+    <p class="xs mu" style="margin:0;text-align:center">Log in, post your arrival, then grab your tote and crew wristband.</p>
+    ${X.ready&&!X.configured&&!X.demo?`<div class="card" style="border-color:#6b3a14;gap:6px"><b class="sm">X login is not connected yet</b><p class="xs mu" style="margin:0">This page cannot send you to X until an X app's keys are added. Tap Continue with X for the two setup steps.</p></div>`:''}
   </div>`;
 }
 function vTote(){
@@ -514,7 +521,7 @@ function vMerchant(){
 function render(){
   const top=$('#top'),nav=$('#nav'),main=$('#main');
   const cc=U.crew?CREW[U.crew].c:'var(--mu)';
-  top.innerHTML=U.in?`<div class="ava" style="background:${cc}">${U.h[1].toUpperCase()}</div><div class="who"><b>${U.h}${U.crew?` · <span style="color:${cc}">${CREW[U.crew].n}</span>`:''}</b><small>${U.wallet} · C-Chain</small></div><span class="pill or">${U.spins} spin${U.spins===1?'':'s'}</span><button class="btn ghost sm testbtn" data-act="panel">Test</button>`
+  top.innerHTML=U.in?`<div class="ava" style="background:${cc}">${U.h[1].toUpperCase()}</div><div class="who"><b>${U.h}${U.crew?` · <span style="color:${cc}">${CREW[U.crew].n}</span>`:''}</b><small>${live()?'X connected':'Fake X · preview'}</small></div><span class="pill or">${U.spins} spin${U.spins===1?'':'s'}</span><button class="btn ghost sm testbtn" data-act="panel">Test</button>`
     :`<div class="who"><b>Avalanche Halloween</b><small>ZillaSpace · ${WAVES[G.wave]}</small></div><button class="btn ghost sm testbtn" data-act="panel">Test</button>`;
   if(!U.in){main.innerHTML=vLanding();nav.hidden=true}
   else{
@@ -595,6 +602,8 @@ setInterval(()=>{const t=30-Math.floor(Date.now()/1000)%30;document.querySelecto
 /* ---------- flows ---------- */
 function login(){
   if(X.locked){passSheet();return}
+  if(!X.ready){toast('One second, checking the X connection…');return}
+  if(!X.configured&&!X.demo){xInfo();return}
   if(X.configured&&INAPP&&!X.anyway){inAppSheet();return}
   sheet(`<h2 class="h">Authorize Avalanche Halloween</h2>
   <p class="sm mu" style="margin:0">X will let this app:</p>
@@ -604,9 +613,9 @@ function login(){
 }
 function auth(){
   if(X.configured){saveState();const b=document.querySelector('[data-act="auth"]');if(b){b.disabled=true;b.textContent='Opening X…'}location.href='/api/xlab/login?to=app';return}
-  const steps=[['✓',`Signed in as ${U.h}`],['✓',`Avalanche wallet created · ${U.wallet}`],['✓','Gas covered by Team1, so you never need AVAX'],['→','Next: post your arrival to unlock your tote']];
+  const steps=[['✓',`Signed in as ${U.h} · fake X`],['→','Next: post your arrival to unlock your tote']];
   sheet(`<h2 class="h">Entering Avalanche Halloween…</h2><div class="steps">${steps.map((s,i)=>`<div style="animation-delay:${i*.5}s"><b class="ok">${s[0]}</b>${s[1]}</div>`).join('')}</div>`);
-  setTimeout(()=>{U.in=true;tx('Wallet created');feed(`${U.h} joined Avalanche Halloween`);tab='home';closeSheet();render()},reduced?300:2300);
+  setTimeout(()=>{U.in=true;feed(`${U.h} joined Avalanche Halloween`);tab='home';closeSheet();render()},reduced?300:1600);
 }
 function pickCrew(){
   if(forceCrew)return forceCrew;
@@ -914,6 +923,7 @@ document.addEventListener('click',e=>{
   switch(a){
     case 'login':login();break;
     case 'xinfo':xInfo();break;
+    case 'xdemo':X.demo=true;closeSheet();render();login();break;
     case 'xcopy':xCopy(HERE);break;
     case 'xcopycb':xCopy(X.redirectUri||'');break;
     case 'xanyway':X.anyway=true;login();break;
