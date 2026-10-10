@@ -208,8 +208,16 @@ const custom={1:null,2:null,3:null,4:null,scene:null};
 /* ---------- test build: real X through /api/xlab ---------- */
 // Real when the server has X keys and the guest is logged in: login, both posts, the repost, the follow checks.
 // Simulated always: wallet, crews, wheel, trades, staff scans, the room.
-const X={ready:false,configured:false,demo:false,user:null,defaults:{},locked:false,redirectUri:'',photo:null,f:{},capMode:'test',cap:{},postId:'',anyway:false};
+const X={ready:false,configured:false,demo:false,user:null,defaults:{},locked:false,redirectUri:'',photo:null,f:{},pre:{},tg:{},lastRepost:'',capMode:'test',cap:{},postId:'',anyway:false};
 const live=()=>X.configured&&!!X.user;
+// Test targets: the event's accounts by default. A tester can swap in an account they do not follow, and any post.
+const TG0={f1:'team1TH',f2:'AvaxTeam1'};
+try{X.tg=JSON.parse(localStorage.getItem('hw_targets')||'{}')||{}}catch(_){}
+const tgt=k=>k==='repost'?(X.tg.repost||X.defaults.repostId||''):(X.tg[k]||TG0[k]);
+const saveTg=()=>{try{localStorage.setItem('hw_targets',JSON.stringify(X.tg))}catch(_){}};
+const cleanH=v=>{v=String(v||'').trim();const m=v.match(/(?:x|twitter)\.com\/@?([A-Za-z0-9_]{1,15})/i);return (m?m[1]:v).replace(/^@/,'')};
+const fh=k=>live()?tgt(k):TG0[k];
+const fsub=(k,d)=>!live()?d:X.pre[tgt(k)]===true&&!U.t[k]?'You already follow this · the spin is yours':X.tg[k]?'Test account':d;
 const HAS_LINK=/(https?:\/\/[^\s]+)|(^|\s)(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/\S*)?/i;
 const UA=navigator.userAgent||'';
 const ANDROID=/Android/.test(UA),IOS=!ANDROID&&(/iPhone|iPad|iPod/.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1));
@@ -247,13 +255,13 @@ async function xPrep(file){
   return {dataUrl};
 }
 // Progress survives a reload or a trip to the X app and back.
-function saveState(){try{sessionStorage.setItem('hw_state',JSON.stringify({G,U,tab,f:X.f,demo:X.demo,who:X.user?X.user.id:''}))}catch(_){}}
-function loadState(){try{const d=JSON.parse(sessionStorage.getItem('hw_state')||'null');if(!d||(d.who||'')!==(X.user?X.user.id:''))return false;G=d.G;U=d.U;tab=d.tab||'home';X.f=d.f||{};X.demo=!!d.demo;return true}catch(_){return false}}
+function saveState(){if(!X.ready)return;try{sessionStorage.setItem('hw_state',JSON.stringify({G,U,tab,f:X.f,pre:X.pre,demo:X.demo,who:X.user?X.user.id:''}))}catch(_){}}
+function loadState(){try{const d=JSON.parse(sessionStorage.getItem('hw_state')||'null');if(!d||(d.who||'')!==(X.user?X.user.id:''))return false;G=d.G;U=d.U;tab=d.tab||'home';X.f=d.f||{};X.pre={};for(const h in (d.pre||{}))if(typeof d.pre[h]==='boolean')X.pre[h]=d.pre[h];X.demo=!!d.demo;return true}catch(_){return false}}
 function readFlash(){
   const m=document.cookie.match(/(?:^|;\s*)xlab_log=([^;]+)/);if(!m)return null;document.cookie='xlab_log=; Max-Age=0; Path=/';
   try{const b=decodeURIComponent(m[1]).replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b),c=>c.charCodeAt(0))))}catch(_){return null}
 }
-async function xCopy(t){try{await navigator.clipboard.writeText(t);toast('Copied')}catch(_){prompt('Copy this:',t)}}
+async function xCopy(t){try{await navigator.clipboard.writeText(t);toast('Copied')}catch(_){try{prompt('Copy this:',t)}catch(__){toast('Could not copy. Long-press the address bar to copy the link.')}}}
 function renderMode(){
   const el=$('#xmode');if(!el)return;el.className='xmode'+(live()?' live':'');
   el.innerHTML=X.locked?'<b>TEST BUILD</b><span class="w">Locked</span><u>Passcode</u>'
@@ -276,6 +284,7 @@ function xInfo(){
   sheet(`<h2 class="h">What is real here</h2>
     <div class="list sm"><div class="li"><div class="grow"><b>Real, on your X account</b><div class="xs mu">Login · both posts with your photo · the repost · the two follow checks</div></div></div>
     <div class="li"><div class="grow"><b>Simulated</b><div class="xs mu">Crews · wheel · trades · staff scans · the room. No wallet is created in this build.</div></div></div></div>
+    ${X.user?'<button class="btn ghost full" data-act="xtargets">Change the test accounts and post</button>':''}
     <a class="btn ghost full" href="/halloween-lab" target="_blank" rel="noopener">Open the X lab ↗</a>
     ${X.user?'<button class="btn ghost full" data-act="xlogout">Log out of X</button>':''}<button class="btn full" data-act="close">Close</button>`);
 }
@@ -306,16 +315,64 @@ async function xBoot(k){
   closeSheet();
   if(!loadState()&&X.user)U.in=false;
   if(X.configured&&!X.user&&U.in)init();          // keys were added since a simulated run: start clean, real login required
-  if(X.user){U.h='@'+X.user.username;if(!U.in){if(lg==='ok'){readFlash();render();enter(cross);return}U.in=true}}
+  if(X.user){U.h='@'+X.user.username;xPre();if(!U.in){if(lg==='ok'){readFlash();render();enter(cross);return}U.in=true}}
   render();
   if(lg==='err'){const fl=readFlash();xFail('X login did not finish',{steps:fl?fl.steps:[],error:fl?'':'X sent you back without completing the login.'})}
   if(lg==='locked')passSheet();
 }
-async function xLogout(){await xapi('logout');X.user=null;X.f={};try{sessionStorage.removeItem('hw_state')}catch(_){}init();closeSheet();render();toast('Logged out of X')}
+async function xLogout(){await xapi('logout');X.user=null;X.f={};X.pre={};try{sessionStorage.removeItem('hw_state')}catch(_){}init();closeSheet();render();toast('Logged out of X')}
 async function xDelete(el){
   if(!X.postId)return;el.disabled=true;el.textContent='Deleting…';
   const j=await xapi('delete',{id:X.postId});
   if(j.ok){X.postId='';el.textContent='Deleted from X ✓'}else{el.disabled=false;el.textContent='Delete this test post from X';xFail('X did not delete the post',j)}
+}
+// A guest who already follows the account earns the spin anyway. X is asked once, up front, so the tap can
+// credit straight away, and so a guest who does not follow yet still gets X's follow screen on the same tap
+// (a window opened after waiting for X would be blocked as a pop-up).
+async function xPre(){
+  if(!live())return;
+  let got=false;
+  for(const k of ['f1','f2']){
+    const h=tgt(k);if(U.t[k]||X.pre[h]!==undefined)continue;
+    X.pre[h]=null;
+    const j=await xapi('checkfollow',{handle:h});
+    if(j.following===true||j.following===false){X.pre[h]=j.following;got=true}else delete X.pre[h];
+  }
+  if(got)render();
+}
+function repostDone(){
+  sheet(`<h2 class="h" style="text-align:center">Reposted on X ✓</h2><p class="sm mu" style="margin:0;text-align:center">+1 spin. The repost is on your X profile now.</p>
+    <button class="btn full" data-act="close">Keep going</button><button class="btn ghost full" data-act="xunrepost">Undo this test repost on X</button>`);
+}
+async function xUnrepost(el){
+  if(!X.lastRepost)return;el.disabled=true;el.textContent='Undoing…';
+  const j=await xapi('unrepost',{post:X.lastRepost});
+  if(j.ok){X.lastRepost='';el.textContent='Repost removed from X ✓'}else{el.disabled=false;el.textContent='Undo this test repost on X';xFail('X did not undo the repost',j)}
+}
+function targetsSheet(){
+  const st=k=>{const v=X.pre[tgt(k)];return v===true?'You already follow this account, so the spin is yours on one tap.':v===false?'You do not follow this account yet. Good for testing the follow step.':'X has not been asked about this account yet.'};
+  sheet(`<h2 class="h">Test accounts and post</h2>
+    <p class="sm mu" style="margin:0">Swap in an account you do not follow, and any post to repost. Saved on this phone only. Guests never see this.</p>
+    <label class="xs mu" for="tg1">Follow task 1 · account</label><input class="xin" id="tg1" value="${esc(tgt('f1'))}" autocapitalize="off" autocorrect="off" spellcheck="false"><span class="xs mu">${st('f1')}</span>
+    <label class="xs mu" for="tg2">Follow task 2 · account</label><input class="xin" id="tg2" value="${esc(tgt('f2'))}" autocapitalize="off" autocorrect="off" spellcheck="false"><span class="xs mu">${st('f2')}</span>
+    <label class="xs mu" for="tg3">Repost task · link to a post</label><input class="xin" id="tg3" value="${esc(tgt('repost'))}" placeholder="https://x.com/…/status/…" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button class="btn full" data-act="xtgsave">Save</button><button class="btn ghost full" data-act="xtgreset">Back to the event accounts</button><button class="btn ghost full" data-act="close">Cancel</button>`);
+}
+function targetsSave(reset){
+  const old={f1:tgt('f1'),f2:tgt('f2'),repost:tgt('repost')};
+  if(reset)X.tg={};
+  else{
+    const a=cleanH($('#tg1').value),b=cleanH($('#tg2').value),p=($('#tg3').value||'').trim(),okH=h=>/^[A-Za-z0-9_]{1,15}$/.test(h);
+    if(!okH(a)||!okH(b)){toast('That is not an X handle. Use the name after the @.');return}
+    if(p&&!/status(?:es)?\/\d{5,25}|^\d{5,25}$/.test(p)){toast('That is not a link to a post on X.');return}
+    X.tg={};
+    if(a.toLowerCase()!==TG0.f1.toLowerCase())X.tg.f1=a;
+    if(b.toLowerCase()!==TG0.f2.toLowerCase())X.tg.f2=b;
+    if(p&&p!==(X.defaults.repostId||''))X.tg.repost=p;
+  }
+  saveTg();
+  for(const k of ['f1','f2','repost'])if(tgt(k)!==old[k]){U.t[k]=0;X.f[k]=0}   // a changed target can be tested again
+  closeSheet();render();toast(reset?'Back to the event accounts':'Saved');xPre();
 }
 
 function init(){
@@ -461,7 +518,7 @@ function vSpin(){
 function vTasks(){
   const next=G.goals[G.goalHit],prev=G.goalHit?G.goals[G.goalHit-1]:0;
   const pct=next?Math.min(100,((G.posts-prev)/(next-prev))*100):100;
-  const lab=(k,rw)=>!live()||k==='repost'?rw:X.f[k]?'Check ✓':'Follow ↗';
+  const lab=(k,rw)=>!live()||k==='repost'?rw:X.pre[tgt(k)]===true?'Claim +1':X.f[k]?'Check ✓':'Follow ↗';
   const row=(k,label,sub,rw)=>`<div class="li"><div class="grow"><b class="sm">${label}</b><div class="xs mu">${sub}</div></div>${U.t[k]?'<span class="btn done sm">Done</span>':`<button class="btn sm" data-act="task" data-v="${k}">${lab(k,rw)}</button>`}</div>`;
   return `
   ${vPackCard()}
@@ -472,12 +529,13 @@ function vTasks(){
   </section>
   <section class="card">
     <h3>Quick tasks</h3>
-    <p class="xs mu" style="margin:0">${live()?'The repost runs through your X login. Follows open X: follow there, come back, tap Check. The spin lands when X confirms.':'Each button runs through your X login, and the spin lands when X confirms.'}</p>
+    <p class="xs mu" style="margin:0">${live()?'The repost runs through your X login. Follows open X: follow there, come back, tap Check. Already following? The spin is yours on one tap.':'Each button runs through your X login, and the spin lands when X confirms.'}</p>
     <div class="list">
-      ${row('repost','Repost the main event post','@team1TH · Avalanche Halloween','+1 spin')}
-      ${row('f1','Follow @team1TH','Team1 Thailand','+1 spin')}
-      ${row('f2','Follow @AvaxTeam1','Team1 global','+1 spin')}
+      ${row('repost',live()&&X.tg.repost?'Repost the test post':'Repost the main event post',live()&&X.tg.repost?'Your own pick · test only':'@team1TH · Avalanche Halloween','+1 spin')}
+      ${row('f1','Follow @'+esc(fh('f1')),fsub('f1','Team1 Thailand'),'+1 spin')}
+      ${row('f2','Follow @'+esc(fh('f2')),fsub('f2','Team1 global'),'+1 spin')}
     </div>
+    ${live()?'<button class="btn ghost sm" data-act="xtargets">Change the test accounts and post</button>':''}
   </section>
   <section class="card">
     <div class="row sp"><h3>Post from the night</h3><span class="pill">${U.t.posts}/2</span></div>
@@ -662,7 +720,7 @@ function vStaff(){
 function packReady(){return U.t.posts>=2&&U.t.repost&&U.t.f1&&U.t.f2}
 function packCheck(){if(!U.pack&&packReady()){U.pack=1;setTimeout(()=>toast('Photo pack unlocked. Rip it open!'),reduced?50:1500)}}
 function vPackCard(){
-  const steps=[['Post 1 · your arrival',U.t.posts>=1],['Post 2 · your crew (19:30)',U.t.posts>=2],['Repost the main post',!!U.t.repost],['Follow @team1TH',!!U.t.f1],['Follow @AvaxTeam1',!!U.t.f2]];
+  const steps=[['Post 1 · your arrival',U.t.posts>=1],['Post 2 · your crew (19:30)',U.t.posts>=2],['Repost the main post',!!U.t.repost],['Follow @'+esc(fh('f1')),!!U.t.f1],['Follow @'+esc(fh('f2')),!!U.t.f2]];
   const n=steps.filter(x=>x[1]).length;
   if(U.pack===2)return `<section class="card"><div class="row sp"><h3>Photo pack</h3><span class="pill ok">Opened ✓</span></div><p class="xs mu" style="margin:0">You got: ${U.packWon}</p></section>`;
   return `<section class="card ${U.pack===1?'hot':''}">
@@ -753,22 +811,23 @@ function openPack(b){
 }
 async function doTaskReal(k){
   const b=document.querySelector(`[data-act="task"][data-v="${k}"]`);
-  const credit=()=>{U.t[k]=1;U.spins++;toast('X confirmed · +1 spin');packCheck();render()};
+  const credit=m=>{U.t[k]=1;U.spins++;toast(m||'X confirmed · +1 spin');packCheck();render()};
   if(k==='repost'){
-    let ref=X.defaults.repostId||'';try{ref=ref||localStorage.getItem('hw_repost')||''}catch(_){}
-    if(!ref){ref=(prompt('Paste the link to the post guests should repost (the main event post):')||'').trim();if(!ref)return;try{localStorage.setItem('hw_repost',ref)}catch(_){}}
+    let ref=tgt('repost');
+    if(!ref){targetsSheet();toast('Add a link to the post to repost, then tap the task again');const i=$('#tg3');if(i)i.focus();return}
     if(b){b.disabled=true;b.textContent='Reposting…'}
     const j=await xapi('repost',{post:ref});
-    if(j.ok){credit();return}
-    try{localStorage.removeItem('hw_repost')}catch(_){}
+    if(j.ok){X.lastRepost=ref;credit();repostDone();return}
+    if(X.tg.repost===ref){delete X.tg.repost;saveTg()}
     render();xFail('X did not take the repost',j);return;
   }
-  const handle=k==='f1'?'team1TH':'AvaxTeam1';
+  const handle=tgt(k);
+  if(X.pre[handle]===true){credit(`You already follow @${handle} · +1 spin`);return}
   if(!X.f[k]){X.f[k]=1;window.open('https://x.com/intent/follow?screen_name='+handle,'_blank','noopener');render();toast('Follow on X, then come back and tap Check');return}
   if(b){b.disabled=true;b.textContent='Checking…'}
   const j=await xapi('checkfollow',{handle});
-  if(j.following===true){credit();return}
-  if(j.following===false&&!j.requested){X.f[k]=0;render();toast(`X says you don't follow @${handle} yet. Tap Follow again.`);return}
+  if(j.following===true){X.pre[handle]=true;credit();return}
+  if(j.following===false&&!j.requested){X.f[k]=0;X.pre[handle]=false;render();toast(`X says you don't follow @${handle} yet. Tap Follow again.`);return}
   render();xFail('X would not confirm the follow',j);
 }
 function doTask(k){
@@ -930,6 +989,10 @@ document.addEventListener('click',e=>{
     case 'xcap':{const t=$('#cap');X.cap[X.capMode]=t.value;X.capMode=v;t.value=X.cap[v];document.querySelectorAll('[data-act="xcap"]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===v));break}
     case 'xdelete':xDelete(el);break;
     case 'xlogout':xLogout();break;
+    case 'xtargets':targetsSheet();break;
+    case 'xtgsave':targetsSave(false);break;
+    case 'xtgreset':targetsSave(true);break;
+    case 'xunrepost':xUnrepost(el);break;
     case 'xpass':xBoot(($('#xpw').value||'').trim());break;
     case 'auth':auth();break;
     case 'close':closeSheet();break;
