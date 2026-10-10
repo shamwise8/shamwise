@@ -268,7 +268,7 @@ function renderMode(){
     :!X.ready?'<b>TEST BUILD</b><span class="w">Checking the X connection…</span>'
     :!X.configured&&X.demo?'<b>PREVIEW</b><span class="w">Fake X · nothing is posted</span><u>Setup</u>'
     :!X.configured?'<b>NOT CONNECTED TO X</b><span class="w">Login needs an X app\'s keys</span><u>Setup</u>'
-    :live()?`<b>X IS REAL</b><span class="w">${esc(U.h)} · the rest is simulated</span><u>Details</u>`
+    :live()?`<b>X IS REAL</b><span class="w">${esc(U.h)} · the rest is simulated</span><u data-act="xlogout">Disconnect X</u><u>Details</u>`
     :'<b>X IS REAL</b><span class="w">after you log in · the rest is simulated</span><u>Details</u>';
 }
 function xInfo(){
@@ -286,7 +286,7 @@ function xInfo(){
     <div class="li"><div class="grow"><b>Simulated</b><div class="xs mu">Crews · wheel · trades · staff scans · the room. No wallet is created in this build.</div></div></div></div>
     ${X.user?'<button class="btn ghost full" data-act="xtargets">Change the test accounts and post</button>':''}
     <a class="btn ghost full" href="/halloween-lab" target="_blank" rel="noopener">Open the X lab ↗</a>
-    ${X.user?'<button class="btn ghost full" data-act="xlogout">Log out of X</button>':''}<button class="btn full" data-act="close">Close</button>`);
+    ${X.user?'<button class="btn ghost full" data-act="xlogout">Disconnect X</button>':''}<button class="btn full" data-act="close">Close</button>`);
 }
 function passSheet(wrong){
   sheet(`<h2 class="h">Passcode</h2><p class="sm mu" style="margin:0">This test build spends X API credits, so it sits behind a passcode.${wrong?' That one was wrong.':''}</p>
@@ -320,7 +320,7 @@ async function xBoot(k){
   if(lg==='err'){const fl=readFlash();xFail('X login did not finish',{steps:fl?fl.steps:[],error:fl?'':'X sent you back without completing the login.'})}
   if(lg==='locked')passSheet();
 }
-async function xLogout(){await xapi('logout');X.user=null;X.f={};X.pre={};try{sessionStorage.removeItem('hw_state')}catch(_){}init();closeSheet();render();toast('Logged out of X')}
+async function xLogout(){await xapi('logout');X.user=null;X.f={};X.pre={};try{sessionStorage.removeItem('hw_state')}catch(_){}init();closeSheet();render();toast('X disconnected')}
 async function xDelete(el){
   if(!X.postId)return;el.disabled=true;el.textContent='Deleting…';
   const j=await xapi('delete',{id:X.postId});
