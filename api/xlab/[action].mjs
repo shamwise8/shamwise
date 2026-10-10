@@ -22,7 +22,8 @@ const AUTHORIZE = "https://x.com/i/oauth2/authorize";
 const TOKEN = "https://api.x.com/2/oauth2/token";
 const REVOKE = "https://api.x.com/2/oauth2/revoke";
 const SCOPES = "tweet.read tweet.write users.read follows.read follows.write media.write offline.access";
-const PAGE = "/halloween-lab";
+const PAGE = "/halloween-lab";          // the engineer's bench
+const APP = "/halloween-lab/app";       // the guest flow (the prototype with real X steps)
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;         // Vercel caps request bodies at 4.5 MB; the page resizes first
 // A post containing a link is billed far higher than a plain one, so captions never carry links.
 const HAS_LINK = /(https?:\/\/[^\s]+)|(^|\s)(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/\S*)?/i;
@@ -213,7 +214,9 @@ export default async function handler(req, res) {
   const action = String(req.query?.action || url.pathname.split("/").filter(Boolean).pop() || "");
   const here = origin(req);
   const redirectUri = `${here}/api/xlab/callback`;
-  const back = (q) => redirect(res, `${here}${PAGE}${q ? "?" + q : ""}`);
+  // Redirect-based steps return to whichever page started them: ?to=app on the way in, carried in the state on the way back.
+  let dest = url.searchParams.get("to") === "app" ? APP : PAGE;
+  const back = (q) => redirect(res, `${here}${dest}${q ? "?" + q : ""}`);
   const jar = cookies(req);
   const steps = [];
 
@@ -246,7 +249,7 @@ export default async function handler(req, res) {
       const nonce = b64url(randomBytes(12));
       // The verifier rides inside the encrypted state, so the exchange can still finish when an
       // in-app browser hands the flow to another browser. The cookie tells us whether that happened.
-      const state = seal({ v: verifier, n: nonce, t: Date.now() });
+      const state = seal({ v: verifier, n: nonce, t: Date.now(), p: dest === APP ? "app" : "" });
       setCookie(res, req, "xlab_st", nonce, { maxAge: 600 });
       const a = new URL(AUTHORIZE);
       a.searchParams.set("response_type", "code");
@@ -263,6 +266,7 @@ export default async function handler(req, res) {
       const err = url.searchParams.get("error");
       const code = url.searchParams.get("code");
       const st = unseal(url.searchParams.get("state") || "");
+      if (st?.p === "app") dest = APP;
       const sameBrowser = !!(st && jar.xlab_st && jar.xlab_st === st.n);
       clearCookie(res, req, "xlab_st");
       const fail = (msg) => { note(steps, "Login failed", msg, false); flash(res, req, { title: "Log in with X", ok: false, steps }); return back("login=err"); };

@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#09070d">
+<title>Avalanche Halloween · test build</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Manrope:wght@400;500;600;700;800&family=Pirata+One&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#09070d;--ph:#0f0c14;--sf:#18131e;--sf2:#211a29;--ln:#2e2637;
+  --tx:#f4eee6;--mu:#a097ab;--or:#ff7a1a;--or2:#ffb36b;--gr:#52d690;
+  --c1:#5fb2ff;--c2:#ffcf3f;--c3:#a98dff;--c4:#ff5b4f;
+  --disp:"Pirata One",Georgia,serif;--body:"Manrope",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.45 var(--body);padding-inline:16px;padding-block:16px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+.stage{display:flex;gap:24px;justify-content:center;align-items:flex-start;max-width:1180px;margin-inline:auto}
+.phone{position:relative;width:400px;max-width:100%;height:min(840px,calc(100dvh - 32px));background:var(--ph);border:1px solid var(--ln);border-radius:34px;overflow:hidden;display:flex;flex-direction:column;flex:none}
+.panel{flex:1;min-width:0;max-width:640px;display:flex;flex-direction:column;gap:14px}
+.testbtn{display:none}
+@media (max-width:900px){
+  .stage{display:block}
+  .phone{width:100%;border-radius:24px}
+  .panel{display:none}
+  .panel.open{display:flex;position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 40px;max-width:none}
+  .testbtn{display:inline-flex}
+}
+.top{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--ln);background:var(--ph)}
+.ava{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:800;font-size:13px;color:#120c18;background:var(--mu)}
+.who{min-width:0;flex:1;line-height:1.2}
+.who b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who small{color:var(--mu);font:500 11px var(--mono)}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--sf2);border:1px solid var(--ln);border-radius:999px;padding:5px 10px;font:700 12px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill.or{color:var(--or2);border-color:#5a3418}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.main{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--ln);background:var(--ph);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--mu);padding:6px 0;border-radius:10px}
+.nav button svg{width:20px;height:20px}
+.nav button[aria-current="page"]{color:var(--or)}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card.hot{border-color:#6b3a14;background:linear-gradient(160deg,#2a160b,var(--sf) 60%)}
+.h{font-family:var(--disp);font-weight:400;letter-spacing:.3px;margin:0;line-height:1.05}
+h2.h{font-size:26px}
+h3{margin:0;font-size:15px;font-weight:800}
+.mu{color:var(--mu)} .sm{font-size:13px} .xs{font-size:11.5px}
+.row{display:flex;align-items:center;gap:10px}
+.row.sp{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--or);color:#1a0d02;font-weight:800;border-radius:12px;padding:12px 16px;text-align:center}
+.btn.ghost{background:var(--sf2);color:var(--tx);border:1px solid var(--ln)}
+.btn.sm{padding:8px 12px;font-size:13px;border-radius:10px}
+.btn.full{width:100%}
+.btn[disabled]{opacity:.42;cursor:not-allowed}
+.btn.done{background:transparent;color:var(--gr);border:1px solid #23573b}
+.board{display:grid;grid-template-columns:1fr 1fr;gap:3px;border-radius:14px;overflow:hidden;background:#000}
+.tile{position:relative;aspect-ratio:1;overflow:hidden}
+.tile .art{position:absolute;inset:0;background-image:var(--art);background-size:200% 200%}
+.tile.miss .art{filter:grayscale(1) brightness(.2)}
+.tile .lab{position:absolute;left:8px;bottom:8px;right:8px;display:flex;align-items:flex-end;justify-content:space-between;gap:6px}
+.tile .num{font:700 12px var(--mono);background:rgba(9,7,13,.8);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:2px 7px;display:inline-flex;gap:6px;align-items:center}
+.tile .q{font:700 12px var(--mono);background:var(--or);color:#1a0d02;border-radius:8px;padding:2px 6px}
+.tile.miss .num{border-style:dashed;color:var(--mu)}
+.mini{width:64px;height:64px;border-radius:10px;overflow:hidden;position:relative;flex:none;border:2px solid var(--ln)}
+.mini .art{position:absolute;inset:0;background-image:var(--art);background-size:200% 200%}
+.rar{font:700 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln);background:var(--sf2);border-radius:10px;padding:7px 10px;font:700 13px var(--mono)}
+.chip[aria-pressed="true"]{border-color:var(--or);background:#3a1d08;color:var(--or2)}
+.chip[disabled]{opacity:.35;cursor:not-allowed}
+.list{display:flex;flex-direction:column}
+.li{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--ln)}
+.li:first-child{border-top:0;padding-top:2px}
+.li .grow{flex:1;min-width:0}
+.ok{color:var(--gr)}
+.bar{height:8px;background:var(--sf2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--or),var(--or2));border-radius:99px;transition:width .4s}
+.tx{font:500 11px var(--mono);color:var(--mu)}
+.note{font-size:12.5px;color:var(--or2);background:#2a1709;border:1px solid #5a3418;border-radius:10px;padding:8px 10px}
+.land{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:8px 4px}
+.land .h{font-size:58px}
+.facedown{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.facedown div{aspect-ratio:3/4;border-radius:10px;border:2px dashed;display:grid;place-items:center;font:700 12px var(--mono);background:#130f19}
+.sheetwrap{position:absolute;inset:0;background:rgba(5,3,8,.72);display:flex;align-items:flex-end;z-index:20}
+.sheet{width:100%;max-height:92%;overflow:auto;background:var(--sf);border-top:1px solid var(--ln);border-radius:22px 22px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;animation:up .25s ease}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.grab{width:40px;height:4px;border-radius:9px;background:var(--ln);margin:0 auto -4px}
+.toast{position:absolute;left:12px;right:12px;top:66px;z-index:30;background:#1f1508;border:1px solid #6b3a14;color:var(--or2);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:700;animation:up .2s ease}
+.steps{display:flex;flex-direction:column;gap:10px}
+.steps div{display:flex;gap:10px;align-items:center;font-size:14px;opacity:0;animation:fadein .3s ease forwards}
+@keyframes fadein{to{opacity:1}}
+.qr{display:block;width:170px;height:170px;margin:0 auto;border-radius:12px;background:#f4eee6;image-rendering:pixelated}
+.nft{position:relative;aspect-ratio:3/4;width:120px;border-radius:12px;overflow:hidden;border:1px solid #6b3a14;background-image:var(--art);background-size:cover;background-position:center;flex:none}
+.nft span{position:absolute;left:0;right:0;bottom:0;padding:18px 8px 8px;background:linear-gradient(transparent,rgba(9,7,13,.92));font:700 11px var(--mono);text-align:center}
+.reveal{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+.pop{animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.burn{animation:burn 1.2s ease forwards}
+@keyframes burn{40%{filter:brightness(2) sepia(1) saturate(4);transform:scale(1.05)}100%{opacity:0;transform:scale(.7) translateY(-20px);filter:brightness(3) sepia(1)}}
+.crewcard{border-radius:18px;padding:22px 16px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;border:2px solid}
+.crewcard .h{font-size:46px}
+.band{font:700 13px var(--mono);border:1px dashed currentColor;border-radius:8px;padding:4px 10px}
+.trophy{position:relative;width:100%;max-width:330px;margin:0 auto;aspect-ratio:1;border-radius:16px;overflow:hidden;border:3px solid #ffb36b;box-shadow:0 0 0 4px #3a1d08,0 0 50px rgba(255,140,40,.35);background-image:var(--art);background-size:cover}
+.trophy::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,200,90,.65),rgba(255,140,30,.15) 22%,transparent 40%);mix-blend-mode:screen;animation:glow 2s ease-in-out infinite alternate}
+
+.pack{position:relative;width:200px;height:280px;margin:6px auto 0;border-radius:16px;background:linear-gradient(160deg,#ff7a1a 0%,#a8380e 45%,#5b2a7a 100%);box-shadow:0 18px 40px rgba(0,0,0,.5),inset 0 0 0 2px rgba(255,255,255,.18);overflow:visible;touch-action:none;user-select:none}
+.pack .body{position:absolute;inset:0;border-radius:16px;display:grid;place-items:center;text-align:center;padding:20px}
+.pack .body b{font:800 26px/1.05 var(--disp,serif);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.3)}
+.pack .top{position:absolute;left:0;right:0;top:0;height:54px;border-radius:16px 16px 0 0;background:linear-gradient(160deg,#ffb36b,#ff7a1a);border-bottom:2px dashed rgba(255,255,255,.75);display:flex;align-items:center;padding:0 12px;gap:8px;z-index:2;transition:transform .25s}
+.pack .zip{width:30px;height:30px;border-radius:50%;background:#fff;color:#5a1f07;display:grid;place-items:center;font-weight:900;box-shadow:0 2px 6px rgba(0,0,0,.35);cursor:grab;flex:none;transition:transform .05s}
+.pack .hint{font:700 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#5a1f07}
+.pack.ripped .top{animation:flyoff .7s cubic-bezier(.3,.1,.6,1) forwards}
+.pack.ripped .card{animation:rise .7s .25s cubic-bezier(.2,1.3,.4,1) forwards}
+.pack .card{position:absolute;left:14px;right:14px;top:30px;bottom:14px;border-radius:12px;background:#140c1c;border:2px solid #ffb36b;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:12px;z-index:1;opacity:0}
+@keyframes flyoff{to{transform:translate(160px,-120px) rotate(35deg);opacity:0}}
+@keyframes rise{from{opacity:1;transform:translateY(0)}to{opacity:1;transform:translateY(-36px) scale(1.04)}}
+.locks{display:flex;flex-direction:column;gap:6px}
+@keyframes glow{from{opacity:.55}to{opacity:1}}
+.trophy span{position:absolute;left:0;right:0;bottom:0;padding:26px 10px 10px;background:linear-gradient(transparent,rgba(9,7,13,.9));text-align:center;font:700 13px var(--mono);z-index:2}
+.wheelbox{position:relative;width:min(290px,78vw);aspect-ratio:1;margin:6px auto 0}
+.wheel{position:relative;width:100%;height:100%;border-radius:50%;border:5px solid #2e2637;box-shadow:0 0 0 1px #000,0 0 40px rgba(255,122,26,.18);transition:transform 3.2s cubic-bezier(.15,.7,.1,1)}
+.wheel span{position:absolute;left:50%;top:50%;width:0;height:0}
+.wheel span em{position:absolute;transform:translate(-50%,-50%);font:800 11px var(--body);font-style:normal;white-space:nowrap}
+.pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);border-left:13px solid transparent;border-right:13px solid transparent;border-top:22px solid var(--or);z-index:2;filter:drop-shadow(0 2px 3px #000)}
+.hub{position:absolute;inset:38%;border-radius:50%;background:var(--ph);border:3px solid var(--or);display:grid;place-items:center;font-family:var(--disp);font-size:22px;color:var(--or2)}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.photo{aspect-ratio:1;border-radius:10px;border:2px solid transparent;display:flex;align-items:flex-end;padding:6px;font-size:11px;font-weight:800}
+.photo[aria-pressed="true"]{border-color:var(--or)}
+textarea{width:100%;min-height:84px;background:var(--ph);border:1px solid var(--ln);border-radius:10px;color:var(--tx);font:14px/1.45 var(--body);padding:10px;resize:vertical}
+.pcard{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.ptitle{font:700 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--or)}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg .btn[aria-pressed="true"]{background:var(--or);color:#1a0d02;border-color:var(--or)}
+.tv{background:#050407;border:1px solid #3a2a1a;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:16px}
+.tvgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat b{display:block;font:700 34px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--or2)}
+.stat small{display:block;margin-top:6px;font:700 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}
+.crewbar{display:flex;height:12px;border-radius:99px;overflow:hidden}
+.econ{width:100%;border-collapse:collapse;font:500 12.5px var(--mono);font-variant-numeric:tabular-nums}
+.econ td{padding:5px 0;border-top:1px solid var(--ln)}
+.econ td:last-child{text-align:right}
+.feed{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.feed div{padding:6px 0;border-top:1px solid #1d1624}
+.artprev{width:100%;max-width:360px;aspect-ratio:1;border-radius:12px;background-image:var(--art);background-size:cover;border:1px solid var(--ln)}
+.file{display:flex;align-items:center;gap:10px;font-size:13px}
+.file input{font-size:12px;color:var(--mu);max-width:100%}
+@media (max-width:520px){.tvgrid{grid-template-columns:1fr 1fr}.stat b{font-size:28px}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+/* ---- test build: real X ---- */
+.xmode{display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font:700 11px var(--mono);letter-spacing:.03em;background:#141019;border-bottom:1px solid var(--ln);color:var(--mu);text-align:left}
+.xmode b{color:var(--or2);flex:none}.xmode.live b{color:var(--gr)}
+.xmode .w{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.xmode u{flex:none}
+.shot{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1px solid var(--ln)}.shot[hidden]{display:none}
+.chips{display:flex;flex-direction:row;gap:6px}.chips button{flex:none;width:auto;white-space:nowrap;background:var(--sf2);border:1px solid var(--ln);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700}
+.chips button[aria-pressed="true"]{border-color:var(--or);color:var(--or2)}
+.xlog{background:var(--ph);border:1px solid var(--ln);border-radius:10px;padding:10px;font:12px/1.45 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;color:#d9d2e0}
+.xin{width:100%;background:var(--ph);border:1px solid var(--ln);border-radius:10px;color:var(--tx);font:16px var(--body);padding:12px}
+a.btn,label.btn{text-decoration:none;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="phone" id="phone">
+    <header class="top" id="top"></header>
+    <button class="xmode" id="xmode" data-act="xinfo"></button>
+    <main class="main" id="main"></main>
+    <nav class="nav" id="nav" aria-label="App sections"></nav>
+    <div id="layer"></div>
+  </div>
+  <aside class="panel" id="panel" aria-label="Prototype controls"></aside>
+</div>
+
+<script>
+(function(){
+const CREW={1:{n:'Wolfi',sub:'Avalanche',c:'#5fb2ff',r:'Common',band:'blue'},2:{n:'Coq',sub:'Coq Inu',c:'#ffcf3f',r:'Common',band:'yellow'},3:{n:'Bob',sub:'The Grotto',c:'#a98dff',r:'Uncommon',band:'purple'},4:{n:'Team1 TH',sub:'Team1 Thailand',c:'#ff5b4f',r:'Rare',band:'red'}};
+const WEIGHTS={1:32,2:32,3:26,4:10};
+const POS={1:'0% 0%',2:'100% 0%',3:'0% 100%',4:'100% 100%'};
+const SEG=[['piece','Your piece','#2a2233'],['potion','Potion!','#14404a'],['spin','+1 spin','#221b2b'],['piece','Your piece','#2a2233'],['boo','Boo!','#17121d'],['potion','Potion!','#14404a'],['loot','Lootbox','#3b2a60'],['piece','Your piece','#2a2233'],['potion','Potion!','#14404a'],['kspin','Keychain','#ff9a3d']];
+const MERCH={tote:'Team1 tote bag',postcard:'Avalanche Halloween postcard',sticker:'Sticker set (first trade)',pen:'Pen (assist)',keychain:'Special keychain (feedback)',kspin:'Special keychain (rare spin)',loot:'Grotto lootbox (digital)'};
+const PACK=[['other',45],['spins',35],['potion',15],['loot',5]];
+const BOOTHS=['Team1 · Avalanche Cascade','Merchant & claim desk','The Grotto','Stonk'];
+const WAVES=['17:30 Doors','19:30 Wave 2','21:00 Wave 3'];
+const CAP=4;
+const NPC0=[
+  {h:'@cascade_kid',crew:4,p:{1:0,2:1,3:0,4:3}},
+  {h:'@mintmali',crew:1,p:{1:3,2:1,3:0,4:0}},
+  {h:'@coqcrew_bkk',crew:2,p:{1:0,2:4,3:1,4:0}},
+  {h:'@grotto_fan',crew:3,p:{1:1,2:0,3:3,4:0}},
+  {h:'@pumpkinpat',crew:3,p:{1:1,2:1,3:2,4:0}},
+  {h:'@nong_avax',crew:1,p:{1:2,2:0,3:1,4:1}}
+];
+const $=s=>document.querySelector(s);
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const hex=n=>{let s='';for(let i=0;i<n;i++)s+='0123456789abcdef'[Math.floor(Math.random()*16)];return s};
+const short=()=>'0x'+hex(4)+'…'+hex(4);
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let G,U,tab='home',wheelRot=0,spinning=false,tr=null,fbAns={},panelOpen=false,forceCrew=0,guides=false,staffTab='tote';
+const custom={1:null,2:null,3:null,4:null,scene:null};
+
+/* ---------- test build: real X through /api/xlab ---------- */
+// Real when the server has X keys and the guest is logged in: login, both posts, the repost, the follow checks.
+// Simulated always: wallet, crews, wheel, trades, staff scans, the room.
+const X={configured:false,user:null,defaults:{},locked:false,redirectUri:'',photo:null,f:{},capMode:'test',cap:{},postId:'',anyway:false};
+const live=()=>X.configured&&!!X.user;
+const HAS_LINK=/(https?:\/\/[^\s]+)|(^|\s)(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/\S*)?/i;
+const UA=navigator.userAgent||'';
+const ANDROID=/Android/.test(UA),IOS=!ANDROID&&(/iPhone|iPad|iPod/.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1));
+const INAPP=/\bLine\//i.test(UA)?'LINE':/Twitter/i.test(UA)?'X':/Instagram/i.test(UA)?'Instagram':/FBAN|FBAV|FB_IAB/i.test(UA)?'Facebook':/TikTok|musical_ly|Bytedance/i.test(UA)?'TikTok':(ANDROID&&/; wv\)/.test(UA))||(IOS&&!/Safari\//.test(UA))?'this app':'';
+const HERE=location.origin+location.pathname;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function xapi(action,body){
+  try{
+    const r=await fetch('/api/xlab/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{}),credentials:'same-origin'});
+    const j=await r.json().catch(()=>({}));j.http=r.status;if(!j.steps)j.steps=[];
+    if(r.status===401&&!j.locked)X.user=null;
+    return j;
+  }catch(e){return {ok:false,http:0,steps:[],error:'The request never reached the server: '+e.message}}
+}
+// Any refusal from X is shown word for word, so it can be screenshotted. Nothing is credited on a failure.
+function xFail(title,j){
+  const L=[];const body=b=>typeof b==='string'?b:JSON.stringify(b);
+  if(j.error)L.push(j.error);
+  if(!j.steps.length&&!j.error)L.push(`The server answered HTTP ${j.http||'?'} with no detail. Usually a timeout.`);
+  for(const st of j.steps){
+    if(st.method==='NOTE'){L.push('• '+st.label+(st.body?'\n  '+body(st.body):''));continue}
+    L.push(`${st.status||'ERR'} ${st.method} ${st.url}\n  ${st.label}`);
+    if(!(st.status>=200&&st.status<300))L.push('  '+body(st.body));
+  }
+  sheet(`<h2 class="h">${esc(title)}</h2><p class="sm mu" style="margin:0">Nothing was credited. This is what X answered:</p><div class="xlog">${esc(L.join('\n'))}</div><a class="btn ghost full" href="/halloween-lab" target="_blank" rel="noopener">Open the X lab for the full log ↗</a><button class="btn full" data-act="close">Close</button>`);
+}
+// Phones shoot 3 to 12 MB and often HEIC; X takes JPEG up to 5 MB and the server 4.5 MB per request. Shrink first.
+async function xPrep(file){
+  let src,w,h,url='';
+  try{src=await createImageBitmap(file,{imageOrientation:'from-image'});w=src.width;h=src.height}
+  catch(_){url=URL.createObjectURL(file);src=new Image();src.src=url;await src.decode();w=src.naturalWidth;h=src.naturalHeight}
+  const k=Math.min(1,1600/Math.max(w,h)),cv=document.createElement('canvas');cv.width=Math.round(w*k);cv.height=Math.round(h*k);
+  cv.getContext('2d').drawImage(src,0,0,cv.width,cv.height);if(url)URL.revokeObjectURL(url);
+  const dataUrl=cv.toDataURL('image/jpeg',.82);if(!dataUrl.startsWith('data:image/jpeg'))throw new Error('this browser could not encode a JPEG');
+  return {dataUrl};
+}
+// Progress survives a reload or a trip to the X app and back.
+function saveState(){try{sessionStorage.setItem('hw_state',JSON.stringify({G,U,tab,f:X.f,who:X.user?X.user.id:''}))}catch(_){}}
+function loadState(){try{const d=JSON.parse(sessionStorage.getItem('hw_state')||'null');if(!d||(d.who||'')!==(X.user?X.user.id:''))return false;G=d.G;U=d.U;tab=d.tab||'home';X.f=d.f||{};return true}catch(_){return false}}
+function readFlash(){
+  const m=document.cookie.match(/(?:^|;\s*)xlab_log=([^;]+)/);if(!m)return null;document.cookie='xlab_log=; Max-Age=0; Path=/';
+  try{const b=decodeURIComponent(m[1]).replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b),c=>c.charCodeAt(0))))}catch(_){return null}
+}
+async function xCopy(t){try{await navigator.clipboard.writeText(t);toast('Copied')}catch(_){prompt('Copy this:',t)}}
+function renderMode(){
+  const el=$('#xmode');if(!el)return;el.className='xmode'+(live()?' live':'');
+  el.innerHTML=X.locked?'<b>TEST BUILD</b><span class="w">Locked</span><u>Passcode</u>'
+    :!X.configured?'<b>TEST BUILD</b><span class="w">X is simulated · no X keys on the server yet</span><u>Why</u>'
+    :live()?`<b>X IS REAL</b><span class="w">${esc(U.h)} · the rest is simulated</span><u>Details</u>`
+    :'<b>X IS REAL</b><span class="w">after you log in · the rest is simulated</span><u>Details</u>';
+}
+function xInfo(){
+  if(X.locked){passSheet();return}
+  if(!X.configured){sheet(`<h2 class="h">X is simulated for now</h2>
+    <p class="sm" style="margin:0">You can walk the whole guest flow, but every X step is faked, the same as the prototype. To make them real:</p>
+    <div class="list sm"><div class="li">1 · Register this callback URL on the X app</div><div class="li">2 · Add X_CLIENT_ID and X_CLIENT_SECRET to the Vercel project</div><div class="li">3 · Redeploy, then reload this page</div></div>
+    <div class="xlog">${esc(X.redirectUri||'')}</div>
+    <button class="btn ghost full" data-act="xcopycb">Copy the callback URL</button><button class="btn full" data-act="close">Close</button>`);return}
+  sheet(`<h2 class="h">What is real here</h2>
+    <div class="list sm"><div class="li"><div class="grow"><b>Real, on your X account</b><div class="xs mu">Login · both posts with your photo · the repost · the two follow checks</div></div></div>
+    <div class="li"><div class="grow"><b>Simulated</b><div class="xs mu">Wallet · crews · wheel · trades · staff scans · the room</div></div></div></div>
+    <a class="btn ghost full" href="/halloween-lab" target="_blank" rel="noopener">Open the X lab ↗</a>
+    ${X.user?'<button class="btn ghost full" data-act="xlogout">Log out of X</button>':''}<button class="btn full" data-act="close">Close</button>`);
+}
+function passSheet(wrong){
+  sheet(`<h2 class="h">Passcode</h2><p class="sm mu" style="margin:0">This test build spends X API credits, so it sits behind a passcode.${wrong?' That one was wrong.':''}</p>
+    <input class="xin" id="xpw" type="password" autocomplete="off" aria-label="Passcode"><button class="btn full" data-act="xpass">Unlock</button>`);
+}
+// The screen the brief asks for: in-app browsers lose the X login, so send the guest to the real browser.
+function inAppSheet(){
+  const target=IOS?'Safari':'Chrome',where=INAPP==='this app'?"an app's built-in browser":INAPP+"'s browser";
+  const ext=INAPP==='LINE'?HERE+'?openExternalBrowser=1':ANDROID?`intent://${location.host}${location.pathname}#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(HERE)};end`:IOS?'x-safari-'+HERE:HERE;
+  sheet(`<h2 class="h">Open in ${target}</h2><p class="sm mu" style="margin:0">You're inside ${where}. X login often gets lost here. Open this page in ${target} and continue there.</p>
+    <a class="btn full" href="${esc(ext)}">Open in ${target}</a><button class="btn ghost full" data-act="xcopy">Copy link</button><button class="btn ghost full" data-act="xanyway">Try here anyway</button>`);
+}
+function enter(cross){
+  const steps=[['✓',`Signed in as ${esc(U.h)}`],['✓',`Avalanche wallet created · ${U.wallet}`],['✓','Gas covered by Team1, so you never need AVAX'],['→','Next: post your arrival to unlock your tote']];
+  if(cross)steps.unshift(['!','This login finished in a different browser than it started in']);
+  sheet(`<h2 class="h">Entering Avalanche Halloween…</h2><div class="steps">${steps.map((st,i)=>`<div style="animation-delay:${i*.5}s"><b class="ok">${st[0]}</b>${st[1]}</div>`).join('')}</div>`);
+  setTimeout(()=>{U.in=true;tx('Wallet created');feed(`${U.h} joined Avalanche Halloween`);tab='home';closeSheet();render()},reduced?300:(cross?3200:2300));
+}
+async function xBoot(k){
+  const qs=new URLSearchParams(location.search),lg=qs.get('login'),cross=!!qs.get('cross');k=k||qs.get('k')||'';
+  if(location.search)history.replaceState(null,'',location.pathname);
+  let j={};try{j=await (await fetch('/api/xlab/me'+(k?'?k='+encodeURIComponent(k):''),{credentials:'same-origin'})).json()}catch(_){}
+  if(j.locked){X.locked=true;renderMode();passSheet(j.wrongPasscode);return}
+  X.locked=false;X.configured=!!j.configured;X.defaults=j.defaults||{};X.redirectUri=j.redirectUri||'';X.user=j.session?j.session.user:null;
+  closeSheet();
+  if(!loadState()&&X.user)U.in=false;
+  if(X.configured&&!X.user&&U.in)init();          // keys were added since a simulated run: start clean, real login required
+  if(X.user){U.h='@'+X.user.username;if(!U.in){if(lg==='ok'){readFlash();render();enter(cross);return}U.in=true}}
+  render();
+  if(lg==='err'){const fl=readFlash();xFail('X login did not finish',{steps:fl?fl.steps:[],error:fl?'':'X sent you back without completing the login.'})}
+  if(lg==='locked')passSheet();
+}
+async function xLogout(){await xapi('logout');X.user=null;X.f={};try{sessionStorage.removeItem('hw_state')}catch(_){}init();closeSheet();render();toast('Logged out of X')}
+async function xDelete(el){
+  if(!X.postId)return;el.disabled=true;el.textContent='Deleting…';
+  const j=await xapi('delete',{id:X.postId});
+  if(j.ok){X.postId='';el.textContent='Deleted from X ✓'}else{el.disabled=false;el.textContent='Delete this test post from X';xFail('X did not delete the post',j)}
+}
+
+function init(){
+  G={wave:0,posts:87,goals:[100,200,300],goalHit:0,elePool:45,merchantReserve:15,dropPool:0,stock:{sticker:150,pen:100,keychain:40},pantsClaimed:11,pantsCap:40,jackpotPants:0,log:[],
+    deck:{piece:300,potion:350,boo:175,spin:150,loot:15,kspin:10},
+    room:{1:41,2:39,3:30,4:17},nextBand:126,
+    assisters:{'@nong_avax':4,'@mintmali':3,'@cascade_kid':2},
+    feed:['@pumpkinpat (Bob) needs a Team1 TH. One piece away.','@coqcrew_bkk swapped Coq ⇄ Wolfi with @mintmali','Doors open. Avalanche Halloween is live.'],
+    npcs:JSON.parse(JSON.stringify(NPC0))};
+  U={in:false,h:'@ghostbuilder',wallet:'0x7a3f…'+hex(4),spins:0,crew:0,band:0,p:{1:0,2:0,3:0,4:0},earned:0,merch:{},t:{repost:0,f1:0,f2:0,posts:0,fb:0},m4:false,booths:[0,0,0,0],assists:0,pack:0,potions:0,claimed:false,trophyNo:0,tx:[],nft:0,handed:{}};
+  tab='home';tr=null;fbAns={};
+  if(X.user){U.in=true;U.h='@'+X.user.username}
+}
+
+/* ---------- economy ---------- */
+const distinct=p=>[1,2,3,4].filter(i=>p[i]>0).length;
+const complete=p=>distinct(p)===4;
+const spares=()=>U.crew?Math.max(0,U.p[U.crew]-1):0;
+function fourLeft(){return G.elePool+G.merchantReserve+G.dropPool}
+function earnOwn(){
+  if(!U.crew)return {ok:false,note:'Collect your tote and crew at the door first.'};
+  if(U.earned>=CAP)return {ok:false,note:`You've earned the max ${CAP} ${CREW[U.crew].n} pieces tonight. Trade them for the others.`};
+  if(U.crew===4){if(G.elePool<1)return {ok:false,note:'The Team1 TH pool is empty. The Merchant still has some.'};G.elePool--}
+  U.p[U.crew]++;U.earned++;return {ok:true,piece:U.crew};
+}
+function take4(){if(U.crew!==4&&U.p[4]>=2)return false;U.p[4]++;return true}
+function tx(l){U.tx.unshift({l,h:short()});U.tx=U.tx.slice(0,6)}
+function feed(m){G.feed.unshift(m);G.feed=G.feed.slice(0,12)}
+function toast(m){const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=m;$('#phone').appendChild(d);setTimeout(()=>d.remove(),2600)}
+function sheet(html){$('#layer').innerHTML=`<div class="sheetwrap" data-act="bg"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div></div>`;paintQRs()}
+function closeSheet(){$('#layer').innerHTML=''}
+function checkGoals(){
+  while(G.goalHit<G.goals.length&&G.posts>=G.goals[G.goalHit]){
+    const rel=Math.min(5,G.merchantReserve);G.merchantReserve-=rel;G.dropPool+=rel;
+    feed(`Room hit ${G.goals[G.goalHit]} posts. Merchant drop: ${rel} × Team1 TH`);
+    toast(`Room hit ${G.goals[G.goalHit]} posts. Merchant drop: ${rel} × Team1 TH`);
+    G.goalHit++;
+  }
+}
+function drawFrom(keys){
+  const tot=keys.reduce((s,k)=>s+G.deck[k],0);if(!tot)return 'boo';
+  let r=Math.random()*tot;for(const k of keys){r-=G.deck[k];if(r<0){G.deck[k]--;return k}}return keys[0];
+}
+function resolveDraw(){
+  let k=drawFrom(Object.keys(G.deck));
+  if(k==='piece'){const r=earnOwn();if(r.ok)return {k,piece:r.piece};G.deck.piece++;k=drawFrom(Object.keys(G.deck).filter(x=>x!=='piece'));return {k,note:r.note}}
+  return {k};
+}
+
+/* ---------- bits ---------- */
+const crewDot=i=>`<span class="dot" style="background:${CREW[i].c}"></span>`;
+const pc=i=>`<span class="rar" style="color:${CREW[i].c}">#${i} ${CREW[i].n} (${CREW[i].sub}) · ${CREW[i].r}</span>`;
+const mini=i=>`<div class="mini pop" style="border-color:${CREW[i].c}"><div class="art" style="background-position:${POS[i]}"></div></div>`;
+function tile(i){const q=U.p[i];return `<div class="tile ${q?'':'miss'}"><div class="art" style="background-position:${POS[i]}"></div><div class="lab"><span class="num">${crewDot(i)}${CREW[i].n}</span>${q>1?`<span class="q">×${q}</span>`:''}</div></div>`}
+const ICON={
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11 12 4l8 7v9H4z"/></svg>',
+  spin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l6 4"/></svg>',
+  tasks:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 6h14M5 12h14M5 18h9"/></svg>',
+  trade:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>',
+  merchant:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h16l-1 11H5zM8 9V7a4 4 0 0 1 8 0v2"/></svg>'
+};
+
+/* ---------- views ---------- */
+function vLanding(){
+  return `<div class="land">
+    <p class="xs mu" style="margin:0;letter-spacing:.12em;text-transform:uppercase;font-weight:800">Team1 × Bitkub · ZillaSpace · Oct 30</p>
+    <h1 class="h">Avalanche<br>Halloween</h1>
+    <p class="mu" style="margin:0">Get your crew piece. Trade with the other 3 crews. Finish the picture. Win the pants.</p>
+    <div class="facedown">${[1,2,3,4].map(i=>`<div style="border-color:${CREW[i].c};color:${CREW[i].c};text-align:center;padding:4px">${CREW[i].n}</div>`).join('')}</div>
+    <button class="btn full" data-act="login"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3zm-1.1 16.2h1.7L7.4 4.7H5.6z"/></svg>Continue with X</button>
+    <p class="xs mu" style="margin:0;text-align:center">Log in, post your arrival, then grab your tote and crew wristband. No wallet app needed: we create one for you, and Team1 covers the gas.</p>
+  </div>`;
+}
+function vTote(){
+  if(!U.t.posts)return `<section class="card hot" style="align-items:center;text-align:center">
+    <span class="pill or">Step 1 of 2</span>
+    <h2 class="h">Post your arrival</h2>
+    <p class="sm" style="margin:0">Snap the entrance, the decor or your costume and post it. Your tote, crew wristband and the spin wheel unlock the moment it's live.</p>
+    <div class="list sm" style="width:100%;text-align:left"><div class="li"><div class="grow">Team1 tote + postcard</div><span class="pill">🔒</span></div><div class="li"><div class="grow">Crew wristband + 2 crew pieces</div><span class="pill">🔒</span></div><div class="li"><div class="grow">Spin wheel + 2 bonus spins</div><span class="pill">🔒</span></div></div>
+    <button class="btn full" data-act="compose">Post to X · about 30 seconds</button>
+    <p class="xs mu" style="margin:0">Tags and hashtag are filled in for you. Post while you queue.</p>
+  </section>`;
+  return `<section class="card hot" style="align-items:center;text-align:center">
+    <span class="pill ok">Posted ✓ · Step 2 of 2</span>
+    <h2 class="h">Get your tote</h2>
+    <p class="sm" style="margin:0">Show this at the tote desk. Staff scan you, put on your crew wristband and hand you the Team1 tote and postcard.</p>
+    <canvas class="qr" width="25" height="25" data-qr="tote-${U.h}" aria-label="Your tote desk QR"></canvas>
+    <p class="xs mu" style="margin:0"><span class="ttl"></span></p>
+    <button class="btn full" data-act="tote">Prototype: tote desk scans you</button>
+  </section>
+`;
+}
+function vHome(){
+  if(!U.crew)return vTote();
+  const me=CREW[U.crew],done=complete(U.p),missing=[1,2,3,4].filter(i=>!U.p[i]);
+  let status;
+  if(U.claimed)status=`<div class="trophy" style="max-width:220px"><span>HALLOWEEN CHAMPION #${U.trophyNo}</span></div><div class="note">Soulbound to ${U.h}. Your spares can still finish a friend's scene. Every finishing piece you give earns an Assist.</div>`;
+  else if(done)status=`<button class="btn full" data-act="tab" data-v="merchant">Scene complete. Claim at the Merchant</button>`;
+  else status=`<p class="sm" style="margin:0">Find: ${missing.map(i=>`<b style="color:${CREW[i].c}">${CREW[i].n}</b> <span class="mu">(${CREW[i].band})</span>`).join(', ')}</p>`;
+  const merch=Object.keys(U.merch).filter(k=>U.merch[k]);
+  return `
+  <section class="card" style="border-color:${me.c}55">
+    <div class="row sp"><div class="row">${crewDot(U.crew)}<b>${me.n} crew</b></div><span class="band" style="color:${me.c}">Band #${U.band}</span></div>
+    <p class="xs mu" style="margin:0">You make ${me.n} pieces (${U.earned}/${CAP} earned tonight). The other three only come from other crews. ${G.room[U.crew]} ${me.n}s in the room.</p>
+  </section>
+  <section class="card">
+    <div class="row sp"><h2 class="h">The scene</h2><span class="pill">${distinct(U.p)}/4</span></div>
+    <div class="board">${[1,2,3,4].map(tile).join('')}</div>
+    ${status}
+  </section>
+  ${U.pack===1?vPackCard():''}
+  <section class="card">
+    <div class="row sp"><h3>Your spares</h3><button class="btn ghost sm" data-act="tab" data-v="trade">Trade</button></div>
+    ${spares()?`<div class="chips"><span class="chip">${crewDot(U.crew)}${me.n} ×${spares()}</span></div><p class="xs mu" style="margin:0">This is your trade currency. Give someone their last piece for an Assist (+2 spins).</p>`:`<p class="sm mu" style="margin:0">Spin to earn more ${me.n} pieces. Every task gives spins.</p>`}
+  </section>
+  <section class="card">
+    <h3>Visit the booths</h3>
+    <p class="xs mu" style="margin:0">Scan each booth's screen with the Scan button in this page. +1 spin per booth.</p>
+    <div class="list">${BOOTHS.map((b,i)=>`<div class="li"><div class="grow"><b class="sm">${b}</b><div class="xs ${U.booths[i]?'ok':'mu'}">${U.booths[i]?'Visited · +1 spin':'Not visited'}</div></div>${U.booths[i]?'<span class="ok sm">✓</span>':`<button class="btn ghost sm" data-act="booth" data-v="${i}">Scan</button>`}</div>`).join('')}</div>
+  </section>
+  ${merch.length?`<section class="card"><h3>Rewards</h3><div class="list">${merch.map(k=>`<div class="li"><div class="grow sm">${MERCH[k]}</div><span class="pill">×${U.merch[k]}</span></div>`).join('')}</div><p class="xs mu" style="margin:0">Physical items: pick up at the Merchant desk (Booth 2).</p></section>`:''}
+  <section class="card">
+    <h3>On-chain activity</h3>
+    <div class="list">${U.tx.slice(0,4).map(t=>`<div class="li"><div class="grow sm">${t.l}</div><span class="tx">${t.h}</span></div>`).join('')}</div>
+    <p class="xs mu" style="margin:0">Avalanche C-Chain · gas sponsored by Team1</p>
+  </section>`;
+}
+function vSpin(){
+  const step=360/SEG.length;
+  const grad='conic-gradient('+SEG.map((s,i)=>`${s[0]==='piece'&&U.crew?CREW[U.crew].c+'55':s[2]} ${i*step}deg ${(i+1)*step}deg`).join(',')+')';
+  const labels=SEG.map((s,i)=>{const a=(i*step+step/2)*Math.PI/180,rr=108;const lab=s[0]==='piece'&&U.crew?CREW[U.crew].n:s[1];return `<span><em style="left:${Math.sin(a)*rr}px;top:${-Math.cos(a)*rr}px;transform:translate(-50%,-50%) rotate(${i*step+step/2}deg);color:${s[0]==='kspin'?'#1a0d02':'#efe7f7'}">${lab}</em></span>`}).join('');
+  const can=U.t.posts&&U.crew&&U.spins>0;
+  return `
+  <section class="card" style="align-items:center;text-align:center">
+    <h2 class="h">Spooky spin</h2>
+    <p class="sm mu" style="margin:0">Your crew piece, extra spins, a Potion you have to drink, or one of 10 rare keychains. Pants only come from finishing the scene.</p>
+    ${!U.t.posts?`<div class="note">The wheel unlocks after your first post.</div><button class="btn full" data-act="compose">Post your arrival</button>`:''}<div class="wheelbox" style="${U.t.posts?'':'opacity:.35;filter:grayscale(.7)'}"><div class="pointer"></div><div class="wheel" id="wheel" style="background:${grad};transform:rotate(${wheelRot}deg)">${labels}</div><div class="hub">${U.spins}</div></div>
+    <button class="btn full" data-act="spin" ${can?'':'disabled'}>${!U.t.posts?'🔒 Locked until your first post':!U.crew?'Get your crew at the tote desk':U.spins<1?'No spins left':'Spin · '+U.spins+' left'}</button>
+    <button class="btn ghost full" data-act="tab" data-v="tasks">Earn more spins</button>
+  </section>`;
+}
+function vTasks(){
+  const next=G.goals[G.goalHit],prev=G.goalHit?G.goals[G.goalHit-1]:0;
+  const pct=next?Math.min(100,((G.posts-prev)/(next-prev))*100):100;
+  const lab=(k,rw)=>!live()||k==='repost'?rw:X.f[k]?'Check ✓':'Follow ↗';
+  const row=(k,label,sub,rw)=>`<div class="li"><div class="grow"><b class="sm">${label}</b><div class="xs mu">${sub}</div></div>${U.t[k]?'<span class="btn done sm">Done</span>':`<button class="btn sm" data-act="task" data-v="${k}">${lab(k,rw)}</button>`}</div>`;
+  return `
+  ${vPackCard()}
+  <section class="card hot">
+    <div class="row sp"><h3>Room goal</h3><span class="pill or">${G.posts}${next?' / '+next:''} posts</span></div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <p class="sm" style="margin:0">${next?`At ${next} posts the Merchant drops <b>5 × Team1 TH</b>. Every post from anyone in the room counts.`:'All three Merchant drops have been released.'}</p>
+  </section>
+  <section class="card">
+    <h3>Quick tasks</h3>
+    <p class="xs mu" style="margin:0">${live()?'The repost runs through your X login. Follows open X: follow there, come back, tap Check. The spin lands when X confirms.':'Each button runs through your X login, and the spin lands when X confirms.'}</p>
+    <div class="list">
+      ${row('repost','Repost the main event post','@team1TH · Avalanche Halloween','+1 spin')}
+      ${row('f1','Follow @team1TH','Team1 Thailand','+1 spin')}
+      ${row('f2','Follow @AvaxTeam1','Team1 global','+1 spin')}
+    </div>
+  </section>
+  <section class="card">
+    <div class="row sp"><h3>Post from the night</h3><span class="pill">${U.t.posts}/2</span></div>
+    <p class="sm" style="margin:0">Post 1 (your arrival) unlocks your tote, crew and the wheel. Post 2 (your crew) opens at 19:30. Tags and hashtag are filled in for you.</p>
+    <p class="xs mu" style="margin:0">+2 spins per post.</p>
+    <button class="btn full" data-act="compose" ${U.t.posts>=2||(U.t.posts===1&&G.wave<1)?'disabled':''}>${U.t.posts>=2?'Both posts done':U.t.posts?(G.wave<1?'Angle 2 opens 19:30':'Post angle 2: your crew'):'Post your arrival · unlocks everything'}</button>
+  </section>`;
+}
+function vTrade(){
+  return `
+  <section class="card" style="align-items:center;text-align:center">
+    <h3>Your trade QR</h3>
+    <canvas class="qr" width="25" height="25" data-qr="me-${U.h}" aria-label="Your trade QR code"></canvas>
+    <p class="sm mu" style="margin:0">Friends scan this to see your crew, spares and needs. <span class="ttl"></span></p>
+  </section>
+  <section class="card">
+    <h3>Scan someone nearby</h3>
+    <p class="xs mu" style="margin:0">Look for wristband colours. Prototype: tap a person to simulate scanning their QR.</p>
+    <div class="list">${G.npcs.map((n,i)=>{const sp=[1,2,3,4].filter(k=>n.p[k]>1),nd=[1,2,3,4].filter(k=>!n.p[k]);return `<div class="li">${crewDot(n.crew)}<div class="grow"><b class="sm">${n.h}</b> <span class="xs" style="color:${CREW[n.crew].c}">${CREW[n.crew].n}</span><div class="xs mu">${n.done?'Claimed their trophy':`Spare: ${sp.length?sp.map(k=>CREW[k].n).join(', '):'none'} · Needs: ${nd.length?nd.map(k=>CREW[k].n).join(', '):'none'}`}</div></div><button class="btn ghost sm" data-act="npc" data-v="${i}" ${n.done||!U.crew?'disabled':''}>Scan</button></div>`}).join('')}</div>
+  </section>`;
+}
+function vMerchant(){
+  const done=complete(U.p);
+  const ms=[['First post (your arrival)','Tote + postcard + crew wristband',!!U.merch.tote],['Your first trade','Sticker set',!!U.merch.sticker],['All posts + follows','Photo pack (rip it open)',U.pack===2],['Feedback form (from 19:30)','Special keychain (40)',!!U.merch.keychain],['Each assist','Pen',!!U.merch.pen],['Rare spin (10 on the wheel)','Special keychain',!!U.merch.kspin],['Finish the scene','Team1 pants + Champion trophy',U.claimed],['Costume contest · top assisters','T-shirt (on stage)',false]];
+  return `
+  ${done&&!U.claimed?`<section class="card hot"><h2 class="h">Claim your trophy</h2><p class="sm" style="margin:0">At Booth 2, staff check your wristband and redeem. Your 4 pieces are burned and a soulbound Halloween Champion trophy is minted to your wallet. Then you collect your pants.</p><button class="btn full" data-act="claim">Open claim QR</button></section>`:''}
+  ${G.dropPool>0?`<section class="card hot"><div class="row sp"><h3>Merchant drop is live</h3><span class="pill or">${G.dropPool} × Team1 TH</span></div><p class="sm" style="margin:0">The room hit its post goal. First come at Booth 2. One Merchant Team1 TH piece per person.</p><button class="btn full" data-act="drop" ${U.m4||!U.crew?'disabled':''}>${U.m4?'You already had your Merchant Team1 TH':'Get scanned for a Team1 TH piece'}</button></section>`:''}
+  <section class="card">
+    <h3>Milestone rewards</h3>
+    <p class="xs mu" style="margin:0">Physical merch is earned, not spun. Collect at the Merchant desk (Booth 2).</p>
+    <div class="list">${ms.map(([m,r,d])=>`<div class="li"><div class="grow"><b class="sm">${r}</b><div class="xs mu">${m}</div></div>${d?'<span class="ok sm">✓</span>':''}</div>`).join('')}</div>
+  </section>
+  <section class="card">
+    <div class="row sp"><h3>Event feedback</h3><span class="pill">${G.wave>=1?'Open':'Opens 19:30'}</span></div>
+    <p class="sm" style="margin:0">The official Team1 form, about a minute. Reward: the special keychain (40 only).</p>
+    <button class="btn full" data-act="fb" ${G.wave<1||U.t.fb||!U.crew?'disabled':''}>${U.t.fb?'Keychain claimed ✓':G.wave<1?'Opens at 19:30':U.fbOpened?'Claim your keychain':'Open the feedback form'}</button>
+  </section>`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const top=$('#top'),nav=$('#nav'),main=$('#main');
+  const cc=U.crew?CREW[U.crew].c:'var(--mu)';
+  top.innerHTML=U.in?`<div class="ava" style="background:${cc}">${U.h[1].toUpperCase()}</div><div class="who"><b>${U.h}${U.crew?` · <span style="color:${cc}">${CREW[U.crew].n}</span>`:''}</b><small>${U.wallet} · C-Chain</small></div><span class="pill or">${U.spins} spin${U.spins===1?'':'s'}</span><button class="btn ghost sm testbtn" data-act="panel">Test</button>`
+    :`<div class="who"><b>Avalanche Halloween</b><small>ZillaSpace · ${WAVES[G.wave]}</small></div><button class="btn ghost sm testbtn" data-act="panel">Test</button>`;
+  if(!U.in){main.innerHTML=vLanding();nav.hidden=true}
+  else{
+    nav.hidden=false;
+    nav.innerHTML=[['home','Home'],['spin','Spin'],['tasks','Tasks'],['trade','Trade'],['merchant','Merchant']].map(([k,l])=>`<button data-act="tab" data-v="${k}" ${tab===k?'aria-current="page"':''}>${ICON[k]}${l}</button>`).join('');
+    main.innerHTML={home:vHome,spin:vSpin,tasks:vTasks,trade:vTrade,merchant:vMerchant}[tab]();
+  }
+  renderPanel();paintQRs();renderMode();saveState();
+}
+function renderPanel(){
+  const p=$('#panel');p.classList.toggle('open',panelOpen);
+  const next=G.goals[G.goalHit],roomTot=[1,2,3,4].reduce((s,i)=>s+G.room[i],0);
+  const ass=Object.entries(G.assisters).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  p.innerHTML=`
+  <div class="row sp"><div><div class="ptitle">Prototype controls</div><h2 class="h" style="font-size:30px;margin-top:4px">Run the night</h2></div><button class="btn ghost sm testbtn" data-act="panel">Close</button></div>
+  <section class="pcard">
+    <div class="ptitle">Event clock</div>
+    <div class="seg">${WAVES.map((w,i)=>`<button class="btn ghost sm" data-act="wave" data-v="${i}" aria-pressed="${G.wave===i}">${w}</button>`).join('')}</div>
+    <p class="xs mu" style="margin:0">Doors 17:30 · programme 18:00–22:00 · feedback rewards open at 19:30.</p>
+  </section>
+  <section class="pcard">
+    <div class="ptitle">Tote desk: crew for the next scan</div>
+    <div class="seg"><button class="btn ghost sm" data-act="force" data-v="0" aria-pressed="${forceCrew===0}">Random (32/32/26/10)</button>${[1,2,3,4].map(i=>`<button class="btn ghost sm" data-act="force" data-v="${i}" aria-pressed="${forceCrew===i}">${crewDot(i)} ${CREW[i].n}</button>`).join('')}</div>
+    <div class="ptitle" style="margin-top:4px">Booth staff</div>
+    <div class="seg"><button class="btn ghost sm" data-act="tote" ${!U.in||U.crew||!U.t.posts?'disabled':''}>Tote desk scan</button>${BOOTHS.map((b,i)=>`<button class="btn ghost sm" data-act="scan" data-v="${i}" ${!U.crew||U.booths[i]?'disabled':''}>Booth ${i+1}</button>`).join('')}</div>
+    <div class="ptitle" style="margin-top:4px">Simulate the room</div>
+    <div class="seg"><button class="btn ghost sm" data-act="room10">+10 posts from the room</button><button class="btn ghost sm" data-act="npcdone">Someone completes</button><button class="btn ghost sm" data-act="reset">Reset</button></div>
+  </section>
+  ${vStaff()}
+  <section class="tv" aria-label="TV wall preview">
+    <div class="row sp"><div class="ptitle">TV wall · live</div><span class="xs mu">${WAVES[G.wave]}</span></div>
+    <div class="tvgrid">
+      <div class="stat"><b>${fourLeft()}</b><small>Team1 TH left</small></div>
+      <div class="stat"><b>${G.pantsClaimed}<span style="font-size:.5em;color:var(--mu)">/${G.pantsCap}</span></b><small>Champions</small></div>
+      <div class="stat"><b>${G.posts}</b><small>${next?'Posts · drop at '+next:'Posts · drops done'}</small></div>
+    </div>
+    <div><div class="ptitle" style="margin-bottom:6px">Crews in the room</div>
+      <div class="crewbar">${[1,2,3,4].map(i=>`<span style="width:${G.room[i]/roomTot*100}%;background:${CREW[i].c}"></span>`).join('')}</div>
+      <div class="row wrap xs mu" style="margin-top:6px;gap:12px">${[1,2,3,4].map(i=>`<span class="row" style="gap:5px">${crewDot(i)}${CREW[i].n} ${G.room[i]}</span>`).join('')}</div>
+    </div>
+    <div><div class="ptitle" style="margin-bottom:6px">Top assisters</div><div class="feed">${ass.map(([h,n],i)=>`<div class="row sp"><span>${i+1}. ${h}${h===U.h?' (you)':''}</span><b style="font-family:var(--mono)">${n}</b></div>`).join('')}</div></div>
+    <div><div class="ptitle" style="margin-bottom:6px">Trading wall</div><div class="feed">${G.feed.slice(0,6).map(f=>`<div>${f}</div>`).join('')}</div></div>
+  </section>
+  <section class="pcard">
+    <div class="ptitle">Scene art</div>
+    <div class="artprev" role="img" aria-label="Current puzzle scene"></div>
+    <div class="seg"><button class="btn ghost sm" data-act="guides" aria-pressed="${guides}">${guides?'Hide':'Show'} artist guides</button></div>
+    <p class="xs mu" style="margin:0">Placeholder creatures follow the brief: faces and bodies stay in their quadrant; the arm, the lantern light and the trunk cross the seams; the centre pumpkin is split four ways. Load your own PNGs to test real characters. Files stay on this device.</p>
+    ${[1,2,3,4].map(i=>`<label class="file">${crewDot(i)}<span style="min-width:72px">${CREW[i].n}</span><input type="file" accept="image/png,image/webp,image/jpeg" data-file="${i}"></label>`).join('')}
+    <label class="file"><span style="min-width:89px">Full scene</span><input type="file" accept="image/png,image/webp,image/jpeg" data-file="scene"></label>
+  </section>
+  <section class="pcard">
+    <div class="ptitle">Version B economy · digital wheel, milestone merch</div>
+    <table class="econ"><tbody>
+      ${Object.keys(G.deck).map(k=>`<tr><td>Spin deck · ${SEG.find(s=>s[0]===k)[1]}</td><td>${G.deck[k]} left</td></tr>`).join('')}
+      <tr><td>Team1 TH pool (earned by Team1 TH crew)</td><td>${G.elePool} / 45</td></tr>
+      <tr><td>Merchant Team1 TH reserve</td><td>${G.merchantReserve}</td></tr>
+      <tr><td>Team1 TH in live drop</td><td>${G.dropPool}</td></tr>
+      <tr><td>Sticker sets (first trade)</td><td>${G.stock.sticker} / 150</td></tr><tr><td>Pens (assists)</td><td>${G.stock.pen} / 100</td></tr><tr><td>Special keychains (feedback)</td><td>${G.stock.keychain} / 40</td></tr><tr><td>Potions poured</td><td>${350-G.deck.potion} from the wheel</td></tr>
+      
+    </tbody></table>
+    <p class="xs mu" style="margin:0">Max spins: 1 tote + 3 X tasks + 4 from 2 posts + 4 booths = 12, plus 2 per assist. Wheel: piece 30% · Potion 35% · Boo 17.5% · +1 spin 15% · lootbox 1.5% · keychain 1% (10). Photo pack (all posts + follows): other-crew piece 45% · +2 spins 35% · potion 15% · lootbox 5%. Rules in force: crews assigned in person at the tote desk · max ${CAP} own-crew pieces per person · non-Team1 TH crews hold max 2 Team1 TH pieces · one Merchant Team1 TH per person · redeem burns 4 pieces and mints a soulbound trophy · wristband checked at claim.</p>
+  </section>`;
+}
+
+/* ---------- QR ---------- */
+function paintQRs(){
+  document.querySelectorAll('canvas[data-qr]').forEach(cv=>{
+    const seed=cv.dataset.qr+Math.floor(Date.now()/30000);let s=0;for(const ch of seed)s=(s*31+ch.charCodeAt(0))>>>0;
+    const r=()=>{s=(s*1103515245+12345)>>>0;return (s>>>16)/65536};
+    const x=cv.getContext('2d'),n=25;x.fillStyle='#f4eee6';x.fillRect(0,0,n,n);x.fillStyle='#0f0c14';
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++)if(r()<.48)x.fillRect(i,j,1,1);
+    [[0,0],[n-7,0],[0,n-7]].forEach(([a,b])=>{x.fillStyle='#0f0c14';x.fillRect(a,b,7,7);x.fillStyle='#f4eee6';x.fillRect(a+1,b+1,5,5);x.fillStyle='#0f0c14';x.fillRect(a+2,b+2,3,3)});
+  });
+}
+setInterval(()=>{const t=30-Math.floor(Date.now()/1000)%30;document.querySelectorAll('.ttl').forEach(e=>e.textContent=`QR refreshes in ${t}s.`);if(t===30)paintQRs()},1000);
+
+/* ---------- flows ---------- */
+function login(){
+  if(X.locked){passSheet();return}
+  if(X.configured&&INAPP&&!X.anyway){inAppSheet();return}
+  sheet(`<h2 class="h">Authorize Avalanche Halloween</h2>
+  <p class="sm mu" style="margin:0">X will let this app:</p>
+  <div class="list sm"><div class="li">See your profile and posts</div><div class="li">${X.configured?'Repost, only when you tap the button':'Repost and follow, only when you tap the button'}</div><div class="li">Post for you, only when you tap Post</div></div>
+  <p class="xs mu" style="margin:0">Revoke any time in X settings. The app never posts on its own.</p>
+  <button class="btn full" data-act="auth">Authorize app</button><button class="btn ghost full" data-act="close">Cancel</button>`);
+}
+function auth(){
+  if(X.configured){saveState();const b=document.querySelector('[data-act="auth"]');if(b){b.disabled=true;b.textContent='Opening X…'}location.href='/api/xlab/login?to=app';return}
+  const steps=[['✓',`Signed in as ${U.h}`],['✓',`Avalanche wallet created · ${U.wallet}`],['✓','Gas covered by Team1, so you never need AVAX'],['→','Next: post your arrival to unlock your tote']];
+  sheet(`<h2 class="h">Entering Avalanche Halloween…</h2><div class="steps">${steps.map((s,i)=>`<div style="animation-delay:${i*.5}s"><b class="ok">${s[0]}</b>${s[1]}</div>`).join('')}</div>`);
+  setTimeout(()=>{U.in=true;tx('Wallet created');feed(`${U.h} joined Avalanche Halloween`);tab='home';closeSheet();render()},reduced?300:2300);
+}
+function pickCrew(){
+  if(forceCrew)return forceCrew;
+  let r=Math.random()*100;for(const i of [1,2,3,4]){r-=WEIGHTS[i];if(r<0)return i}return 1;
+}
+
+function logA(who,msg){G.log.unshift(new Date().toTimeString().slice(0,5)+' · '+who+' · '+msg);G.log=G.log.slice(0,30)}
+function vStaff(){
+  const tabs=[['tote','Tote desk'],['merchant','Merchant'],['admin','Admin']];
+  const me=U.crew?CREW[U.crew]:null;let body='';
+  if(staffTab==='tote'){
+    body=!U.in?`<p class="sm mu" style="margin:0">Waiting for a guest to log in with X on their phone.</p>`
+    :!U.crew?`<div class="card" style="gap:6px"><span class="xs mu">Guest at desk</span><b>${U.h}</b><span class="xs mu">Checked in on Luma by Bitkub · not linked yet</span>${U.t.posts?'<span class="sm ok">✓ Arrival post verified on X</span>':'<span class="sm" style="color:#ff6b5a">✗ No post yet. Send them aside to post, then rescan.</span>'}</div><button class="btn full" data-act="stote">Scan guest QR</button>`
+    :`<div class="card" style="gap:6px;border-color:${me.c};background:${me.c}1f"><span class="xs mu">Grab a</span><b style="font-size:22px;color:${me.c}">${me.band.toUpperCase()} band</b><span class="sm">✓ Band #${U.band} linked to ${U.h}</span><span class="xs mu">Hand over: tote + postcard. Point them to the TV wall and the post task.</span></div><p class="xs mu" style="margin:0">Next guest: reset the prototype to run another scan.</p>`;
+  }else if(staffTab==='merchant'){
+    if(!U.crew)body=`<p class="sm mu" style="margin:0">Scan a guest QR. Guest has no crew yet.</p>`;
+    else{
+      const items=['sticker','pen','keychain','kspin'].filter(k=>U.merch[k]);
+      const have=[1,2,3,4].filter(i=>U.p[i]>0).length;
+      body=`<div class="card" style="gap:6px"><div class="row sp"><b>${U.h}</b><span class="pill">${crewDot(U.crew)} ${me.n}</span></div><span class="xs mu">Check wrist: ${me.band} band #${U.band} · scene ${have}/4${U.claimed?' · Champion #'+U.trophyNo:''}</span></div>
+      <div class="ptitle">Physical rewards owed</div>
+      ${items.length?`<div class="list">${items.map(k=>`<div class="li"><div class="grow sm">${MERCH[k]}</div>${U.handed[k]?'<span class="pill">Handed ✓</span>':`<button class="btn ghost sm" data-act="shand" data-v="${k}">Hand over</button>`}</div>`).join('')}</div>`:`<p class="xs mu" style="margin:0">Nothing owed yet.</p>`}
+      <div class="seg"><button class="btn ghost sm" data-act="sdrop" ${U.m4||G.dropPool<1?'disabled':''}>Give drop piece (${G.dropPool} live)</button><button class="btn sm" data-act="sredeem" ${have<4||U.claimed?'disabled':''}>Wrist #${U.band} checked · Redeem</button></div>`;
+    }
+  }else{
+    const tot=[1,2,3,4].reduce((s,i)=>s+G.room[i],0);
+    body=`<table class="econ"><tbody>
+      <tr><td>Guests linked</td><td>${tot} (${[1,2,3,4].map(i=>CREW[i].n+' '+G.room[i]).join(' · ')})</td></tr>
+      <tr><td>Champions</td><td>${G.pantsClaimed} / ${G.pantsCap} pants</td></tr>
+      <tr><td>Feedback form opens</td><td>${G.fbClicks||0} clicks · ${40-G.stock.keychain} keychains out</td></tr>
+      <tr><td>Room posts</td><td>${G.posts} · next goal ${G.goals[G.goalHit]||'done'}</td></tr>
+      <tr><td>Team1 TH reserve</td><td>${G.merchantReserve} held · ${G.dropPool} live in drop</td></tr>
+      <tr><td>Stock left</td><td>Sticker ${G.stock.sticker} · Pen ${G.stock.pen} · Keychain ${G.stock.keychain} (+${G.deck.kspin} on wheel)</td></tr>
+    </tbody></table>
+    <button class="btn ghost sm" data-act="srelease" ${G.merchantReserve<1?'disabled':''}>Release a drop now (5 × Team1 TH)</button>
+    <div class="ptitle">Action log</div>
+    ${G.log.length?`<div class="xs mu" style="font-family:var(--mono);display:flex;flex-direction:column;gap:4px">${G.log.slice(0,8).map(l=>`<div>${l}</div>`).join('')}</div>`:'<p class="xs mu" style="margin:0">No staff actions yet.</p>'}`;
+  }
+  return `<section class="pcard"><div class="ptitle">Staff screens · what Stonk builds</div>
+  <div class="seg">${tabs.map(([k,l])=>`<button class="btn ghost sm" data-act="stab" data-v="${k}" aria-pressed="${staffTab===k}">${l}</button>`).join('')}</div>
+  ${body}<p class="xs mu" style="margin:0">Staff log in with an allowlisted X handle + PIN. Every action is logged.</p></section>`;
+}
+
+function packReady(){return U.t.posts>=2&&U.t.repost&&U.t.f1&&U.t.f2}
+function packCheck(){if(!U.pack&&packReady()){U.pack=1;setTimeout(()=>toast('Photo pack unlocked. Rip it open!'),reduced?50:1500)}}
+function vPackCard(){
+  const steps=[['Post 1 · your arrival',U.t.posts>=1],['Post 2 · your crew (19:30)',U.t.posts>=2],['Repost the main post',!!U.t.repost],['Follow @team1TH',!!U.t.f1],['Follow @AvaxTeam1',!!U.t.f2]];
+  const n=steps.filter(x=>x[1]).length;
+  if(U.pack===2)return `<section class="card"><div class="row sp"><h3>Photo pack</h3><span class="pill ok">Opened ✓</span></div><p class="xs mu" style="margin:0">You got: ${U.packWon}</p></section>`;
+  return `<section class="card ${U.pack===1?'hot':''}">
+    <div class="row sp"><h3>Photo pack</h3><span class="pill ${U.pack===1?'or':''}">${n}/5</span></div>
+    <p class="sm" style="margin:0">Do every post and follow and you get one pack to rip open. 45% chance of a piece from <b>another crew</b>, the only way to get one without trading.</p>
+    <div class="locks">${steps.map(([l,d])=>`<div class="row sm"><span class="${d?'ok':'mu'}">${d?'✓':'○'}</span><span class="${d?'':'mu'}">${l}</span></div>`).join('')}</div>
+    <button class="btn full" data-act="pack" ${U.pack===1?'':'disabled'}>${U.pack===1?'Rip your pack':'🔒 '+(5-n)+' to go'}</button>
+  </section>`;
+}
+function packSheet(){
+  if(U.pack!==1)return;
+  sheet(`<h2 class="h" style="text-align:center">Photo pack</h2><p class="sm mu" style="margin:0;text-align:center">Drag the tab across to rip it open.</p>
+  <div class="pack" id="pk"><div class="top"><div class="zip" id="zip" aria-hidden="true">→</div><span class="hint">Rip</span></div><div class="body"><b>AVALANCHE<br>HALLOWEEN</b></div><div class="card" id="pkc"></div></div>
+  <button class="btn ghost full" data-act="rip" style="margin-top:8px">Tap to rip instead</button>`);
+  const zip=$('#zip'),pk=$('#pk');let x0=null,dx=0;const max=150;
+  zip.addEventListener('pointerdown',e=>{x0=e.clientX;zip.setPointerCapture(e.pointerId)});
+  zip.addEventListener('pointermove',e=>{if(x0===null)return;dx=Math.max(0,Math.min(max,e.clientX-x0));zip.style.transform=`translateX(${dx}px)`;pk.querySelector('.top').style.transform=`rotate(${dx/max*-4}deg)`;if(dx>=max*0.85){x0=null;ripPack()}});
+  zip.addEventListener('pointerup',()=>{if(x0===null)return;x0=null;zip.style.transform='';pk.querySelector('.top').style.transform=''});
+}
+function ripPack(){
+  if(U.pack!==1)return;U.pack=2;
+  let r=Math.random()*100,k='spins';for(const [o,w] of PACK){r-=w;if(r<0){k=o;break}}
+  let html,won;
+  if(k==='other'){
+    const opts=[1,2,3,4].filter(i=>i!==U.crew&&!(i===4&&U.p[4]>=2));
+    const w=opts.map(i=>i===4?5:WEIGHTS[i]);let t=Math.random()*w.reduce((a,b)=>a+b,0),pick=opts[0];
+    for(let j=0;j<opts.length;j++){t-=w[j];if(t<0){pick=opts[j];break}}
+    U.p[pick]++;tx(`Mint ${CREW[pick].n} · photo pack`);feed(`${U.h} ripped a ${CREW[pick].n} from a photo pack`);
+    won=`${CREW[pick].n} piece`;html=`${mini(pick)}<b style="color:${CREW[pick].c}">${CREW[pick].n}</b><span class="xs mu">Another crew's piece</span>`;
+  }else if(k==='spins'){U.spins+=2;won='+2 spins';html=`<b style="font-size:30px;color:var(--or2)">+2</b><span class="sm">spins</span>`}
+  else if(k==='potion'){U.potions++;won='A potion';html=`<b style="font-size:24px;color:#6fd3e0">Potion!</b><span class="xs mu">Drinks counter</span>`}
+  else{U.merch.loot=(U.merch.loot||0)+1;tx('Mint Grotto lootbox · photo pack');won='Grotto lootbox';html=`<b style="font-size:22px;color:#b48cff">Grotto lootbox</b><span class="xs mu">Sent to your wallet</span>`}
+  U.packWon=won;
+  const c=$('#pkc');if(c)c.innerHTML=html;const pk=$('#pk');if(pk)pk.classList.add('ripped');
+  const btn=document.querySelector('[data-act="rip"]');if(btn)btn.remove();
+  setTimeout(()=>{render();const s=document.querySelector('.sheet');if(s)s.insertAdjacentHTML('beforeend',k==='potion'?`<button class="btn full" data-act="potion">Show at the drinks counter</button>`:`<button class="btn full" data-act="close">Nice</button>`)},reduced?50:1000);
+}
+function potionSheet(){
+  sheet(`<h2 class="h" style="text-align:center;color:#6fd3e0">Potion!</h2>
+  <p style="margin:0;text-align:center">The witch says drink. Go to the drinks counter and show this screen.</p>
+  <div class="card" style="text-align:center;gap:4px;border-color:#14404a"><b>Witch's Potion · soda shot</b><span class="xs mu">20+ with a dot on your wristband? Ask for it cursed. Max one cursed per hour, while it lasts.</span></div>
+  <button class="btn full" data-act="drank">Prototype: counter taps Drank it</button><button class="btn ghost full" data-act="close">Later</button>`);
+}
+function toteDesk(){
+  if(!U.in||U.crew)return;
+  if(!U.t.posts){logA('Tote',`${U.h} no post yet · sent to post`);toast('Tote desk: no post yet. Post first, then come back.');renderPanel();return}
+  U.crew=pickCrew();U.band=G.nextBand++;G.room[U.crew]++;U.merch.tote=1;U.merch.postcard=1;U.spins+=1;
+  const a=earnOwn(),b=earnOwn();
+  tx(`Mint ${CREW[U.crew].n} ×${(a.ok?1:0)+(b.ok?1:0)} · crew start`);
+  feed(`${U.h} joined the ${CREW[U.crew].n} crew`);logA('Tote',`${U.h} → ${CREW[U.crew].n}, band #${U.band}, tote + postcard`);
+  const me=CREW[U.crew];
+  render();
+  sheet(`<div class="crewcard pop" style="border-color:${me.c};background:${me.c}1f"><span class="xs" style="letter-spacing:.14em;text-transform:uppercase;font-weight:800">You're in the</span><span class="h" style="color:${me.c}">${me.n}</span><span class="sm" style="opacity:.8">${me.sub}</span><span class="rar" style="color:${me.c}">${me.r} crew · ${me.band} wristband</span><span class="band" style="color:${me.c};margin-top:6px">Band #${U.band}</span></div>
+  <div class="reveal">${mini(U.crew)}${b.ok?mini(U.crew):''}</div>
+  <p class="sm" style="margin:0;text-align:center">You start with ${(a.ok?1:0)+(b.ok?1:0)} ${me.n} piece${b.ok?'s':''}, ${U.spins} spins and your Team1 tote. You can only make ${me.n}s, so find the other 3 crews.</p>
+  <button class="btn full" data-act="gospin">Spin now · ${U.spins} spins</button>`);
+}
+function doSpin(){
+  if(spinning||!U.crew)return;if(U.spins<1){toast('No spins left. Do tasks to earn more.');return}
+  U.spins--;spinning=true;
+  const res=resolveDraw(),idx=SEG.map((s,j)=>s[0]===res.k?j:-1).filter(j=>j>=0),i=rnd(idx),step=360/SEG.length,c=i*step+step/2;
+  wheelRot=wheelRot-(((wheelRot%360)+360)%360)+360*5+(360-c);
+  const w=$('#wheel');if(w)w.style.transform=`rotate(${wheelRot}deg)`;
+  const b=document.querySelector('[data-act="spin"]');if(b){b.disabled=true;b.textContent='Spinning…'}
+  setTimeout(()=>{spinning=false;showSpin(res)},reduced?100:3350);
+}
+function showSpin(res){
+  const k=res.k;let body,title='You got';
+  if(k==='piece'){tx(`Mint ${CREW[res.piece].n} · spin`);body=`<div class="reveal">${mini(res.piece)}</div><p style="margin:0;text-align:center">${pc(res.piece)}</p>`}
+  else if(k==='spin'){U.spins++;body=`<p style="margin:0;text-align:center;font-size:20px;font-weight:800">+1 spin</p>`}
+  else if(k==='boo'){title='Boo!';body=`<p style="margin:0;text-align:center">Nothing this time. The ghosts win this round.</p>`}
+  else if(k==='potion'){U.potions++;render();potionSheet();return}
+  else if(k==='kspin'){U.merch.kspin=(U.merch.kspin||0)+1;title='RARE';feed(`${U.h} spun a rare keychain`);body=`<p style="margin:0;text-align:center;font-size:22px;font-weight:800;color:var(--or2)">Special keychain</p><p class="sm mu" style="margin:0;text-align:center">1 of only 10 on the wheel tonight. Collect it at the Merchant.</p>`}
+  else{U.merch[k]=(U.merch[k]||0)+1;if(k==='set'){G.jackpotPants++;title='JACKPOT';feed(`${U.h} hit the merch-set jackpot`)}tx(`Reward · ${MERCH[k]}`);body=`<p style="margin:0;text-align:center;font-size:22px;font-weight:800;color:var(--or2)">${MERCH[k]}</p><p class="sm mu" style="margin:0;text-align:center">${k==='loot'?'Sent to your wallet.':'Collect it at the Merchant desk.'}</p>`}
+  render();
+  sheet(`<h2 class="h" style="text-align:center">${title}</h2>${body}${res.note?`<div class="note">${res.note}</div>`:''}<button class="btn full" data-act="close">${U.spins?'Keep going':'Done'}</button>`);
+}
+function boothSheet(b){
+  sheet(`<h2 class="h">${BOOTHS[b]}</h2><p class="sm mu" style="margin:0">Point the in-page scanner at the QR on the booth screen. It changes every 30 seconds. +1 spin, once per booth.</p>
+  <div style="aspect-ratio:4/3;border-radius:14px;background:repeating-linear-gradient(45deg,#15101b 0 10px,#1a1422 10px 20px);display:grid;place-items:center;border:2px solid var(--or)"><span class="xs mu">camera view</span></div>
+  <button class="btn full" data-act="scan" data-v="${b}">Prototype: scan the booth QR</button><button class="btn ghost full" data-act="close">Cancel</button>`);
+}
+function openPack(b){
+  if(!U.crew){toast('Get your crew at the tote desk first');return}
+  if(U.booths[b]){toast('Already visited this booth');return}
+  U.booths[b]=1;U.spins++;
+  feed(`${U.h} visited ${BOOTHS[b]}`);closeSheet();render();toast(`${BOOTHS[b]} · +1 spin`);
+}
+async function doTaskReal(k){
+  const b=document.querySelector(`[data-act="task"][data-v="${k}"]`);
+  const credit=()=>{U.t[k]=1;U.spins++;toast('X confirmed · +1 spin');packCheck();render()};
+  if(k==='repost'){
+    let ref=X.defaults.repostId||'';try{ref=ref||localStorage.getItem('hw_repost')||''}catch(_){}
+    if(!ref){ref=(prompt('Paste the link to the post guests should repost (the main event post):')||'').trim();if(!ref)return;try{localStorage.setItem('hw_repost',ref)}catch(_){}}
+    if(b){b.disabled=true;b.textContent='Reposting…'}
+    const j=await xapi('repost',{post:ref});
+    if(j.ok){credit();return}
+    try{localStorage.removeItem('hw_repost')}catch(_){}
+    render();xFail('X did not take the repost',j);return;
+  }
+  const handle=k==='f1'?'team1TH':'AvaxTeam1';
+  if(!X.f[k]){X.f[k]=1;window.open('https://x.com/intent/follow?screen_name='+handle,'_blank','noopener');render();toast('Follow on X, then come back and tap Check');return}
+  if(b){b.disabled=true;b.textContent='Checking…'}
+  const j=await xapi('checkfollow',{handle});
+  if(j.following===true){credit();return}
+  if(j.following===false&&!j.requested){X.f[k]=0;render();toast(`X says you don't follow @${handle} yet. Tap Follow again.`);return}
+  render();xFail('X would not confirm the follow',j);
+}
+function doTask(k){
+  if(live()){doTaskReal(k);return}
+  const b=document.querySelector(`[data-act="task"][data-v="${k}"]`);if(b){b.disabled=true;b.textContent=k==='repost'?'Reposting…':'Following…'}
+  setTimeout(()=>{U.t[k]=1;U.spins++;toast('X confirmed · +1 spin');packCheck();render()},reduced?100:900);
+}
+function compose(){
+  const ang=U.t.posts===0?0:1;
+  const A=[{t:'Angle 1 · You\'re here',d:'The entrance, the photo wall or your costume.',ph:[['Photo wall','linear-gradient(160deg,#ff7a1a,#5a1f07)'],['Costume','linear-gradient(160deg,#5b2a7a,#1d0f2a)'],['Entrance','linear-gradient(160deg,#1f4a6a,#0c1420)']],cap:'Haunting ZillaSpace tonight 🎃 Avalanche Halloween with @team1TH @AvaxTeam1 @Bitkub @TheGrotto #AvalancheHalloween'},
+           {t:'Angle 2 · Your crew',d:'Your crew in the room: wristbands, totes, the LED behind you.',ph:[['Costume','linear-gradient(160deg,#5b2a7a,#1d0f2a)'],['Crew selfie','linear-gradient(160deg,'+(U.crew?CREW[U.crew].c:'#ff7a1a')+',#140c1c)'],['Tote + band','linear-gradient(160deg,#ff7a1a,#5a1f07)']],cap:`Repping the ${U.crew?CREW[U.crew].n:'Avalanche'} crew at Avalanche Halloween 🎃 @team1TH @AvaxTeam1 @Bitkub @TheGrotto #AvalancheHalloween`}][ang];
+  if(live()){
+    X.photo=null;X.cap={test:`Testing the Avalanche Halloween app 🎃 #${X.defaults.hashtag||'AvalancheHalloweenLab'}`,event:A.cap};
+    sheet(`<h2 class="h">${A.t}</h2><p class="sm mu" style="margin:0">${A.d}</p>
+    <img class="shot" id="shot" alt="Your photo" hidden>
+    <div class="row"><label class="btn ghost full" for="xcam">Take a photo</label><label class="btn ghost full" for="xlib">From library</label></div>
+    <input type="file" id="xcam" accept="image/*" capture="environment" data-xphoto="1" hidden><input type="file" id="xlib" accept="image/*" data-xphoto="1" hidden>
+    <label class="xs mu" for="cap">Caption · exactly what goes on your X</label>
+    <div class="chips"><button data-act="xcap" data-v="test" aria-pressed="${X.capMode==='test'}">Test caption</button><button data-act="xcap" data-v="event" aria-pressed="${X.capMode==='event'}">Event caption</button></div>
+    <textarea id="cap">${esc(X.cap[X.capMode])}</textarea>
+    <p class="xs mu" style="margin:0">This is a real post from ${esc(U.h)}. "Event" is the real caption and tags four accounts, so use it once, on purpose.</p>
+    <button class="btn full" data-act="post" disabled>Add a photo first</button><button class="btn ghost full" data-act="close">Cancel</button>`);
+    return;
+  }
+  sheet(`<h2 class="h">${A.t}</h2><p class="sm mu" style="margin:0">${A.d}</p>
+  <div class="photos">${A.ph.map((p,i)=>`<button class="photo" style="background:${p[1]}" data-act="photo" data-v="${i}" aria-pressed="${i===0}">${p[0]}</button>`).join('')}</div>
+  <label class="xs mu" for="cap">Caption (tags locked in)</label>
+  <textarea id="cap">${A.cap}</textarea>
+  <button class="btn full" data-act="post">Post to X</button><button class="btn ghost full" data-act="close">Cancel</button>`);
+}
+function postDone(extra){
+    U.t.posts++;G.posts++;U.spins+=2;packCheck();
+    feed(`${U.h} posted from Avalanche Halloween`);checkGoals();render();
+    const first=U.t.posts===1;if(first)tab='home';render();
+    sheet(first?`<h2 class="h" style="text-align:center">You're in</h2><div class="list sm"><div class="li"><div class="grow">Team1 tote + postcard</div><span class="ok">Unlocked</span></div><div class="li"><div class="grow">Crew wristband + pieces</div><span class="ok">Unlocked</span></div><div class="li"><div class="grow">Spin wheel · +2 spins</div><span class="ok">Unlocked</span></div></div><p class="sm" style="margin:0;text-align:center">Show your QR at the tote desk.</p>${extra||''}<button class="btn full" data-act="close">Show my QR</button>`:`<h2 class="h" style="text-align:center">Posted</h2><p style="margin:0;text-align:center;font-size:20px"><b>+2 spins</b></p><p class="xs mu" style="margin:0;text-align:center">Room: ${G.posts} posts${G.goals[G.goalHit]?` · next Team1 TH drop at ${G.goals[G.goalHit]}`:''}</p>${extra||''}<button class="btn full" data-act="close">Done</button>`);
+}
+async function doPostReal(){
+  const b=document.querySelector('[data-act="post"]'),cap=($('#cap').value||'').trim();
+  if(!X.photo){toast('Add a photo first');return}
+  if(HAS_LINK.test(cap)){toast('Take the link out of the caption. Tags and the hashtag only.');return}
+  const tag=(cap.match(/#(\w+)/)||[])[1];if(!tag){toast('Keep a hashtag in the caption. The app checks for it.');return}
+  if(b){b.disabled=true;b.textContent='Posting to X…'}
+  const j=await xapi('post',{text:cap,hashtag:tag,image:X.photo.dataUrl});
+  if(!j.ok){if(b){b.disabled=false;b.textContent='Post to X'}xFail('X did not take the post',j);return}
+  X.postId=j.id;
+  if(!j.readBack||j.hashtagOk===false||j.mediaOk===false){
+    j.error=`The post went out, but the read-back ${!j.readBack?'failed':j.hashtagOk===false?'did not find #'+tag:'did not find the photo'}. The real app would not credit this.`;
+    xFail('Posted, but not verified',j);return;
+  }
+  postDone(`<a class="btn ghost full" href="${esc(j.url)}" target="_blank" rel="noopener">See it on X ↗</a><button class="btn ghost full" data-act="xdelete">Delete this test post from X</button>`);
+}
+function doPost(){
+  if(live()){doPostReal();return}
+  const b=document.querySelector('[data-act="post"]');if(b){b.disabled=true;b.textContent='Posting to X…'}
+  setTimeout(()=>postDone(''),reduced?100:1100);
+}
+function tradeSheet(i){
+  const n=G.npcs[i];if(!tr||tr.i!==i)tr={i,give:null,get:null};
+  const needs=[1,2,3,4].filter(k=>!n.p[k]),sp=[1,2,3,4].filter(k=>n.p[k]>1);
+  const canGive=needs.filter(k=>U.p[k]>0);
+  const lastCopy=tr.give&&U.p[tr.give]===1&&!U.claimed;
+  sheet(`<div class="row sp"><div class="row">${crewDot(n.crew)}<h2 class="h">${n.h}</h2></div><span class="pill">${distinct(n.p)}/4</span></div>
+  <div class="row wrap sm"><span class="mu">${CREW[n.crew].n} crew · Spare:</span>${sp.length?sp.map(k=>`<b style="color:${CREW[k].c}">${CREW[k].n}</b>`).join(' '):'<span class="mu">none</span>'}<span class="mu" style="margin-left:6px">Needs:</span>${needs.length?needs.map(k=>`<b style="color:${CREW[k].c}">${CREW[k].n}</b>`).join(' '):'<span class="mu">none</span>'}</div>
+  <div><div class="xs mu" style="margin-bottom:6px">You give (pieces they need)</div><div class="chips">${canGive.length?canGive.map(k=>`<button class="chip" data-act="tgive" data-v="${k}" aria-pressed="${tr.give===k}">${crewDot(k)}${CREW[k].n} · you have ${U.p[k]}</button>`).join(''):'<span class="sm mu">You have nothing they need.</span>'}</div></div>
+  <div><div class="xs mu" style="margin-bottom:6px">You get (their spares)</div><div class="chips">${sp.map(k=>`<button class="chip" data-act="tget" data-v="${k}" aria-pressed="${tr.get===k}" ${(k===4&&U.crew!==4&&U.p[4]>=2)?'disabled':''}>${crewDot(k)}${CREW[k].n}</button>`).join('')}<button class="chip" data-act="tget" data-v="0" aria-pressed="${tr.get===0}">Nothing (gift)</button></div></div>
+  ${lastCopy?`<div class="note">That's your only ${CREW[tr.give].n}. Giving it away puts you back to ${distinct(U.p)-1}/4.</div>`:''}
+  ${tr.give&&needs.length===1?`<div class="note">${CREW[tr.give].n} is ${n.h}'s last missing piece. Giving it earns you an Assist (+2 spins and a pen).</div>`:''}
+  <button class="btn full" data-act="propose" ${!tr.give||tr.get===null?'disabled':''}>${tr.get?`Propose: ${tr.give?CREW[tr.give].n:'?'} ⇄ ${CREW[tr.get].n}`:'Send as gift'}</button>
+  <button class="btn ghost full" data-act="close">Cancel</button>`);
+}
+function propose(){
+  const n=G.npcs[tr.i],give=tr.give,get=tr.get;
+  sheet(`<h2 class="h" style="text-align:center">Waiting for ${n.h}…</h2><p class="sm mu" style="margin:0;text-align:center">${get?'They confirm on their phone. Both pieces move together, or neither does.':'Sending your gift on-chain.'}</p>`);
+  setTimeout(()=>{
+    const before=distinct(n.p);
+    U.p[give]--;n.p[give]++;
+    if(get){n.p[get]--;U.p[get]++;tx(`Swap ${CREW[give].n} ⇄ ${CREW[get].n} · ${n.h}`);feed(`${U.h} swapped ${CREW[give].n} ⇄ ${CREW[get].n} with ${n.h}`)}
+    else{tx(`Gift ${CREW[give].n} → ${n.h}`);feed(`${U.h} gifted a ${CREW[give].n} to ${n.h}`)}
+    let extra='';
+    if(!U.merch.sticker&&G.stock.sticker>0){G.stock.sticker--;U.merch.sticker=1;extra+=`<div class="note">First trade! A sticker set is waiting for you at the Merchant desk.</div>`}
+    if(before===3&&distinct(n.p)===4){
+      U.assists++;U.spins+=2;G.assisters[U.h]=(G.assisters[U.h]||0)+1;
+      let kc='';if(G.stock.pen>0){G.stock.pen--;U.merch.pen=(U.merch.pen||0)+1;kc=' and a pen'}
+      feed(`${n.h} completed the scene. Assist: ${U.h}`);
+      extra+=`<div class="note">Assist! ${n.h} finished their scene with your piece. +2 spins${kc}, and you're on the Top Assisters board.</div>`;
+      setTimeout(()=>{if(G.pantsClaimed<G.pantsCap){G.pantsClaimed++;[1,2,3,4].forEach(k=>n.p[k]--);n.done=true;feed(`${n.h} became Halloween Champion #${G.pantsClaimed}`);render()}},2500);
+    }
+    tr=null;render();
+    sheet(`<h2 class="h" style="text-align:center">${get?'Trade done':'Gift sent'}</h2>${get?`<div class="reveal">${mini(get)}</div><p style="margin:0;text-align:center">${pc(get)}</p>`:''}${extra}${complete(U.p)&&!U.claimed?`<button class="btn full" data-act="tab" data-v="merchant">Scene complete. Go claim</button>`:''}<button class="btn ${complete(U.p)&&!U.claimed?'ghost ':''}full" data-act="close">Done</button>`);
+  },reduced?100:1300);
+}
+function claimSheet(){
+  const me=CREW[U.crew];
+  sheet(`<h2 class="h" style="text-align:center">Claim at Booth 2</h2><canvas class="qr" width="25" height="25" data-qr="claim-${U.h}" aria-label="Your claim QR"></canvas>
+  <div class="card" style="text-align:center;gap:4px"><span class="xs mu">Staff check</span><b>Wristband #${U.band} · <span style="color:${me.c}">${me.n} (${me.band})</span></b><span class="xs mu">${U.h}. If the wrist doesn't match, don't redeem.</span></div>
+  <div class="board" id="burnboard" style="width:150px;margin:0 auto">${[1,2,3,4].map(i=>`<div class="tile"><div class="art" style="background-position:${POS[i]}"></div></div>`).join('')}</div>
+  <button class="btn full" data-act="redeem">Prototype: staff tap Redeem</button>`);
+}
+function redeem(){
+  document.querySelectorAll('#burnboard .tile').forEach((t,i)=>{t.style.animationDelay=(i*.12)+'s';t.classList.add('burn')});
+  setTimeout(()=>{
+    [1,2,3,4].forEach(k=>U.p[k]--);G.pantsClaimed++;U.trophyNo=G.pantsClaimed;U.claimed=true;
+    const pants=G.pantsClaimed<=G.pantsCap;
+    tx('Burn 4 pieces · mint soulbound trophy');logA('Merchant',`${U.h} band #${U.band} redeemed → Champion #${U.trophyNo}${pants?', pants':''}`);feed(`${U.h} became Halloween Champion #${U.trophyNo}`);
+    render();
+    sheet(`<h2 class="h" style="text-align:center">Halloween Champion</h2><div class="trophy pop"><span>CHAMPION #${U.trophyNo} OF ${G.pantsCap}</span></div>
+    <p style="margin:0;text-align:center">Soulbound to ${U.h}. It can't be transferred or sold.</p>
+    <div class="note">${pants?'Staff: hand over the Team1 pants and snip the wristband tab.':'Tonight\'s pants are all claimed. Staff: hand over a merch set and a raffle entry.'}</div>
+    <button class="btn full" data-act="close">Done</button>`);
+  },reduced?100:1500);
+}
+const FEEDBACK_URL='https://example.com/team1-event-feedback'; /* swap for the Team1 event feedback link */
+function feedbackSheet(){
+  sheet(`<h2 class="h">Team1 event feedback</h2>
+  <p class="sm" style="margin:0">Opens the official Team1 form in a new tab. About a minute. Come back here when you've submitted.</p>
+  <a class="btn full" href="${FEEDBACK_URL}" target="_blank" rel="noopener" data-act="fbopen" style="text-decoration:none;text-align:center">Open the feedback form ↗</a>
+  ${U.fbOpened?`<button class="btn ghost full" data-act="fbsubmit">I've submitted · claim my keychain</button>`:''}
+  <p class="xs mu" style="margin:0">At the Merchant, show the form's "submitted" screen and this QR.</p>`);
+}
+function fbSubmit(){sheet(`<h2 class="h" style="text-align:center">Show the Merchant</h2><canvas class="qr" width="25" height="25" data-qr="fb-${U.h}" aria-label="Your feedback reward QR"></canvas><p class="xs mu" style="margin:0;text-align:center">Staff check wristband #${U.band}</p><button class="btn full" data-act="fbgrant">Prototype: Merchant scans</button>`)}
+function fbGrant(){
+  U.t.fb=1;let body;
+  if(G.stock.keychain>0){G.stock.keychain--;U.merch.keychain=1;U.handed.keychain=1;logA('Merchant',`${U.h} feedback → special keychain handed`);body=`<p style="margin:0;text-align:center;font-size:20px;font-weight:800;color:var(--or2)">Special keychain</p><p class="sm mu" style="margin:0;text-align:center">The Merchant hands it over now.</p>`}
+  else{U.spins+=2;body=`<p style="margin:0;text-align:center">Keychains are gone. +2 spins instead.</p>`}
+  feed(`${U.h} sent feedback`);render();
+  sheet(`<h2 class="h" style="text-align:center">Thanks!</h2>${body}<button class="btn full" data-act="close">Done</button>`);
+}
+function claimDrop(){if(U.m4||G.dropPool<1)return;sheet(`<h2 class="h" style="text-align:center">Merchant drop</h2><canvas class="qr" width="25" height="25" data-qr="drop-${U.h}" aria-label="Your drop QR"></canvas><p class="xs mu" style="margin:0;text-align:center">Staff check wristband #${U.band}</p><button class="btn full" data-act="dropgrant">Prototype: Merchant scans</button>`)}
+function dropGrant(){
+  if(!take4()){sheet(`<h2 class="h">Hold limit</h2><p class="sm" style="margin:0">You already hold 2 Team1 TH pieces. Trade one away first.</p><button class="btn full" data-act="close">OK</button>`);return}
+  G.dropPool--;U.m4=true;logA('Merchant',`${U.h} drop → Team1 TH (${G.dropPool} left)`);tx('Mint Team1 TH · Merchant drop');feed(`${U.h} grabbed a Team1 TH piece from the drop`);render();
+  sheet(`<h2 class="h" style="text-align:center">From the drop</h2><div class="reveal">${mini(4)}</div><p style="margin:0;text-align:center">${pc(4)}</p><button class="btn full" data-act="close">Done</button>`);
+}
+function shop(){
+  if(spares()<3||G.lootMerchant<1)return;
+  U.p[U.crew]-=3;G.lootMerchant--;U.merch.loot=(U.merch.loot||0)+1;
+  if(U.crew===4)G.merchantReserve+=3;
+  tx(`Burn 3 ${CREW[U.crew].n} · Grotto lootbox`);render();
+  sheet(`<h2 class="h" style="text-align:center">Merchant's swap</h2><p style="margin:0;text-align:center;font-size:20px;font-weight:800;color:var(--or2)">Grotto lootbox</p><p class="sm mu" style="margin:0;text-align:center">Sent to your wallet.</p><button class="btn full" data-act="close">Done</button>`);
+}
+function donate(){
+  const total=[1,2,3,4].reduce((s,i)=>s+U.p[i],0);if(!total){toast('No pieces to donate');return}
+  sheet(`<h2 class="h">Donate ${total} pieces?</h2><p class="sm" style="margin:0">They go back to the Merchant for someone else to finish. You get a sticker pack.</p><button class="btn full" data-act="donateok">Donate and leave</button><button class="btn ghost full" data-act="close">Keep playing</button>`);
+}
+function donateOk(){G.merchantReserve+=U.p[4];[1,2,3,4].forEach(i=>U.p[i]=0);U.merch.sticker=(U.merch.sticker||0)+1;tx('Return pieces · Merchant');feed(`${U.h} donated pieces to the Merchant`);closeSheet();render();toast('Thanks. Sticker pack added to your rewards.')}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const a=el.dataset.act,v=el.dataset.v;
+  if(a==='bg'){if(e.target===el)closeSheet();return}
+  switch(a){
+    case 'login':login();break;
+    case 'xinfo':xInfo();break;
+    case 'xcopy':xCopy(HERE);break;
+    case 'xcopycb':xCopy(X.redirectUri||'');break;
+    case 'xanyway':X.anyway=true;login();break;
+    case 'xcap':{const t=$('#cap');X.cap[X.capMode]=t.value;X.capMode=v;t.value=X.cap[v];document.querySelectorAll('[data-act="xcap"]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===v));break}
+    case 'xdelete':xDelete(el);break;
+    case 'xlogout':xLogout();break;
+    case 'xpass':xBoot(($('#xpw').value||'').trim());break;
+    case 'auth':auth();break;
+    case 'close':closeSheet();break;
+    case 'tab':tab=v;closeSheet();render();$('#main').scrollTop=0;break;
+    case 'gospin':tab='spin';closeSheet();render();break;
+    case 'tote':toteDesk();break;
+    case 'force':forceCrew=+v;renderPanel();break;
+    case 'spin':doSpin();break;
+    case 'task':doTask(v);break;
+    case 'compose':compose();break;
+    case 'photo':document.querySelectorAll('[data-act="photo"]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));break;
+    case 'post':doPost();break;
+    case 'booth':boothSheet(+v);break;
+    case 'scan':openPack(+v);break;
+    case 'npc':tr=null;tradeSheet(+v);break;
+    case 'tgive':tr.give=+v;tradeSheet(tr.i);break;
+    case 'tget':tr.get=+v;tradeSheet(tr.i);break;
+    case 'propose':propose();break;
+    case 'claim':claimSheet();break;
+    case 'redeem':redeem();break;
+    case 'fb':fbAns={};feedbackSheet();break;
+    case 'fbopen':U.fbOpened=1;G.fbClicks=(G.fbClicks||0)+1;logA('App',`${U.h} opened feedback form`);setTimeout(feedbackSheet,300);break;
+    case 'fbsubmit':fbSubmit();break;
+    case 'fbgrant':fbGrant();break;
+    case 'drop':claimDrop();break;
+    case 'dropgrant':dropGrant();break;
+    case 'shop':shop();break;
+    case 'donate':donate();break;
+    case 'donateok':donateOk();break;
+    case 'wave':G.wave=+v;feed(`${WAVES[G.wave]}`);if(G.wave>=1)toast('Feedback rewards are open at the Merchant');render();break;
+    case 'room10':G.posts+=10;checkGoals();render();break;
+    case 'npcdone':{if(G.pantsClaimed<G.pantsCap){G.pantsClaimed++;const h=rnd(['@siam_dev','@kubkid','@farmer_tee','@lootghost','@zilla_nft']);feed(`${h} became Halloween Champion #${G.pantsClaimed}`);const a2=rnd(Object.keys(G.assisters).filter(k=>k!==U.h));G.assisters[a2]++}render();break}
+    case 'reset':try{sessionStorage.removeItem('hw_state')}catch(_){}X.f={};init();wheelRot=0;closeSheet();render();break;
+    case 'panel':panelOpen=!panelOpen;renderPanel();break;
+    case 'stab':staffTab=v;renderPanel();break;
+    case 'stote':toteDesk();renderPanel();break;
+    case 'shand':U.handed[v]=1;logA('Merchant',`${U.h} ${MERCH[v]||v} handed`);renderPanel();break;
+    case 'sdrop':dropGrant();renderPanel();break;
+    case 'sredeem':claimSheet();setTimeout(redeem,300);break;
+    case 'srelease':{const n=Math.min(5,G.merchantReserve);G.merchantReserve-=n;G.dropPool+=n;logA('Admin',`released ${n} × Team1 TH to the drop`);feed(`Merchant drop: ${n} Team1 TH pieces live at Booth 2`);render();break}
+    case 'pack':packSheet();break;
+    case 'rip':ripPack();break;
+    case 'potion':potionSheet();break;
+    case 'drank':closeSheet();feed(`${U.h} drank a potion`);toast('Potion down. The ghosts approve.');break;
+    case 'guides':guides=!guides;paintArt();renderPanel();break;
+  }
+});
+document.addEventListener('change',async e=>{
+  if(!e.target.dataset||!e.target.dataset.xphoto)return;
+  const f=e.target.files&&e.target.files[0];e.target.value='';
+  if(!f){toast('No photo came back. The camera may be blocked in this browser.');return}
+  try{
+    X.photo=await xPrep(f);const im=$('#shot');if(im){im.src=X.photo.dataUrl;im.hidden=false}
+    const b=document.querySelector('[data-act="post"]');if(b){b.disabled=false;b.textContent='Post to X'}
+  }catch(err){X.photo=null;toast('This browser could not read that photo: '+(err.message||err))}
+});
+document.addEventListener('change',e=>{
+  const k=e.target.dataset&&e.target.dataset.file;if(!k||!e.target.files[0])return;
+  const img=new Image();img.onload=()=>{custom[k]=img;paintArt()};img.src=URL.createObjectURL(e.target.files[0]);
+});
+
+/* ---------- scene art (original placeholders) ---------- */
+function creature(x,cx,cy,col,letter){
+  x.save();x.translate(cx,cy);
+  const g=x.createRadialGradient(-30,-40,10,0,0,150);g.addColorStop(0,'#fff');g.addColorStop(.12,col);g.addColorStop(1,shade(col,-.45));
+  x.fillStyle=g;x.beginPath();x.moveTo(0,-130);x.bezierCurveTo(95,-130,120,-30,115,40);x.bezierCurveTo(110,120,60,140,0,140);x.bezierCurveTo(-60,140,-110,120,-115,40);x.bezierCurveTo(-120,-30,-95,-130,0,-130);x.fill();
+  x.fillStyle=shade(col,-.55);x.beginPath();x.moveTo(-70,-105);x.lineTo(-95,-160);x.lineTo(-40,-122);x.fill();x.beginPath();x.moveTo(70,-105);x.lineTo(95,-160);x.lineTo(40,-122);x.fill();
+  x.fillStyle='#fff';x.beginPath();x.ellipse(-38,-40,24,28,0,0,7);x.fill();x.beginPath();x.ellipse(38,-40,24,28,0,0,7);x.fill();
+  x.fillStyle='#120c18';x.beginPath();x.arc(-32,-34,11,0,7);x.fill();x.beginPath();x.arc(44,-34,11,0,7);x.fill();
+  x.strokeStyle='#120c18';x.lineWidth=5;x.lineCap='round';x.beginPath();x.arc(0,8,22,.15*Math.PI,.85*Math.PI);x.stroke();
+  x.fillStyle='rgba(255,255,255,.22)';x.beginPath();x.ellipse(0,80,58,44,0,0,7);x.fill();
+  x.fillStyle='rgba(18,12,24,.75)';x.font='bold 54px "Pirata One", Georgia, serif';x.textAlign='center';x.textBaseline='middle';x.fillText(letter,0,84);
+  x.restore();
+}
+function shade(hexc,amt){const n=parseInt(hexc.slice(1),16);let r=n>>16,g=(n>>8)&255,b=n&255;const f=c=>Math.max(0,Math.min(255,Math.round(c+(amt<0?c*amt:(255-c)*amt))));return `rgb(${f(r)},${f(g)},${f(b)})`}
+function jack(x,cx,cy,r){
+  const g=x.createRadialGradient(cx,cy,r*.3,cx,cy,r*2.1);g.addColorStop(0,'rgba(255,150,40,.5)');g.addColorStop(1,'rgba(255,150,40,0)');x.fillStyle=g;x.fillRect(cx-r*2.2,cy-r*2.2,r*4.4,r*4.4);
+  x.save();x.translate(cx,cy);
+  x.fillStyle='#3e5b24';x.fillRect(-r*.1,-r*1.05,r*.2,r*.32);
+  [[-r*.5,r*.55,'#c4520d'],[r*.5,r*.55,'#c4520d'],[-r*.22,r*.6,'#e2690f'],[r*.22,r*.6,'#e2690f'],[0,r*.5,'#f07a14']].forEach(([ox,rx,c])=>{x.fillStyle=c;x.beginPath();x.ellipse(ox,0,rx,r*.8,0,0,7);x.fill()});
+  x.fillStyle='#ffd25a';const tri=(ax,ay,s)=>{x.beginPath();x.moveTo(ax,ay-s);x.lineTo(ax+s,ay+s*.7);x.lineTo(ax-s,ay+s*.7);x.fill()};
+  tri(-r*.33,-r*.18,r*.17);tri(r*.33,-r*.18,r*.17);tri(0,r*.08,r*.09);
+  x.beginPath();x.moveTo(-r*.5,r*.26);for(let t=0;t<=7;t++)x.lineTo(-r*.5+t*(r/7),r*.26+(t%2?r*.1:0));x.quadraticCurveTo(0,r*.78,-r*.5,r*.26);x.fill();
+  x.restore();
+}
+function drawImgIn(x,img,qx,qy){const box=440,s=Math.min(box/img.width,box/img.height),w=img.width*s,h=img.height*s;x.drawImage(img,qx+250-w/2,qy+250-h/2,w,h)}
+function paintArt(){
+  const c=document.createElement('canvas');c.width=c.height=1000;const x=c.getContext('2d');
+  if(custom.scene){x.drawImage(custom.scene,0,0,1000,1000)}
+  else{
+    const g=x.createLinearGradient(0,0,0,1000);g.addColorStop(0,'#160c2a');g.addColorStop(.5,'#2c1233');g.addColorStop(1,'#3a170b');x.fillStyle=g;x.fillRect(0,0,1000,1000);
+    let s=11;const rr=()=>{s=(s*9301+49297)%233280;return s/233280};
+    x.fillStyle='#fff';for(let i=0;i<150;i++){x.globalAlpha=.3+rr()*.6;x.beginPath();x.arc(rr()*1000,rr()*380,rr()*1.6+.3,0,7);x.fill()}x.globalAlpha=1;
+    const mg=x.createRadialGradient(500,95,20,500,95,200);mg.addColorStop(0,'rgba(255,220,150,.5)');mg.addColorStop(1,'rgba(255,220,150,0)');x.fillStyle=mg;x.fillRect(300,0,400,320);
+    x.fillStyle='#f6e6bd';x.beginPath();x.arc(500,95,58,0,7);x.fill();
+    x.fillStyle='#0f0814';x.beginPath();x.moveTo(60,430);x.lineTo(60,250);x.lineTo(200,170);x.lineTo(340,250);x.lineTo(340,200);x.lineTo(660,200);x.lineTo(660,250);x.lineTo(800,170);x.lineTo(940,250);x.lineTo(940,430);x.closePath();x.fill();
+    x.fillStyle='rgba(255,196,90,.75)';for(let i=0;i<8;i++){x.fillRect(110+i*105,300,26,34)}
+    x.fillStyle='rgba(255,236,200,.85)';x.font='30px "Pirata One", Georgia, serif';x.textAlign='center';x.fillText('ZillaSpace',500,240);
+    x.fillStyle='#120a14';x.fillRect(0,880,1000,120);
+    const fog=x.createLinearGradient(0,820,0,900);fog.addColorStop(0,'rgba(220,210,255,0)');fog.addColorStop(1,'rgba(220,210,255,.18)');x.fillStyle=fog;x.fillRect(0,820,1000,80);
+    jack(x,500,500,92);
+    x.fillStyle='rgba(255,236,200,.95)';x.font='54px "Pirata One", Georgia, serif';x.textAlign='center';x.fillText('Avalanche Halloween',500,955);
+    const Q={1:[0,0],2:[500,0],3:[0,500],4:[500,500]};
+    // crossings drawn under bodies where they start
+    if(!custom[1]){x.strokeStyle=CREW[1].c;x.lineWidth=26;x.lineCap='round';x.beginPath();x.moveTo(330,300);x.quadraticCurveTo(460,250,580,300);x.stroke();
+      x.save();x.translate(600,305);x.rotate(.3);x.fillStyle='#ff4f9a';x.beginPath();x.ellipse(0,0,24,14,0,0,7);x.fill();x.beginPath();x.moveTo(-22,0);x.lineTo(-40,-12);x.lineTo(-40,12);x.fill();x.beginPath();x.moveTo(22,0);x.lineTo(40,-12);x.lineTo(40,12);x.fill();x.restore();
+      x.fillStyle=CREW[1].c;x.beginPath();x.arc(582,300,18,0,7);x.fill()}
+    if(!custom[3]){const lg=x.createRadialGradient(470,690,10,470,690,190);lg.addColorStop(0,'rgba(190,160,255,.6)');lg.addColorStop(1,'rgba(190,160,255,0)');x.fillStyle=lg;x.fillRect(280,500,380,380);
+      x.strokeStyle='#2a2033';x.lineWidth=8;x.beginPath();x.moveTo(350,800);x.lineTo(470,660);x.stroke();x.fillStyle='#e9e0ff';x.fillRect(452,650,36,46);x.strokeStyle=CREW[3].c;x.lineWidth=4;x.strokeRect(452,650,36,46)}
+    if(!custom[4]){x.strokeStyle=shade(CREW[4].c,-.15);x.lineWidth=34;x.lineCap='round';x.beginPath();x.moveTo(690,705);x.bezierCurveTo(620,700,610,610,575,575);x.stroke();x.fillStyle=shade(CREW[4].c,-.3);x.beginPath();x.arc(572,572,19,0,7);x.fill()}
+    [1,2,3,4].forEach(i=>{const [qx,qy]=Q[i];if(custom[i])drawImgIn(x,custom[i],qx,qy);else creature(x,qx+250,qy+(i>2?250:260),CREW[i].c,i===4?'T1':CREW[i].n[0])});
+  }
+  if(guides){
+    x.setLineDash([12,10]);x.lineWidth=3;x.strokeStyle='rgba(255,255,255,.75)';
+    x.beginPath();x.moveTo(500,0);x.lineTo(500,1000);x.moveTo(0,500);x.lineTo(1000,500);x.stroke();
+    x.strokeStyle='rgba(82,214,144,.9)';[[0,0],[500,0],[0,500],[500,500]].forEach(([a,b])=>x.strokeRect(a+40,b+40,420,420));
+    x.setLineDash([]);x.fillStyle='rgba(82,214,144,.95)';x.font='bold 22px system-ui, sans-serif';x.textAlign='left';x.fillText('face + body safe zone',52,72);
+    x.fillStyle='rgba(255,255,255,.9)';x.fillText('cut line',512,30);
+  }
+  document.documentElement.style.setProperty('--art',`url(${c.toDataURL('image/jpeg',.86)})`);
+}
+
+init();
+render();
+xBoot();
+(document.fonts&&document.fonts.load?document.fonts.load('46px "Pirata One"').catch(()=>{}):Promise.resolve()).then(paintArt);
+paintArt();
+})();
+</script>
+</body>
+</html>
