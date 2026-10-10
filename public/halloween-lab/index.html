@@ -113,13 +113,20 @@
     <!-- 2 follow -->
     <div class="card">
       <h2><span class="n" id="n2">2</span>Follow an account</h2>
+      <p>X removed follow from the pay-per-use API in April 2026. So the working route is: follow on X itself, then ask X whether the follow is there.</p>
       <label for="handle">Handle</label>
       <input type="text" id="handle" autocapitalize="off" autocomplete="off" spellcheck="false" />
       <div class="row">
-        <button class="primary grow" id="followBtn">Follow</button>
-        <button id="unfollowBtn">Undo</button>
+        <a class="btn primary grow" id="intentBtn" target="_blank" rel="noopener" href="#">Follow on X ↗</a>
+        <button class="grow" id="checkBtn">Check the follow</button>
       </div>
       <div class="res" id="followRes"></div>
+      <p style="margin-top:14px">The old way, kept to capture X's exact refusal:</p>
+      <div class="row">
+        <button class="grow" id="followBtn">Follow via API</button>
+        <button id="unfollowBtn">Undo via API</button>
+      </div>
+      <div class="res" id="apiFollowRes"></div>
     </div>
 
     <!-- 3 repost -->
@@ -316,6 +323,7 @@
     }
     show("setup", false); show("lab", true);
     if (!$("handle").value) $("handle").value = j.defaults.followHandle;
+    setIntent();
     if (!$("postRef").value) $("postRef").value = j.defaults.repostId || "";
     if (!$("tag").value) $("tag").value = j.defaults.hashtag;
     if (!$("caption").value) { $("caption").value = `Testing the Avalanche Halloween app 🎃 #${j.defaults.hashtag}`; countCaption(); }
@@ -327,7 +335,7 @@
     show("refreshBtn", !!s); show("logoutBtn", !!s);
     $("loginBtn").textContent = s ? "Log in again" : "Log in with X";
     $("loginBtn").classList.toggle("primary", !s);
-    for (const id of ["followBtn", "unfollowBtn", "repostBtn", "unrepostBtn", "postBtn"]) $(id).disabled = !s;
+    for (const id of ["checkBtn", "followBtn", "unfollowBtn", "repostBtn", "unrepostBtn", "postBtn"]) $(id).disabled = !s;
     clearInterval(tick);
     if (!s) { $("who").innerHTML = ""; return; }
     const granted = (s.scope || "").split(/\s+/).filter(Boolean);
@@ -350,18 +358,32 @@
   $("refreshBtn").onclick = async (e) => { busy(e.target, true, "Refreshing…"); const j = await api("refresh", {}, "Refresh token"); busy(e.target, false, "x"); if (j.ok) { ME.session.expiresAt = j.expiresAt; ME.session.hasRefresh = j.hasRefresh; renderSession(); } };
   $("logoutBtn").onclick = async (e) => { busy(e.target, true, "Logging out…"); await api("logout", {}, "Log out"); busy(e.target, false, "x"); ME.session = null; renderSession(); };
 
+  const cleanHandle = () => $("handle").value.trim().replace(/^@/, "");
+  const setIntent = () => { $("intentBtn").href = "https://x.com/intent/follow?screen_name=" + encodeURIComponent(cleanHandle()); };
+  $("handle").addEventListener("input", setIntent);
+  $("intentBtn").addEventListener("click", () => addEntry("Opened X's follow screen for @" + cleanHandle(), true,
+    [{ label: "Follow there, come back to this tab, then tap Check the follow.", method: "NOTE", status: 200, body: $("intentBtn").href }]));
+  $("checkBtn").onclick = async (e) => {
+    busy(e.target, true, "Asking X…");
+    const h = cleanHandle(); const j = await api("checkfollow", { handle: h }, "Check follow of @" + h);
+    busy(e.target, false, "x");
+    $("followRes").innerHTML = j.following === true ? pill(true, "X says you follow @" + h)
+      : j.requested ? pill(null, "Follow requested (protected account)")
+      : j.following === false ? pill(false, "Not following @" + h + " yet")
+      : pill(false, "X would not say, see the log");
+    $("n2").classList.toggle("done", j.following === true); $("n2").textContent = j.following === true ? "✓" : "2";
+  };
   $("followBtn").onclick = async (e) => {
     busy(e.target, true, "Following…");
-    const h = $("handle").value.trim(); const j = await api("follow", { handle: h }, "Follow @" + h.replace(/^@/, ""));
+    const h = cleanHandle(); const j = await api("follow", { handle: h }, "Follow @" + h + " via API");
     busy(e.target, false, "x");
-    $("followRes").innerHTML = j.ok ? pill(true, j.pending ? "Follow requested (protected account)" : "X confirmed the follow") : pill(false, "Follow failed, see the log");
-    $("n2").classList.toggle("done", !!j.ok); if (j.ok) $("n2").textContent = "✓";
+    $("apiFollowRes").innerHTML = j.ok ? pill(true, j.pending ? "Follow requested (protected account)" : "The API follow worked after all") : pill(false, "Refused, as expected. The log has X's reply");
   };
   $("unfollowBtn").onclick = async (e) => {
     busy(e.target, true, "Undoing…");
-    const h = $("handle").value.trim(); const j = await api("unfollow", { handle: h }, "Unfollow @" + h.replace(/^@/, ""));
+    const h = cleanHandle(); const j = await api("unfollow", { handle: h }, "Unfollow @" + h + " via API");
     busy(e.target, false, "x");
-    $("followRes").innerHTML = j.ok ? pill(null, "Unfollowed") : pill(false, "Undo failed, see the log");
+    $("apiFollowRes").innerHTML = j.ok ? pill(null, "Unfollowed") : pill(false, "Refused. The log has X's reply");
   };
   $("repostBtn").onclick = async (e) => {
     busy(e.target, true, "Reposting…");

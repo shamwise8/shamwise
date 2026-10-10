@@ -17,8 +17,6 @@
 //   XLAB_APP_URL                   optional origin override, e.g. https://www.shamwise.com
 import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from "node:crypto";
 
-export const config = { maxDuration: 30 };
-
 const API = "https://api.x.com/2";
 const AUTHORIZE = "https://x.com/i/oauth2/authorize";
 const TOKEN = "https://api.x.com/2/oauth2/token";
@@ -317,6 +315,24 @@ export default async function handler(req, res) {
       return send(res, ok ? 200 : 502, { ok, expiresAt: s.exp, hasRefresh: !!s.rt, steps });
     }
     await ensureFresh(steps, res, req, s);
+
+    // X removed follow/unfollow from pay-per-use on 16 Apr 2026. The API buttons stay so the lab captures
+    // the exact refusal; this read-only check is what the guest app can rely on instead: the guest follows
+    // on x.com (web intent), then we ask X whether the follow is there.
+    if (action === "checkfollow") {
+      const handle = String(body.handle || d.followHandle).replace(/^@/, "").trim();
+      if (!/^[A-Za-z0-9_]{1,15}$/.test(handle)) return send(res, 400, { error: "That is not a valid X handle.", steps });
+      const r = await xcall(steps, `Is @${s.u.username} following @${handle}?`,
+        `${API}/users/by/username/${handle}?user.fields=connection_status`, { headers: bearer(s) });
+      const conn = r.json?.data?.connection_status;
+      if (!r.ok || !r.json?.data?.id) return send(res, 502, { ok: false, error: `Could not look up @${handle}.`, steps });
+      if (!Array.isArray(conn)) {
+        note(steps, "No connection_status in the reply", "X answered, but without the field that says whether this account follows the target. The follow cannot be verified this way on this app.", false);
+        return send(res, 200, { ok: false, handle, following: null, steps });
+      }
+      const following = conn.includes("following");
+      return send(res, 200, { ok: true, handle, following, requested: conn.includes("follow_request_sent"), connection: conn, steps });
+    }
 
     if (action === "follow" || action === "unfollow") {
       const handle = String(body.handle || d.followHandle).replace(/^@/, "").trim();
