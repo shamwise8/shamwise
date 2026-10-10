@@ -849,7 +849,7 @@ function compose(){
     <div class="chips"><button data-act="xcap" data-v="test" aria-pressed="${X.capMode==='test'}">Test caption</button><button data-act="xcap" data-v="event" aria-pressed="${X.capMode==='event'}">Event caption</button></div>
     <textarea id="cap">${esc(X.cap[X.capMode])}</textarea>
     <p class="xs mu" style="margin:0">This is a real post from ${esc(U.h)}. "Event" is the real caption and tags four accounts, so use it once, on purpose.</p>
-    <button class="btn full" data-act="post" disabled>Add a photo first</button><button class="btn ghost full" data-act="close">Cancel</button>`);
+    <button class="btn full" data-act="post" disabled>Add a photo first</button><button class="btn ghost full" data-act="xskip">Skip the post · test only</button><button class="btn ghost full" data-act="close">Cancel</button>`);
     return;
   }
   sheet(`<h2 class="h">${A.t}</h2><p class="sm mu" style="margin:0">${A.d}</p>
@@ -993,6 +993,7 @@ document.addEventListener('click',e=>{
     case 'xtgsave':targetsSave(false);break;
     case 'xtgreset':targetsSave(true);break;
     case 'xunrepost':xUnrepost(el);break;
+    case 'xskip':closeSheet();postDone();toast('Skipped · nothing was posted to X');break;
     case 'xpass':xBoot(($('#xpw').value||'').trim());break;
     case 'auth':auth();break;
     case 'close':closeSheet();break;
