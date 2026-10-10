@@ -297,6 +297,8 @@
     const steps = j.steps || [];
     if (j.error) steps.push({ label: j.error, method: "NOTE", status: 0, body: "" });
     if (status === 413) steps.push({ label: "The upload was too large for the server (HTTP 413).", method: "NOTE", status: 0, body: "" });
+    // No detail came back at all: the lab's own server timed out (10 s limit on this plan) or crashed before answering.
+    if (!steps.length && status && (status < 200 || status >= 300)) steps.push({ label: `The lab server answered HTTP ${status} with no detail. Usually a timeout: X took longer than the server allows.`, method: "NOTE", status: 0, body: "" });
     addEntry(title, !!j.ok, steps);
     if (status === 401 && !j.locked) setTimeout(boot, 50);
     return j;
