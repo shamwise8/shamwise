@@ -15,7 +15,7 @@
 //   XLAB_HASHTAG                   optional, default AvalancheHalloweenLab
 //   XLAB_SESSION_SECRET            optional, defaults to a key derived from X_CLIENT_SECRET
 //   XLAB_APP_URL                   optional origin override, e.g. https://www.shamwise.com
-import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { createCipheriv, createDecipheriv, createECDH, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const API = "https://api.x.com/2";
 const AUTHORIZE = "https://x.com/i/oauth2/authorize";
@@ -202,6 +202,46 @@ function missingEnv() {
   if (!CLIENT_SECRET() && !env("XLAB_SESSION_SECRET")) m.push("X_CLIENT_SECRET");
   return m;
 }
+// ---- demo wallet: one real Avalanche C-Chain address per X account, derived on this server, no provider.
+// The key is HMAC(server secret, X user id), so the same account always gets the same address. The server can
+// re-derive every key, which makes this custodial and for demonstration only: nothing here signs or sends.
+const RC = [0x1n, 0x8082n, 0x800000000000808an, 0x8000000080008000n, 0x808bn, 0x80000001n, 0x8000000080008081n, 0x8000000000008009n,
+  0x8an, 0x88n, 0x80008009n, 0x8000000an, 0x8000808bn, 0x800000000000008bn, 0x8000000000008089n, 0x8000000000008003n,
+  0x8000000000008002n, 0x8000000000000080n, 0x800an, 0x800000008000000an, 0x8000000080008081n, 0x8000000000008080n, 0x80000001n, 0x8000000080008008n];
+const ROT = [0, 1, 62, 28, 27, 36, 44, 6, 55, 20, 3, 10, 43, 25, 39, 41, 45, 15, 21, 8, 18, 2, 61, 56, 14];
+const M64 = (1n << 64n) - 1n;
+const rotl = (v, n) => (n ? ((v << BigInt(n)) | (v >> BigInt(64 - n))) & M64 : v);
+function keccak256(input) {
+  const rate = 136, len = input.length, padded = Buffer.alloc(Math.ceil((len + 1) / rate) * rate);
+  Buffer.from(input).copy(padded); padded[len] ^= 0x01; padded[padded.length - 1] ^= 0x80;
+  const A = new Array(25).fill(0n);
+  for (let off = 0; off < padded.length; off += rate) {
+    for (let i = 0; i < rate / 8; i++) A[i] ^= padded.readBigUInt64LE(off + i * 8);
+    for (let r = 0; r < 24; r++) {
+      const C = [0, 1, 2, 3, 4].map((x) => A[x] ^ A[x + 5] ^ A[x + 10] ^ A[x + 15] ^ A[x + 20]);
+      for (let x = 0; x < 5; x++) { const d = C[(x + 4) % 5] ^ rotl(C[(x + 1) % 5], 1); for (let y = 0; y < 25; y += 5) A[x + y] ^= d; }
+      const B = new Array(25);
+      for (let x = 0; x < 5; x++) for (let y = 0; y < 5; y++) B[y + 5 * ((2 * x + 3 * y) % 5)] = rotl(A[x + 5 * y], ROT[x + 5 * y]);
+      for (let x = 0; x < 5; x++) for (let y = 0; y < 25; y += 5) A[x + y] = B[x + y] ^ (~B[((x + 1) % 5) + y] & M64 & B[((x + 2) % 5) + y]);
+      A[0] ^= RC[r];
+    }
+  }
+  const out = Buffer.alloc(32); for (let i = 0; i < 4; i++) out.writeBigUInt64LE(A[i], i * 8);
+  return out;
+}
+function addressOf(priv) {
+  const e = createECDH("secp256k1"); e.setPrivateKey(priv);
+  const hex = keccak256(e.getPublicKey().subarray(1)).subarray(12).toString("hex");
+  const h = keccak256(Buffer.from(hex, "ascii")).toString("hex");
+  return "0x" + [...hex].map((c, i) => (parseInt(h[i], 16) >= 8 ? c.toUpperCase() : c)).join("");
+}
+function walletFor(userId) {
+  const secret = env("XLAB_WALLET_SECRET") || CLIENT_SECRET() || env("XLAB_SESSION_SECRET");
+  if (!secret || !userId) return "";
+  try { return addressOf(createHmac("sha256", "xlab-wallet:" + secret).update(String(userId)).digest()); } catch { return ""; }
+}
+export const __walletTest = { keccak256, addressOf };
+
 const tweetId = (v) => {
   const s = String(v || "").trim();
   const m = s.match(/status(?:es)?\/(\d{5,25})/) || s.match(/^(\d{5,25})$/);
@@ -231,7 +271,7 @@ export default async function handler(req, res) {
       return send(res, 200, {
         configured: missing.length === 0, missing, redirectUri,
         passcodeSet: !!env("XLAB_PASSCODE"), scopesRequested: SCOPES, defaults: DEFAULTS(),
-        session: s ? { user: s.u, scope: s.scope || "", expiresAt: s.exp || 0, hasRefresh: !!s.rt } : null,
+        session: s ? { user: { ...s.u, wallet: walletFor(s.u?.id) }, scope: s.scope || "", expiresAt: s.exp || 0, hasRefresh: !!s.rt } : null,
       });
     }
 
