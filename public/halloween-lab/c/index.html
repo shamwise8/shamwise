@@ -156,7 +156,7 @@ const RT=[
   {k:'stage',t:'Scan the stage QR',sub:'Shown once, at the quest hint after the main sessions',p:2},
   {k:'tg',t:'Join the team1 Thailand Telegram',sub:'Find the code word pinned in the channel',p:1},
   {k:'trade',t:'Trade a piece',sub:'Your first trade counts',p:1},
-  {k:'costume',t:'Come in a Halloween costume',sub:'Staff mark it at the photo wall',p:3}
+  {k:'costume',t:'Come in a Halloween costume',sub:'Staff mark it at the photo wall',p:2,s:1}
 ];
 const LADDER=[                                   // at = cost. Points are spent on claim; each item once.
   {at:3,k:'pen',n:'Pen',stock:['pen']},
@@ -255,7 +255,7 @@ function vTasks(){
   const rrow=t=>{const d=S.room[t.k];return `<button class="row ${d?'done':''}" data-act="rtask" data-v="${t.k}" ${d?'disabled':''}>
       <span class="ic">${d?'✓':'◆'}</span>
       <span class="grow"><b>${esc(t.t)}</b><small>${esc(t.sub)}</small></span>
-      <span class="end">${d?'<small>Done</small>':`<span>+${t.p} pt${t.p>1?'s':''}</span><small>${t.k==='trade'?'In puzzles':'Open'}</small>`}</span></button>`};
+      <span class="end">${d?'<small>Done</small>':`<span>+${t.p} pt${t.p>1?'s':''}${t.s?` · +${t.s} spin`:''}</span><small>${t.k==='trade'?'In puzzles':'Open'}</small>`}</span></button>`};
   return `<section class="center"><h2>Earn points</h2><p class="mu">Points unlock merch. Spins turn the wheel.</p></section>
     <section><div class="hdr"><span>𝕏 Tasks</span><small class="mu">${xd}/${XT.length} completed</small></div>
       <div class="bar"><i style="width:${xd/XT.length*100}%"></i></div>
@@ -383,7 +383,7 @@ function rtask(k){
   if(k==='costume')return sheet(`<h3>Costume check</h3><p class="sm mu">Show this screen to staff at the photo wall. They mark it from their desk.</p>
     <div class="code">${esc(S.h)}</div><button class="btn proto" data-act="rskip" data-v="costume">Prototype: staff marks it</button>`);
 }
-function rdone(k){const t=RT.find(x=>x.k===k);if(S.room[k])return;S.room[k]=1;addPts(t.p,t.t);close();render();toast(`Done · +${t.p} pt${t.p>1?'s':''}`)}
+function rdone(k){const t=RT.find(x=>x.k===k);if(S.room[k])return;S.room[k]=1;S.spins+=t.s||0;addPts(t.p,t.t);close();render();toast(`Done · +${t.p} pt${t.p>1?'s':''}${t.s?`, +${t.s} spin`:''}`)}
 function rsubmit(k){
   const v=($('#rc').value||'').trim().toUpperCase();
   if(k==='stage'&&v!==code('stage'))return toast('That is not the stage code');
@@ -525,7 +525,7 @@ function about(){
 /* simulator: 200 guests who do every task and every activity */
 function simGuest(trade){
   const P={},add=id=>P[id]=(P[id]||0)+1;let pts=0,spins=0,pot=0,extra=0;
-  XT.forEach(t=>{pts+=t.p;spins+=t.s});RT.forEach(t=>{if(t.k!=='trade')pts+=t.p});
+  XT.forEach(t=>{pts+=t.p;spins+=t.s});RT.forEach(t=>{if(t.k!=='trade'){pts+=t.p;spins+=t.s||0}});
   Object.keys(ACT).forEach(k=>{add(drawPiece(k,P));add(k==='crew'?drawPiece(k,P):randomPiece())});
   while(spins>0){spins--;const ok=k=>!(k==='potion'&&pot>=CAP.potion)&&!(k==='spin'&&extra>=CAP.spin);const k=rnd(SEG.filter(ok));
     if(k==='piece')add(wheelPiece(P));else if(k==='point')pts+=wheelPts();else if(k==='potion')pot++;else if(k==='spin'){extra++;spins++}}
