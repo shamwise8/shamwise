@@ -383,7 +383,7 @@ function rtask(k){
   if(k==='costume')return sheet(`<h3>Costume check</h3><p class="sm mu">Show this screen to staff at the photo wall. They mark it from their desk.</p>
     <div class="code">${esc(S.h)}</div><button class="btn proto" data-act="rskip" data-v="costume">Prototype: staff marks it</button>`);
 }
-function rdone(k){const t=RT.find(x=>x.k===k);if(S.room[k])return;S.room[k]=1;S.spins+=t.s||0;addPts(t.p,t.t);close();render();if(k==='stage'){setTimeout(stagePack,300)}toast(`Done · +${t.p} pt${t.p>1?'s':''}${t.s?`, +${t.s} spin`:''}`)}
+function rdone(k){const t=RT.find(x=>x.k===k);if(S.room[k])return;S.room[k]=1;S.spins+=t.s||0;addPts(t.p,t.t);close();render();if(k==='stage'){if((G.stageMode||'pack')==='spins'){S.spins+=STAGESPINS;render();setTimeout(()=>toast(`Stage drop · +${STAGESPINS} spins`),300)}else setTimeout(stagePack,300)}toast(`Done · +${t.p} pt${t.p>1?'s':''}${t.s?`, +${t.s} spin`:''}`)}
 function rsubmit(k){
   const v=($('#rc').value||'').trim().toUpperCase();
   if(k==='stage'&&v!==code('stage'))return toast('That is not the stage code');
@@ -416,6 +416,7 @@ function drawPiece(k,P=S.pieces){
 const WEIGHT={j1:.55,j2:.28,j3:.17};
 const GAPFILL=.5;   // share of wheel pieces that fill a gap: the tote and Frog first, the pants once both are done
 // The stage drop at the quest hints: 2 pieces that fill tote or Frog gaps, never the pants, never the Grotto piece
+const STAGESPINS=2;   // the stage reward when staff switch it to spins
 function stagePiece(P=S.pieces){const miss=allIds().filter(id=>!has(id,P)&&!id.startsWith('j3'));return miss.length?rnd(miss):randomPiece()}
 function stagePack(){
   const p1=stagePiece(),p2=stagePiece({...S.pieces,[p1]:(S.pieces[p1]||0)+1});
@@ -516,6 +517,7 @@ function staffSheet(){
     <table class="tbl">${Object.entries(ACT).map(([k,a])=>`<tr><td>${esc(a.n)}</td><td><b>${code(k)}</b></td></tr>`).join('')}<tr><td>Stage QR, at the quest hint</td><td><b>${code('stage')}</b></td></tr><tr><td>Telegram code word</td><td><b>${TGWORD}</b></td></tr></table>
     <p class="xs mu">New codes in <span id="cd">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span></p>
     ${S.in?`<div class="rowbtns"><button class="btn" data-act="rskip" data-v="costume" ${S.room.costume?'disabled':''}>Mark costume</button><button class="btn" data-act="bonus" ${S.bonus>=CAP.bonus?'disabled':''}>Bonus pack (${S.bonus}/${CAP.bonus})</button></div>`:''}
+    <p class="xs mu">Stage drop at 20:15, set from the stock on the night</p><div class="rowbtns"><button class="btn ${(G.stageMode||'pack')==='pack'?'pri':''}" data-act="stagemode" data-v="pack">Pack of 2 pieces</button><button class="btn ${G.stageMode==='spins'?'pri':''}" data-act="stagemode" data-v="spins">+${STAGESPINS} spins</button></div>
     <p class="xs mu">Stock</p><table class="tbl">${Object.keys(STOCK0).map(k=>`<tr><td>${STOCKNAME[k]}</td><td>${G[k]} / ${STOCK0[k]}</td></tr>`).join('')}</table>
     <button class="btn ghost" data-act="reset">Reset the prototype</button>`);
   clearInterval(staffTimer);staffTimer=setInterval(()=>{const el=$('#cd');if(!el){clearInterval(staffTimer);return}const l=300-Math.floor(Date.now()/1000)%300;el.textContent=`${Math.floor(l/60)}:${String(l%60).padStart(2,'0')}`;if(l===300)staffSheet()},1000);
@@ -603,6 +605,7 @@ document.addEventListener('click',e=>{
     case 'revshow':sheet(`<h3>Show this at the merch desk</h3><div class="code">Review keychain</div><p class="sm mu" style="text-align:center">${esc(S.h)}</p><button class="btn proto" data-act="revhand">Prototype: staff hands it over</button>`);break;
     case 'revhand':if(G.keyrev>0)G.keyrev--;S.rev=3;close();render();toast('Collected');break;
     case 'sim':simSheet();break;
+    case 'stagemode':G.stageMode=v;save();staffSheet();break;
     case 'resetme':S={...fresh(),in:S.in,h:S.h,wallet:S.wallet};wheelRot=0;close();render();toast('Progress reset. Still signed in.');break;
     case 'reset':S=fresh();G={...STOCK0};wheelRot=0;close();render();toast('Prototype reset');break;
   }
