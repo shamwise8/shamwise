@@ -163,7 +163,7 @@ const LADDER=[
 ];
 const SEG=['piece','point','piece','potion','piece','point','piece','boo','piece','point','piece','potion','piece','point','spin','piece','point','piece','potion','boo']; // 20 slots: 45/25/15/10/5
 const KIND={piece:{l:'Piece',c:'#2a2420',i:'🧩'},point:{l:'+1 point',c:'#7a3a10',i:'★'},potion:{l:'Potion',c:'#174a45',i:'🧪'},boo:{l:'Boo',c:'#232323',i:'👻'},spin:{l:'+1 spin',c:'#3b2a5c',i:'↻'}};
-const CAP={potion:2,spin:2,bonus:2};
+const CAP={potion:3,spin:2,bonus:2};   // potion: most a guest can hold at once. Drinking one frees a slot. Try 4.
 const TRADEMAX=2;
 const okTrade=(give,want)=>!want.startsWith('j3')||give.startsWith('j3');   // Crown pieces only trade for Crown pieces   // simulator: a realistic guest manages about two trades
 const TGWORD='PUMPKIN';
@@ -265,8 +265,8 @@ function vSpin(){
       ${S.in?`<button class="jag" data-act="spin" ${S.spins<1||spinning?'disabled':''}>Weave your luck</button>`:`<button class="jag" data-act="login">Join to spin</button>`}
     </section>
     <section><div class="hdr"><span>Wheel odds</span></div>
-      <table class="odds"><tr><td>🧩 A puzzle piece</td><td>45%</td></tr><tr><td>★ +1 point</td><td>25%</td></tr><tr><td>🧪 Potion · a drink at the counter, max ${CAP.potion}</td><td>15%</td></tr><tr><td>👻 Boo · nothing</td><td>10%</td></tr><tr><td>↻ +1 spin, max ${CAP.spin}</td><td>5%</td></tr></table>
-      <p class="xs mu">When a cap is reached, that slot can no longer land and the others share its chance.</p></section>`;
+      <table class="odds"><tr><td>🧩 A puzzle piece</td><td>45%</td></tr><tr><td>★ +1 point</td><td>25%</td></tr><tr><td>🧪 Potion · a drink at the counter, hold up to ${CAP.potion}</td><td>15%</td></tr><tr><td>👻 Boo · nothing</td><td>10%</td></tr><tr><td>↻ +1 spin, max ${CAP.spin}</td><td>5%</td></tr></table>
+      <p class="xs mu">The teal 🧪 slots are potions. When a cap is reached, that slot can no longer land and the others share its chance.</p></section>`;
 }
 function drawWheel(){
   const w=$('#wheel');if(!w)return;
@@ -304,7 +304,8 @@ function vClaims(){
   const pz=J.map(j=>{const ok=jDone(j),k='pz_'+j.id,c=st(k);let left=j.stock?j.stock.reduce((a,s)=>a+G[s],0):null;
     return `<div class="row ${c?'done':''}"><span class="ic">${c?'✓':ok?'🧩':'·'}</span><div class="grow"><b>${esc(j.reward)}</b><small>${esc(j.n)}${left!==null?` · ${left} left`:' · no limit'}</small></div>
       <div class="end">${c?`<small>${j.egg?'Minted':c==='shown'?'Show staff':'Collected'}</small>`:ok?`<button class="btn or" style="padding:6px 14px;width:auto" data-act="claim" data-v="${k}">${j.egg?'Mint':'Claim'}</button>`:'<small>Locked</small>'}</div></div>`}).join('');
-  const pots=S.potWon?Array.from({length:S.potWon},(_,i)=>{const d=i<S.potDrank;return `<div class="row ${d?'done':''}"><span class="ic">🧪</span><div class="grow"><b>Witch’s potion #${i+1}</b><small>Show this at the drinks counter</small></div><div class="end">${d?'<small>Drank it</small>':`<button class="btn" style="padding:6px 14px;width:auto" data-act="potion">Show</button>`}</div></div>`}).join(''):`<p class="sm mu">Potions you win on the wheel show up here. Up to ${CAP.potion}.</p>`;
+  const potLeft=S.potWon-S.potDrank;
+  const pots=S.potWon?`<div class="row ${potLeft?'':'done'}"><span class="ic">🧪</span><div class="grow"><b>Witch’s potion ×${potLeft}</b><small>A special drink at the counter. No points needed.${S.potDrank?` ${S.potDrank} drunk so far.`:''}</small></div><div class="end">${potLeft?`<button class="btn" style="padding:6px 14px;width:auto" data-act="potion">Show</button>`:'<small>All drunk</small>'}</div></div>`:`<p class="sm mu">Potions you win on the wheel show up here. Hold up to ${CAP.potion} at a time. No points needed.</p>`;
   return `<section class="center"><h2>Claims</h2><p class="mu">Points are reached, never spent. Claiming a pen keeps your points.</p></section>
     <section><div class="hdr"><span>Points</span><small class="mu">${S.pts} pts</small></div><div class="list">${lad}</div></section>
     <section><div class="hdr"><span>Puzzles</span><small class="mu">${J.filter(jDone).length}/3</small></div><div class="list">${pz}</div></section>
@@ -436,7 +437,7 @@ function doTrade(){
 /* wheel */
 function doSpin(){
   if(spinning||S.spins<1)return;
-  const ok=k=>!(k==='potion'&&S.potWon>=CAP.potion)&&!(k==='spin'&&S.extra>=CAP.spin);
+  const ok=k=>!(k==='potion'&&S.potWon-S.potDrank>=CAP.potion)&&!(k==='spin'&&S.extra>=CAP.spin);
   const slots=SEG.map((k,i)=>[k,i]).filter(([k])=>ok(k));
   const [k,i]=rnd(slots);
   S.spins--;spinning=true;
@@ -450,7 +451,7 @@ function land(k){
   let body='';
   if(k==='piece'){const id=randomPiece();S.pieces[id]=(S.pieces[id]||0)+1;body=`<div class="reveal">${tile(id,1)}</div>${S.pieces[id]>1?'<p class="sm mu" style="text-align:center">A double. Good for trading.</p>':''}`}
   else if(k==='point'){addPts(1,'Wheel');body='<p class="code">+1 point</p>'}
-  else if(k==='potion'){S.potWon++;G.potion=Math.max(0,G.potion-1);body='<p class="code" style="color:var(--teal)">Potion</p><p class="sm mu" style="text-align:center">Show it at the drinks counter. It’s in Claims.</p>'}
+  else if(k==='potion'){S.potWon++;G.potion=Math.max(0,G.potion-1);body=`<p class="code" style="color:var(--teal)">Potion ×${S.potWon-S.potDrank}</p><p class="sm mu" style="text-align:center">A special drink at the counter, no points needed. Show it from Claims.${S.potWon-S.potDrank>=CAP.potion?` That’s the most you can hold. Drink one to win more.`:''}</p>`}
   else if(k==='spin'){S.extra++;S.spins++;body='<p class="code">+1 spin</p>'}
   else body='<p class="code">Boo!</p><p class="sm mu" style="text-align:center">Nothing this time. The ghosts win this round.</p>';
   render();
@@ -557,7 +558,7 @@ document.addEventListener('click',e=>{
     case 'pickmid':showStaff('mid',v);break;
     case 'picktop':showStaff('pz_j3',v);break;
     case 'handover':handover(v);break;
-    case 'potion':sheet(`<h3>Witch’s potion</h3><div class="code" style="color:var(--teal)">Potion</div><p class="sm mu" style="text-align:center">${esc(S.h)} · show at the drinks counter</p><button class="btn proto" data-act="drank">Prototype: counter taps Drank it</button>`);break;
+    case 'potion':sheet(`<h3>Witch’s potion</h3><div class="code" style="color:var(--teal)">Potion ×${S.potWon-S.potDrank}</div><p class="sm mu" style="text-align:center">${esc(S.h)} · show at the drinks counter</p><button class="btn proto" data-act="drank">Prototype: counter taps Drank it</button>`);break;
     case 'drank':S.potDrank=Math.min(S.potWon,S.potDrank+1);close();render();toast('Cheers');break;
     case 'staff':staffSheet();break;
     case 'bonus':if(S.bonus<CAP.bonus){S.bonus++;openPack('bonus',true)}break;
