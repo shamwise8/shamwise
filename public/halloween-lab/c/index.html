@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#111111">
+<title>Avalanche Halloween · prototype C</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bigelow+Rules&family=Eczar:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Matches the Stonk build: Bigelow Rules headings, Eczar body, near-black, cream, orange. */
+:root{--bg:#111;--bg2:#171513;--bg3:#1f1c19;--ink:#ebe6dd;--cream:#f1e7d4;--mu:#a9a39a;--mu2:#77716a;--or:#f07a24;--or2:#ff9d55;--red:#e6212f;--gr:#8fd0a2;--pu:#b394ea;--teal:#5cc2b8;--ln:rgba(241,231,212,.12);--ln2:rgba(241,231,212,.28);--spook:'Bigelow Rules',Georgia,serif;--serif:'Eczar',Georgia,serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.45 var(--serif);-webkit-text-size-adjust:100%}
+body{min-height:100vh;background:radial-gradient(130% 55% at 50% -5%,#2b1a0f 0%,#111 62%) fixed}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0;text-align:inherit}
+button:disabled{opacity:.45;cursor:default}
+a{color:var(--or2)}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;padding:0 16px 96px}
+header.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;margin:0 -16px;background:rgba(17,17,17,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--ln)}
+.logo{display:flex;flex-direction:column;line-height:.9}
+.logo small{font:600 9px/1.2 var(--serif);letter-spacing:.2em;color:var(--red)}
+.logo b{font:400 27px/1 var(--spook);color:var(--cream)}
+.me{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--mu);min-width:0}
+.pill{border:1px solid var(--ln2);padding:2px 9px;font-size:13px;color:var(--cream);white-space:nowrap}
+.pill.or{border-color:var(--or);color:var(--or2)}
+.who{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:underline dotted;text-underline-offset:3px}
+nav.tabs{display:flex;gap:20px;overflow-x:auto;padding:10px 0 0;scrollbar-width:none;border-bottom:1px solid var(--ln)}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{font-size:16px;color:var(--mu);padding:6px 0 8px;border-bottom:2px solid transparent;white-space:nowrap}
+nav.tabs button[aria-current=page]{color:var(--cream);border-color:var(--or)}
+h1,h2,h3{font-family:var(--spook);font-weight:400;color:var(--cream);letter-spacing:.5px;margin:0}
+h1{font-size:68px;line-height:.92}h2{font-size:48px;line-height:1}h3{font-size:30px;line-height:1.05}
+p{margin:0}
+.mu{color:var(--mu)}.sm{font-size:15px}.xs{font-size:13px}.or{color:var(--or2)}.ok{color:var(--gr)}
+.kick{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--mu)}
+section{padding:26px 0;border-bottom:1px solid var(--ln);display:flex;flex-direction:column;gap:14px}
+section:last-child{border-bottom:0}
+.center{text-align:center;align-items:center}
+.jag{display:inline-flex;align-items:center;justify-content:center;min-width:220px;padding:15px 38px;font:400 26px/1 var(--spook);color:var(--cream);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 50' preserveAspectRatio='none'%3E%3Cpath d='M12 7 L40 4 L70 8 L100 4 L130 8 L160 4 L188 7 L198 25 L188 43 L160 46 L130 42 L100 46 L70 42 L40 46 L12 43 L2 25 Z' fill='%23111' stroke='%23f1e7d4' stroke-width='1.6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.jag:hover:not(:disabled){filter:drop-shadow(0 0 10px rgba(240,122,36,.45))}
+.jag.full{width:100%}
+.btn{display:block;width:100%;padding:13px 16px;border:1px solid var(--ln2);text-align:center;color:var(--cream);font-size:16px;background:var(--bg2)}
+.btn.pri{background:var(--cream);color:#111;border-color:var(--cream);font-weight:500}
+.btn.or{background:var(--or);border-color:var(--or);color:#111;font-weight:500}
+.btn.ghost{background:none}
+.btn.proto{border-style:dashed;color:var(--or2);border-color:rgba(240,122,36,.6);background:none;font-size:15px}
+.rowbtns{display:flex;gap:8px}.rowbtns>*{flex:1}
+.list{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:16px 2px;border-bottom:1px solid var(--ln);width:100%}
+.row:last-child{border-bottom:0}
+.row .ic{width:24px;flex:none;text-align:center;color:var(--mu)}
+.row .grow{flex:1;min-width:0}
+.row b{display:block;font-weight:500;color:var(--cream)}
+.row small{display:block;color:var(--mu);font-size:15px}
+.row .end{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.row .end span{color:var(--or2);font-size:15px}
+.row .end small{font-size:14px}
+.row.done b{color:var(--mu)}
+.hdr{display:flex;align-items:baseline;justify-content:space-between;gap:8px;border-bottom:1px solid var(--or);padding-bottom:8px}
+.hdr span{color:var(--cream);letter-spacing:.12em;text-transform:uppercase;font-size:15px}
+.bar{height:3px;background:var(--ln);position:relative}.bar i{position:absolute;inset:0 auto 0 0;background:var(--or)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--ln)}
+.stats div{padding:12px 8px;text-align:center;border-right:1px solid var(--ln)}.stats div:last-child{border-right:0}
+.stats b{display:block;font:400 34px/1 var(--spook);color:var(--cream)}.stats small{color:var(--mu);font-size:13px}
+.steps3{display:flex;flex-direction:column}
+.steps3 .row b{font:400 26px/1 var(--spook);letter-spacing:.5px}
+.steps3 .num{font-size:13px;color:var(--mu);width:24px}
+.hero{padding-top:34px}
+.ghosts{font-size:64px;line-height:1;filter:drop-shadow(0 8px 24px rgba(240,122,36,.35))}
+/* puzzles */
+.pzwrap{display:grid;grid-template-columns:1fr;gap:18px}
+.pzc{border:1px solid var(--ln);padding:14px;display:flex;gap:14px;align-items:center;background:rgba(23,21,19,.6)}
+.pzc.complete{border-color:var(--or)}
+.pz{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:118px;flex:none;aspect-ratio:1}
+.pc{position:relative;display:grid;place-items:center;border:1px dashed var(--ln2);font-size:11px;color:var(--mu2);text-align:center;padding:2px;line-height:1.1}
+.pc.have{border-style:solid;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.pc .n{position:absolute;top:2px;right:3px;font-size:10px;background:#111;color:var(--or2);padding:0 3px}
+.pc.seal{outline:1px solid var(--or);outline-offset:-4px}
+.pzc .grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.pzc h3{font-size:28px}
+.tag{display:inline-block;align-self:flex-start;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);border:1px solid var(--ln);padding:1px 6px}
+/* wheel */
+.wheelbox{position:relative;width:min(330px,86vw);aspect-ratio:1;margin:6px auto 0}
+.wheelbox svg{width:100%;height:100%;transition:transform 3.2s cubic-bezier(.17,.8,.2,1)}
+.pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border:12px solid transparent;border-top:20px solid var(--or);z-index:2}
+.odds{width:100%;border-collapse:collapse;font-size:15px}
+.odds td{padding:7px 2px;border-bottom:1px solid var(--ln)}.odds td:last-child{text-align:right;color:var(--mu)}
+/* sheet */
+.sheetwrap{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.66);display:flex;align-items:center;justify-content:center;padding:16px}
+.sheet{width:100%;max-width:440px;max-height:92vh;overflow:auto;background:#141210;border:1px solid var(--ln2);padding:22px 20px 22px;display:flex;flex-direction:column;gap:14px;position:relative}
+.sheet h3{font-size:34px}
+.x{position:absolute;top:10px;right:12px;font-size:22px;color:var(--mu);width:32px;height:32px}
+.in{width:100%;background:#0b0a09;border:1px solid var(--ln2);color:var(--ink);padding:12px;font:18px var(--serif);letter-spacing:.06em}
+.code{font:400 54px/1 var(--spook);color:var(--cream);letter-spacing:.12em;text-align:center;padding:10px;border:1px solid var(--ln2)}
+.cap{background:#0b0a09;border:1px solid var(--ln);padding:12px;font-size:15px;white-space:pre-wrap}
+.note{font-size:14px;color:var(--or2);border:1px solid rgba(240,122,36,.4);background:rgba(240,122,36,.07);padding:9px 11px}
+.check{display:flex;flex-direction:column;gap:8px}
+.check div{display:flex;gap:10px;opacity:0;animation:in .4s forwards}
+.check b{color:var(--gr);font-weight:500}
+@keyframes in{to{opacity:1}}
+.reveal{display:flex;gap:12px;justify-content:center}
+.big{width:110px;aspect-ratio:1;display:grid;place-items:center;text-align:center;font-size:14px;color:#fff;border:1px solid var(--ln2);padding:6px;animation:pop .5s both}
+.big:nth-child(2){animation-delay:.25s}
+@keyframes pop{from{transform:scale(.6) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
+.pack{width:150px;aspect-ratio:3/4;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid var(--ln2);background:linear-gradient(160deg,#3a210f,#120c08);font:400 30px/1 var(--spook);color:var(--cream);text-align:center;padding:10px}
+.pack small{font:500 11px/1.2 var(--serif);letter-spacing:.18em;color:var(--mu)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:40;background:var(--cream);color:#111;padding:10px 16px;font-size:15px;max-width:calc(100% - 32px);box-shadow:0 8px 30px rgba(0,0,0,.5)}
+footer.proto{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;justify-content:center;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(17,17,17,.94);border-top:1px dashed rgba(240,122,36,.5)}
+footer.proto button{font-size:14px;color:var(--or2);border:1px dashed rgba(240,122,36,.6);padding:6px 12px}
+.sel{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.sel button{border:1px solid var(--ln2);padding:8px 4px;font-size:13px;text-align:center;line-height:1.15;min-height:52px}
+.sel button[aria-pressed=true]{border-color:var(--or);color:var(--or2)}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl td{padding:6px 2px;border-bottom:1px solid var(--ln)}.tbl td:last-child{text-align:right}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top" id="top"></header>
+  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+  <main id="main"></main>
+</div>
+<footer class="proto"><button data-act="staff">Staff desk</button><button data-act="sim">Simulate 200</button><button data-act="resetme">Reset progress</button><button data-act="about">?</button></footer>
+<div id="layer"></div>
+<script>
+(()=>{
+/* ================= Config: the agreed economy ================= */
+const EVENT={date:'31 Oct',venue:'Zilla Space',hosts:'team1 Thailand × Bitkub'};
+const J=[
+  {id:'j1',n:'The Tote',reward:'team1 tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
+  {id:'j2',n:'team1 TH, by Frog',reward:'Collectible NFT of Frog’s illustration',c:['#b394ea','#2b1d48'],pieces:['Top left','Top right','Bottom left','Bottom right'],egg:true},
+  {id:'j3',n:'The Crown',reward:'Pants, or a T-shirt when pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto seal']}
+];
+const SEAL='j3-3';                       // only from Grotto activities, cannot be traded
+const ACT={
+  t1:{n:'team1 booth quest',main:'j1'},
+  bk:{n:'Bitkub booth',main:'j1'},
+  hall:{n:'The Grotto · the Hall',main:'j3',grotto:true},
+  games:{n:'The Grotto · free-play games',main:'j3',grotto:true},
+  crew:{n:'Find a team1 crew member',main:'j2',hidden:true}
+};
+const XT=[
+  {k:'f1',t:'Follow @Team1TH',sub:'team1 Thailand',p:1,s:1,kind:'follow',h:'Team1TH'},
+  {k:'rt',t:'Repost Avalanche Halloween',sub:'The event post',p:1,s:1,kind:'repost'},
+  {k:'f2',t:'Follow @AvaxTeam1',sub:'team1 global',p:1,s:1,kind:'follow',h:'AvaxTeam1'},
+  {k:'rtg',t:'Repost The Grotto’s video',sub:'Their newest feature video',p:2,s:2,kind:'repost'},
+  {k:'post',t:'Post about the event',sub:'Tags @Team1TH @AvaxTeam1 and Bitkub',p:2,s:2,kind:'post'}
+];
+const RT=[
+  {k:'stage',t:'Scan the stage QR',sub:'Shown once, at the quest hint after the main sessions',p:2},
+  {k:'tg',t:'Join the team1 Thailand Telegram',sub:'Find the code word pinned in the channel',p:1},
+  {k:'trade',t:'Trade a piece',sub:'Your first trade counts',p:1},
+  {k:'costume',t:'Costume at the photo wall',sub:'Staff mark it for you',p:1}
+];
+const LADDER=[
+  {at:3,k:'pen',n:'Pen',stock:['pen']},
+  {at:7,k:'mid',n:'Sticker set or postcard',stock:['sticker','postcard']},
+  {at:14,k:'key',n:'Keychain',stock:['key']}
+];
+const SEG=['piece','point','piece','potion','piece','point','piece','boo','piece','point','piece','potion','piece','point','spin','piece','point','piece','potion','boo']; // 20 slots: 45/25/15/10/5
+const KIND={piece:{l:'Piece',c:'#2a2420',i:'🧩'},point:{l:'+1 point',c:'#7a3a10',i:'★'},potion:{l:'Potion',c:'#174a45',i:'🧪'},boo:{l:'Boo',c:'#232323',i:'👻'},spin:{l:'+1 spin',c:'#3b2a5c',i:'↻'}};
+const CAP={potion:2,spin:2,bonus:2};
+const TRADEMAX=2;
+const okTrade=(give,want)=>!want.startsWith('j3')||give.startsWith('j3');   // Crown pieces only trade for Crown pieces   // simulator: a realistic guest manages about two trades
+const TGWORD='PUMPKIN';
+const FEEDBACK='https://events.team1.network/events/68hamvg';
+const STOCK0={pen:300,sticker:60,postcard:60,key:30,tote:115,pants:40,tee:15,potion:150,lootcard:100};
+const STOCKNAME={pen:'Pen',sticker:'Sticker set',postcard:'Postcard',key:'Keychain',tote:'Tote bag',pants:'Pants',tee:'T-shirt',potion:'Potion',lootcard:'Grotto lootbox card'};
+
+/* ================= State ================= */
+const $=s=>document.querySelector(s);
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const hex=n=>Array.from({length:n},()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join('');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fresh=()=>({in:false,h:'',wallet:'',tab:'home',pts:0,spins:0,x:{},xs:{},room:{},bonus:0,pieces:{},acts:{},claims:{},mid:'',top:'',potWon:0,potDrank:0,extra:0,nft:'',log:[],lootcard:false});
+let S=load()||fresh(),G=loadG()||{...STOCK0},wheelRot=0,spinning=false;
+function load(){try{return JSON.parse(localStorage.getItem('hwC'))}catch(_){return null}}
+function loadG(){try{return JSON.parse(localStorage.getItem('hwC_stock'))}catch(_){return null}}
+function save(){try{localStorage.setItem('hwC',JSON.stringify(S));localStorage.setItem('hwC_stock',JSON.stringify(G))}catch(_){}}
+const has=(id,P=S.pieces)=>(P[id]||0)>0;
+const jDone=(j,P=S.pieces)=>j.pieces.every((_,i)=>has(j.id+'-'+i,P));
+const pieceName=id=>{const [j,i]=id.split('-');const jj=J.find(x=>x.id===j);return jj.pieces[+i]};
+const pieceJ=id=>J.find(x=>x.id===id.split('-')[0]);
+const allIds=()=>J.flatMap(j=>j.pieces.map((_,i)=>j.id+'-'+i));
+
+/* ================= Helpers ================= */
+function toast(m){const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+function sheet(html){$('#layer').innerHTML=`<div class="sheetwrap" data-act="bg"><div class="sheet" role="dialog" aria-modal="true"><button class="x" data-act="close" aria-label="Close">×</button>${html}</div></div>`}
+function close(){$('#layer').innerHTML=''}
+function nextRung(){return LADDER.find(r=>S.pts<r.at)}
+function addPts(n,why){
+  const before=S.pts;S.pts+=n;S.log.unshift(`+${n} pt · ${why}`);
+  LADDER.forEach(r=>{if(before<r.at&&S.pts>=r.at)setTimeout(()=>toast(`${r.n} unlocked. Claim it in Claims.`),900)});
+}
+function tile(id,big){
+  const j=pieceJ(id),n=S.pieces[id]||0,isSeal=id===SEAL;
+  const st=`background:linear-gradient(150deg,${j.c[0]},${j.c[1]})`;
+  if(big)return `<div class="big" style="${st}">${esc(pieceName(id))}<br><small>${esc(j.n)}</small></div>`;
+  return `<div class="pc ${n?'have':''} ${isSeal?'seal':''}" style="${n?st:''}">${n?esc(pieceName(id)):(isSeal?'Grotto only':'?')}${n>1?`<span class="n">×${n}</span>`:''}</div>`;
+}
+
+/* ================= Render ================= */
+const TABS=[['home','home'],['tasks','tasks'],['spin','spin'],['puzzles','puzzles'],['claims','claims']];
+function render(){
+  $('#top').innerHTML=`<div class="logo"><small>AVALANCHE</small><b>Halloween</b></div>
+    <div class="me">${S.in?`<span class="pill or">${S.pts} pts</span><span class="pill">${S.spins} spin${S.spins===1?'':'s'}</span><button class="who" data-act="wallet">${esc(S.h)}</button>`:`<button class="pill" data-act="login">connect X</button>`}</div>`;
+  $('#tabs').innerHTML=TABS.map(([k,l])=>`<button data-act="tab" data-v="${k}" ${S.tab===k?'aria-current="page"':''}>${l}</button>`).join('');
+  const V={home:vHome,tasks:vTasks,spin:vSpin,puzzles:vPuzzles,claims:vClaims}[S.tab]||vHome;
+  $('#main').innerHTML=V();
+  if(S.tab==='spin')drawWheel();
+  save();
+}
+function gate(what){return `<section class="center"><p class="mu">Connect X to ${what}.</p><button class="jag" data-act="login">Join event</button></section>`}
+
+function vHome(){
+  const r=nextRung();
+  const intro=`<section class="center hero">
+      <p class="kick">${esc(EVENT.hosts)}</p>
+      <h1>The haunt<br>is open.</h1>
+      <p class="mu">Collect pieces. Finish puzzles. Unlock treats.</p>
+      <div class="ghosts" aria-hidden="true">👻🎃👻</div>
+      ${S.in?`<button class="jag" data-act="tab" data-v="puzzles">Enter a booth code</button>`:`<button class="jag" data-act="login">Join event</button>`}
+    </section>`;
+  const how=`<section><div class="steps3">
+      <div class="row"><span class="num">01</span><div class="grow"><b>Play</b><small>Finish an activity at a booth. Staff show you a code for a pack of 2 pieces.</small></div></div>
+      <div class="row"><span class="num">02</span><div class="grow"><b>Collect</b><small>Complete a four-piece puzzle to unlock its treat. Trade your doubles.</small></div></div>
+      <div class="row"><span class="num">03</span><div class="grow"><b>Earn</b><small>Tasks give points for merch, and spins for the wheel.</small></div></div>
+    </div><p class="xs mu center" style="text-align:center">${esc(EVENT.date)} · ${esc(EVENT.venue)} · ${esc(EVENT.hosts)}</p></section>`;
+  if(!S.in)return intro+how;
+  const done=J.filter(jDone).length;
+  return intro+`<section>
+      <div class="stats"><div><b>${S.pts}</b><small>points</small></div><div><b>${S.spins}</b><small>spins</small></div><div><b>${done}/3</b><small>puzzles</small></div></div>
+      ${r?`<p class="sm mu">${r.at-S.pts} more point${r.at-S.pts===1?'':'s'} to the ${esc(r.n.toLowerCase())}.</p><div class="bar"><i style="width:${Math.min(100,S.pts/r.at*100)}%"></i></div>`:`<p class="sm ok">Every merch rung reached. Claim them in Claims.</p>`}
+      <div class="rowbtns"><button class="btn" data-act="tab" data-v="tasks">Earn points</button><button class="btn" data-act="tab" data-v="spin">Spin</button></div>
+    </section>`+how;
+}
+
+function vTasks(){
+  if(!S.in)return `<section class="center"><h2>Earn points</h2></section>`+gate('do tasks');
+  const xd=XT.filter(t=>S.x[t.k]).length,rd=RT.filter(t=>S.room[t.k]).length;
+  const xrow=t=>{const d=S.x[t.k];return `<button class="row ${d?'done':''}" data-act="xtask" data-v="${t.k}" ${d?'disabled':''}>
+      <span class="ic">${d?'✓':t.kind==='follow'?'＋':t.kind==='repost'?'⟲':'✎'}</span>
+      <span class="grow"><b>${esc(t.t)}</b><small>${esc(t.sub)} · ${t.p} point${t.p>1?'s':''}</small></span>
+      <span class="end">${d?'<small>Done</small>':`<span>+${t.s} spin${t.s>1?'s':''}</span><small>Start ↗</small>`}</span></button>`};
+  const rrow=t=>{const d=S.room[t.k];return `<button class="row ${d?'done':''}" data-act="rtask" data-v="${t.k}" ${d?'disabled':''}>
+      <span class="ic">${d?'✓':'◆'}</span>
+      <span class="grow"><b>${esc(t.t)}</b><small>${esc(t.sub)}</small></span>
+      <span class="end">${d?'<small>Done</small>':`<span>+${t.p} pt${t.p>1?'s':''}</span><small>${t.k==='trade'?'In puzzles':'Open'}</small>`}</span></button>`};
+  return `<section class="center"><h2>Earn points</h2><p class="mu">Points unlock merch. Spins turn the wheel.</p></section>
+    <section><div class="hdr"><span>𝕏 Tasks</span><small class="mu">${xd}/${XT.length} completed</small></div>
+      <div class="bar"><i style="width:${xd/XT.length*100}%"></i></div>
+      <div class="list">${XT.map(xrow).join('')}</div></section>
+    <section><div class="hdr"><span>In the room</span><small class="mu">${rd}/${RT.length} completed</small></div>
+      <div class="list">${RT.map(rrow).join('')}</div>
+      <p class="xs mu">Staff may also ask you to do something on the night. Their code is worth one pack, up to ${CAP.bonus} per guest.</p></section>`;
+}
+
+function vSpin(){
+  return `<section class="center"><h2>Spooky spin</h2><p class="mu">${S.in?`${S.spins} spin${S.spins===1?'':'s'} left · pieces, points and potions inside`:'Pieces, points and potions inside'}</p>
+      <div class="wheelbox"><div class="pointer"></div><svg id="wheel" viewBox="-110 -110 220 220" role="img" aria-label="Spin wheel"></svg></div>
+      ${S.in?`<button class="jag" data-act="spin" ${S.spins<1||spinning?'disabled':''}>Weave your luck</button>`:`<button class="jag" data-act="login">Join to spin</button>`}
+    </section>
+    <section><div class="hdr"><span>Wheel odds</span></div>
+      <table class="odds"><tr><td>🧩 A puzzle piece</td><td>45%</td></tr><tr><td>★ +1 point</td><td>25%</td></tr><tr><td>🧪 Potion · a drink at the counter, max ${CAP.potion}</td><td>15%</td></tr><tr><td>👻 Boo · nothing</td><td>10%</td></tr><tr><td>↻ +1 spin, max ${CAP.spin}</td><td>5%</td></tr></table>
+      <p class="xs mu">When a cap is reached, that slot can no longer land and the others share its chance.</p></section>`;
+}
+function drawWheel(){
+  const w=$('#wheel');if(!w)return;
+  const n=SEG.length,step=360/n;let h='';
+  SEG.forEach((k,i)=>{const a0=(i*step-90)*Math.PI/180,a1=((i+1)*step-90)*Math.PI/180,r=100;
+    const x0=Math.cos(a0)*r,y0=Math.sin(a0)*r,x1=Math.cos(a1)*r,y1=Math.sin(a1)*r;
+    const am=((i+.5)*step-90)*Math.PI/180,tx=Math.cos(am)*72,ty=Math.sin(am)*72;
+    h+=`<path d="M0 0 L${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z" fill="${KIND[k].c}" stroke="#111" stroke-width="1"/>`;
+    h+=`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" font-size="13" text-anchor="middle" dominant-baseline="central" fill="#f1e7d4" transform="rotate(${(i+.5)*step} ${tx.toFixed(1)} ${ty.toFixed(1)})">${KIND[k].i}</text>`;});
+  h+=`<circle r="100" fill="none" stroke="#f1e7d4" stroke-opacity=".5" stroke-width="1.5"/><circle r="16" fill="#111" stroke="#f07a24" stroke-width="2"/>`;
+  w.innerHTML=h;w.style.transform=`rotate(${wheelRot}deg)`;
+}
+
+function vPuzzles(){
+  const anyDup=Object.entries(S.pieces).some(([id,n])=>n>1&&id!==SEAL);
+  const card=j=>{const c=jDone(j);return `<div class="pzc ${c?'complete':''}"><div class="pz">${j.pieces.map((_,i)=>tile(j.id+'-'+i)).join('')}</div>
+      <div class="grow">${j.egg?'<span class="tag">Easter egg</span>':''}<h3>${esc(j.n)}</h3><p class="sm mu">${esc(j.reward)}</p>
+      <p class="sm ${c?'ok':'mu'}">${c?'Complete · claim it in Claims':`${j.pieces.filter((_,i)=>has(j.id+'-'+i)).length}/4 pieces`}</p></div></div>`};
+  const acts=Object.entries(ACT).map(([k,a])=>{const d=S.acts[k];if(a.hidden&&!d)return `<div class="row"><span class="ic">?</span><div class="grow"><b>One more, somewhere</b><small>Ask around.</small></div></div>`;
+    return `<div class="row ${d?'done':''}"><span class="ic">${d?'✓':'◆'}</span><div class="grow"><b>${esc(a.n)}</b><small>Pack leans to ${esc(J.find(x=>x.id===a.main).n)}</small></div><div class="end"><small>${d?'Opened':'Not yet'}</small></div></div>`}).join('');
+  return `<section class="center"><h2>Puzzles</h2><p class="mu">Finish an activity, get the code from staff, open a pack of 2 pieces. One pack per activity.</p>
+      ${S.in?`<button class="jag" data-act="code">Enter a booth code</button>`:`<button class="jag" data-act="login">Join event</button>`}</section>
+    <section><div class="pzwrap">${J.map(card).join('')}</div>
+      ${S.in?`<button class="btn" data-act="trade" ${anyDup?'':'disabled'}>${anyDup?'Trade a double':'Trade a double · you have none yet'}</button>`:''}
+      <p class="xs mu">The Grotto seal comes only from the Hall and cannot be traded. Crown pieces only trade for other Crown pieces.</p></section>
+    ${S.in?`<section><div class="hdr"><span>Activities</span><small class="mu">${Object.keys(S.acts).length}/${Object.keys(ACT).length}</small></div><div class="list">${acts}</div></section>`:''}`;
+}
+
+function vClaims(){
+  if(!S.in)return `<section class="center"><h2>Claims</h2></section>`+gate('see your claims');
+  const st=k=>S.claims[k];
+  const lad=LADDER.map(r=>{const ok=S.pts>=r.at,c=st(r.k),left=r.stock.reduce((a,s)=>a+G[s],0);
+    return `<div class="row ${c?'done':''}"><span class="ic">${c?'✓':ok?'★':'·'}</span><div class="grow"><b>${esc(r.n)}</b><small>${r.at} points · ${left} left</small></div>
+      <div class="end">${c?`<small>${c==='shown'?'Show staff':'Collected'}</small>`:ok?`<button class="btn or" style="padding:6px 14px;width:auto" data-act="claim" data-v="${r.k}" ${left?'':'disabled'}>${left?'Claim':'Gone'}</button>`:'<small>Locked</small>'}</div></div>`}).join('');
+  const pz=J.map(j=>{const ok=jDone(j),k='pz_'+j.id,c=st(k);let left=j.stock?j.stock.reduce((a,s)=>a+G[s],0):null;
+    return `<div class="row ${c?'done':''}"><span class="ic">${c?'✓':ok?'🧩':'·'}</span><div class="grow"><b>${esc(j.reward)}</b><small>${esc(j.n)}${left!==null?` · ${left} left`:' · no limit'}</small></div>
+      <div class="end">${c?`<small>${j.egg?'Minted':c==='shown'?'Show staff':'Collected'}</small>`:ok?`<button class="btn or" style="padding:6px 14px;width:auto" data-act="claim" data-v="${k}">${j.egg?'Mint':'Claim'}</button>`:'<small>Locked</small>'}</div></div>`}).join('');
+  const pots=S.potWon?Array.from({length:S.potWon},(_,i)=>{const d=i<S.potDrank;return `<div class="row ${d?'done':''}"><span class="ic">🧪</span><div class="grow"><b>Witch’s potion #${i+1}</b><small>Show this at the drinks counter</small></div><div class="end">${d?'<small>Drank it</small>':`<button class="btn" style="padding:6px 14px;width:auto" data-act="potion">Show</button>`}</div></div>`}).join(''):`<p class="sm mu">Potions you win on the wheel show up here. Up to ${CAP.potion}.</p>`;
+  return `<section class="center"><h2>Claims</h2><p class="mu">Points are reached, never spent. Claiming a pen keeps your points.</p></section>
+    <section><div class="hdr"><span>Points</span><small class="mu">${S.pts} pts</small></div><div class="list">${lad}</div></section>
+    <section><div class="hdr"><span>Puzzles</span><small class="mu">${J.filter(jDone).length}/3</small></div><div class="list">${pz}</div></section>
+    <section><div class="hdr"><span>Potions</span></div><div class="list">${pots}</div></section>
+    <section><div class="hdr"><span>Feedback</span></div><a class="row" href="${FEEDBACK}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="ic">✎</span><div class="grow"><b>Review the event</b><small>One keychain per guest, outside the points. 50 for reviews.</small></div><div class="end"><span>Review ↗</span></div></a></section>`;
+}
+
+/* ================= Flows ================= */
+function login(){
+  sheet(`<h3>Log in or sign up</h3><p class="sm mu">One tap with X. We create your Avalanche wallet for you.</p>
+    <button class="btn pri" data-act="xauth">Continue with X</button>
+    <p class="xs mu">Prototype: no real X login. The real app uses Privy.</p>`);
+}
+function xauth(){
+  sheet(`<h3>Avalanche Halloween wants access</h3>
+    <div class="list sm"><div class="row"><span class="ic">👁</span><div class="grow">Read your profile and posts</div></div><div class="row"><span class="ic">👥</span><div class="grow">See who you follow</div></div><div class="row"><span class="ic">✕</span><div class="grow mu">It cannot post for you</div></div></div>
+    <label class="xs mu" for="hh">Your X handle, for the prototype</label><input class="in" id="hh" placeholder="@yourname" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button class="btn pri" data-act="authorize">Authorize app</button>`);
+}
+function enter(){
+  let h=($('#hh')&&$('#hh').value||'').trim().replace(/^@/,'')||'guest'+Math.floor(Math.random()*900+100);
+  h='@'+h.replace(/[^A-Za-z0-9_]/g,'').slice(0,15);
+  S.in=true;S.h=h;S.wallet='0x'+hex(40);
+  const steps=[`Signed in as ${esc(h)} on X`,`Avalanche wallet created · ${S.wallet.slice(0,6)}…${S.wallet.slice(-4)}`,'Gas covered by team1, so you never need AVAX','Next: finish an activity or do a task'];
+  sheet(`<h3>Entering the haunt…</h3><div class="check">${steps.map((s,i)=>`<div style="animation-delay:${i*.45}s"><b>${i<3?'✓':'→'}</b>${s}</div>`).join('')}</div>`);
+  setTimeout(()=>{close();S.tab='home';render()},2200);
+}
+function walletSheet(){
+  sheet(`<h3>Your wallet</h3><p class="sm mu">Made for ${esc(S.h)} when you connected X. No app, no seed phrase.</p>
+    <div class="cap">${esc(S.wallet)}</div><p class="xs mu">Avalanche C-Chain · gas covered by team1</p>
+    <div class="list sm">${S.nft?`<div class="row"><span class="ic">🖼</span><div class="grow">Frog’s illustration · minted</div><div class="end"><small>${S.nft}</small></div></div>`:'<div class="row"><div class="grow mu">No collectibles yet</div></div>'}</div>
+    <div class="note">Prototype: the address is made up and nothing is on-chain.</div>
+    <button class="btn ghost" data-act="logout">Disconnect X</button>`);
+}
+function xtask(k){
+  const t=XT.find(x=>x.k===k);
+  const skip=`<button class="btn proto" data-act="xskip" data-v="${k}">Prototype: skip, mark it done</button>`;
+  if(t.kind==='follow')return sheet(`<h3>${esc(t.t)}</h3><p class="sm mu">X opens on the account. Follow, come back, and we check it. Already following? It counts straight away.</p>
+    <div class="rowbtns"><button class="btn" data-act="xopen" data-v="${k}">Open X ↗</button><button class="btn pri" data-act="xcheck" data-v="${k}">Check</button></div>${skip}`);
+  if(t.kind==='repost')return sheet(`<h3>${esc(t.t)}</h3><p class="sm mu">X opens on the post. Repost it, come back, and we check it.</p>
+    <div class="rowbtns"><button class="btn" data-act="xopen" data-v="${k}">Open the post ↗</button><button class="btn pri" data-act="xcheck" data-v="${k}">Check</button></div>${skip}`);
+  sheet(`<h3>${esc(t.t)}</h3><p class="sm mu">X opens with this filled in. Add your photo there, post it, and come back. We find your post ourselves.</p>
+    <div class="cap">Haunting ${esc(EVENT.venue)} tonight 🎃 Avalanche Halloween with @Team1TH @AvaxTeam1 @Bitkub #AvalancheHalloween</div>
+    <div class="rowbtns"><button class="btn" data-act="xopen" data-v="${k}">Tweet on X ↗</button><button class="btn pri" data-act="xcheck" data-v="${k}">Find my post</button></div>
+    <details class="sm mu"><summary>Didn’t find it?</summary><p style="margin-top:8px">Paste your post link instead.</p><input class="in" placeholder="https://x.com/…/status/…" style="margin-top:6px"></details>${skip}`);
+}
+function xcheck(k,skipped){
+  const t=XT.find(x=>x.k===k);if(S.x[k])return;
+  sheet(`<h3>${skipped?'Skipping…':'Checking with X…'}</h3><div class="check"><div><b>…</b>${skipped?'Prototype: no X call':'Looking for it on your account'}</div></div>`);
+  setTimeout(()=>{S.x[k]=1;S.spins+=t.s;addPts(t.p,t.t);close();render();toast(`Done · +${t.p} pt${t.p>1?'s':''}, +${t.s} spin${t.s>1?'s':''}`)},skipped?300:1100);
+}
+function rtask(k){
+  if(k==='trade'){S.tab='puzzles';render();toast('Trade a double in Puzzles');return}
+  if(k==='stage')return sheet(`<h3>Scan the stage QR</h3><p class="sm mu">It appears on the LED wall once, at the quest hint after the main sessions. Point your camera at it, or type the code.</p>
+    <input class="in" id="rc" inputmode="numeric" placeholder="Stage code"><button class="btn pri" data-act="rsubmit" data-v="stage">Submit</button><button class="btn proto" data-act="rskip" data-v="stage">Prototype: skip, mark it done</button>`);
+  if(k==='tg')return sheet(`<h3>Join our Telegram</h3><p class="sm mu">The code word is pinned in the team1 Thailand channel.</p>
+    <input class="in" id="rc" placeholder="Code word" autocapitalize="characters"><button class="btn pri" data-act="rsubmit" data-v="tg">Submit</button><button class="btn proto" data-act="rskip" data-v="tg">Prototype: skip, mark it done</button>`);
+  if(k==='costume')return sheet(`<h3>Costume check</h3><p class="sm mu">Show this screen to staff at the photo wall. They mark it from their desk.</p>
+    <div class="code">${esc(S.h)}</div><button class="btn proto" data-act="rskip" data-v="costume">Prototype: staff marks it</button>`);
+}
+function rdone(k){const t=RT.find(x=>x.k===k);if(S.room[k])return;S.room[k]=1;addPts(t.p,t.t);close();render();toast(`Done · +${t.p} pt${t.p>1?'s':''}`)}
+function rsubmit(k){
+  const v=($('#rc').value||'').trim().toUpperCase();
+  if(k==='stage'&&v!==code('stage'))return toast('That is not the stage code');
+  if(k==='tg'&&v!==TGWORD)return toast('Not the code word. Check the pinned message.');
+  rdone(k);
+}
+
+/* booth codes: staff show a 4-digit code that changes every 5 minutes */
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function code(id,off=0){return String(1000+hash(id+':'+(Math.floor(Date.now()/300000)+off))%9000)}
+function codeSheet(){
+  sheet(`<h3>Enter a booth code</h3><p class="sm mu">Staff show it after you finish their activity. It changes every 5 minutes.</p>
+    <input class="in" id="bc" inputmode="numeric" maxlength="4" placeholder="4-digit code"><button class="btn pri" data-act="bcsubmit">Open my pack</button>
+    <p class="xs mu">Prototype: skip the code and pick the activity.</p>
+    <div class="sel">${Object.entries(ACT).map(([k,a])=>`<button data-act="bcskip" data-v="${k}" ${S.acts[k]?'disabled':''}>${esc(a.n)}${S.acts[k]?' ✓':''}</button>`).join('')}</div>`);
+}
+function bcsubmit(){
+  const v=($('#bc').value||'').trim();
+  const k=Object.keys(ACT).find(a=>v===code(a)||v===code(a,-1));
+  if(!k)return toast('That code is not live. Ask staff for the current one.');
+  openPack(k);
+}
+function drawPiece(k,P=S.pieces){
+  const a=ACT[k]||{main:rnd(J).id};
+  if(k==='hall'&&!has(SEAL,P))return SEAL;             // the Hall always gives the Grotto seal first
+  const j=J.find(x=>x.id===a.main),ids=j.pieces.map((_,i)=>j.id+'-'+i).filter(id=>id!==SEAL||a.grotto);
+  const missing=ids.filter(id=>!has(id,P));
+  return missing.length?rnd(missing):rnd(ids);          // guided: the main piece fills a gap until the set is done
+}
+const WEIGHT={j1:.55,j2:.28,j3:.17};                                  // random pieces lean to the tote, away from the crown
+function randomPiece(){let r=Math.random(),j='j3';for(const [k,w] of Object.entries(WEIGHT)){if(r<w){j=k;break}r-=w}
+  return rnd(allIds().filter(id=>id.startsWith(j)&&id!==SEAL))}       // can repeat: doubles are for trading
+function openPack(k,bonus){
+  const a=ACT[k]||{n:'Staff bonus',main:rnd(J).id};
+  if(!bonus){if(S.acts[k])return toast('You already opened this activity’s pack');S.acts[k]=1}
+  const p1=drawPiece(k),p2=randomPiece();
+  sheet(`<div class="pack"><small>HALLOWEEN PACK</small>${esc(a.n)}<small>2 PIECES</small></div><button class="jag full" data-act="reveal" data-v="${p1},${p2}${a.grotto?',G':''}">Reveal</button>`);
+}
+function reveal(v){
+  const [p1,p2,g]=v.split(',');[p1,p2].forEach(id=>S.pieces[id]=(S.pieces[id]||0)+1);
+  const card=g&&!S.lootcard&&G.lootcard>0;if(card){S.lootcard=true;G.lootcard--}
+  const doneNow=J.filter(j=>jDone(j)&&[p1,p2].some(id=>id.startsWith(j.id)));
+  sheet(`<h3 style="text-align:center">You got</h3><div class="reveal">${tile(p1,1)}${tile(p2,1)}</div>
+    ${[p1,p2].filter(id=>S.pieces[id]>1).length?'<p class="sm mu" style="text-align:center">A double. Trade it for a piece you need.</p>':''}
+    ${doneNow.map(j=>`<p class="sm ok" style="text-align:center">${esc(j.n)} complete. Claim it in Claims.</p>`).join('')}
+    ${card?'<div class="note">Staff: hand over a Grotto lootbox card. Redeem it in The Grotto.</div>':''}
+    <button class="btn pri" data-act="donepack">Done</button>`);
+  render();
+}
+function tradeSheet(){
+  const dups=Object.entries(S.pieces).filter(([id,n])=>n>1&&id!==SEAL).map(([id])=>id);
+  const want=allIds().filter(id=>!has(id)&&id!==SEAL);
+  if(!want.length)return toast('You have every tradable piece already');
+  sheet(`<h3>Trade a double</h3><p class="sm mu">In the real app you scan another guest’s code and both agree. Here a ghost guest takes your offer. Crown pieces only trade for other Crown pieces.</p>
+    <p class="xs mu">You give</p><div class="sel" id="tg1">${dups.map((id,i)=>`<button data-act="pick" data-g="give" data-v="${id}" aria-pressed="${i===0}">${esc(pieceName(id))}<br><small class="mu">${esc(pieceJ(id).n)}</small></button>`).join('')}</div>
+    <p class="xs mu">You get</p><div class="sel" id="tg2">${want.map((id,i)=>`<button data-act="pick" data-g="want" data-v="${id}" aria-pressed="${i===0}">${esc(pieceName(id))}<br><small class="mu">${esc(pieceJ(id).n)}</small></button>`).join('')}</div>
+    <button class="btn pri" data-act="dotrade">Trade with @night_owl</button>`);
+}
+function doTrade(){
+  const give=document.querySelector('[data-g="give"][aria-pressed="true"]'),want=document.querySelector('[data-g="want"][aria-pressed="true"]');
+  if(!give||!want)return;
+  if(!okTrade(give.dataset.v,want.dataset.v))return toast('Crown pieces only trade for other Crown pieces');
+  S.pieces[give.dataset.v]--;S.pieces[want.dataset.v]=(S.pieces[want.dataset.v]||0)+1;
+  const first=!S.room.trade;if(first){S.room.trade=1;addPts(1,'First trade')}
+  close();render();toast(`Traded · you got ${pieceName(want.dataset.v)}${first?' · +1 pt':''}`);
+}
+
+/* wheel */
+function doSpin(){
+  if(spinning||S.spins<1)return;
+  const ok=k=>!(k==='potion'&&S.potWon>=CAP.potion)&&!(k==='spin'&&S.extra>=CAP.spin);
+  const slots=SEG.map((k,i)=>[k,i]).filter(([k])=>ok(k));
+  const [k,i]=rnd(slots);
+  S.spins--;spinning=true;
+  const step=360/SEG.length,c=i*step+step/2;
+  wheelRot=wheelRot-(((wheelRot%360)+360)%360)+360*5+(360-c);
+  const w=$('#wheel');if(w)w.style.transform=`rotate(${wheelRot}deg)`;
+  const b=document.querySelector('[data-act="spin"]');if(b){b.disabled=true;b.textContent='Spinning…'}
+  setTimeout(()=>{spinning=false;land(k)},matchMedia('(prefers-reduced-motion:reduce)').matches?80:3300);
+}
+function land(k){
+  let body='';
+  if(k==='piece'){const id=randomPiece();S.pieces[id]=(S.pieces[id]||0)+1;body=`<div class="reveal">${tile(id,1)}</div>${S.pieces[id]>1?'<p class="sm mu" style="text-align:center">A double. Good for trading.</p>':''}`}
+  else if(k==='point'){addPts(1,'Wheel');body='<p class="code">+1 point</p>'}
+  else if(k==='potion'){S.potWon++;G.potion=Math.max(0,G.potion-1);body='<p class="code" style="color:var(--teal)">Potion</p><p class="sm mu" style="text-align:center">Show it at the drinks counter. It’s in Claims.</p>'}
+  else if(k==='spin'){S.extra++;S.spins++;body='<p class="code">+1 spin</p>'}
+  else body='<p class="code">Boo!</p><p class="sm mu" style="text-align:center">Nothing this time. The ghosts win this round.</p>';
+  render();
+  sheet(`<h3 style="text-align:center">${k==='boo'?'Boo':'You got'}</h3>${body}<button class="btn pri" data-act="close">${S.spins?'Keep spinning':'Done'}</button>`);
+}
+
+/* claims */
+function claim(k){
+  if(k==='mid')return sheet(`<h3>Pick one</h3><div class="rowbtns"><button class="btn" data-act="pickmid" data-v="sticker" ${G.sticker?'':'disabled'}>Sticker set<br><small class="mu">${G.sticker} left</small></button><button class="btn" data-act="pickmid" data-v="postcard" ${G.postcard?'':'disabled'}>Postcard<br><small class="mu">${G.postcard} left</small></button></div>`);
+  if(k==='pz_j3')return sheet(`<h3>Pick one</h3><div class="rowbtns"><button class="btn" data-act="picktop" data-v="pants" ${G.pants?'':'disabled'}>Pants<br><small class="mu">${G.pants} left</small></button><button class="btn" data-act="picktop" data-v="tee" ${G.tee?'':'disabled'}>T-shirt<br><small class="mu">${G.tee} left</small></button></div>`);
+  if(k==='pz_j2'){S.claims[k]='minting';sheet(`<h3>Minting…</h3><div class="check"><div><b>✓</b>Frog’s illustration, assembled from your 4 pieces</div><div style="animation-delay:.5s"><b>✓</b>Minting to ${S.wallet.slice(0,6)}…${S.wallet.slice(-4)}</div><div style="animation-delay:1s"><b>✓</b>Gas covered by team1</div></div>`);
+    setTimeout(()=>{S.nft='0x'+hex(4)+'…'+hex(4);S.claims[k]='done';render();sheet(`<h3>It’s yours</h3><p class="sm mu">Frog’s team1 Thailand illustration is in your wallet. Holders hear about our next event first.</p><div class="note">Prototype: simulated mint.</div><button class="btn pri" data-act="close">Nice</button>`)},1700);return}
+  showStaff(k);
+}
+const ITEM={pen:'Pen',key:'Keychain',pz_j1:'Tote bag'};
+function showStaff(k,item){
+  S.claims[k]='shown';const n=item?STOCKNAME[item]:ITEM[k]||k;S.claims[k+'_item']=item||'';render();
+  sheet(`<h3>Show this at the merch desk</h3><div class="code">${esc(n)}</div><p class="sm mu" style="text-align:center">${esc(S.h)}</p><button class="btn proto" data-act="handover" data-v="${k}">Prototype: staff hands it over</button>`);
+}
+function handover(k){
+  const item=S.claims[k+'_item']||{pen:'pen',key:'key',pz_j1:'tote'}[k];if(item&&G[item]>0)G[item]--;
+  S.claims[k]='done';close();render();toast('Collected');
+}
+
+/* staff desk (prototype) */
+let staffTimer=null;
+function staffSheet(){
+  const left=300-Math.floor(Date.now()/1000)%300;
+  sheet(`<h3>Staff desk</h3><p class="sm mu">In the real app this is on the team1 and Stonk devices. Staff show a code only after a guest finishes the activity.</p>
+    <table class="tbl">${Object.entries(ACT).map(([k,a])=>`<tr><td>${esc(a.n)}</td><td><b>${code(k)}</b></td></tr>`).join('')}<tr><td>Stage QR, at the quest hint</td><td><b>${code('stage')}</b></td></tr><tr><td>Telegram code word</td><td><b>${TGWORD}</b></td></tr></table>
+    <p class="xs mu">New codes in <span id="cd">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span></p>
+    ${S.in?`<div class="rowbtns"><button class="btn" data-act="rskip" data-v="costume" ${S.room.costume?'disabled':''}>Mark costume</button><button class="btn" data-act="bonus" ${S.bonus>=CAP.bonus?'disabled':''}>Bonus pack (${S.bonus}/${CAP.bonus})</button></div>`:''}
+    <p class="xs mu">Stock</p><table class="tbl">${Object.keys(STOCK0).map(k=>`<tr><td>${STOCKNAME[k]}</td><td>${G[k]} / ${STOCK0[k]}</td></tr>`).join('')}</table>
+    <button class="btn ghost" data-act="reset">Reset the prototype</button>`);
+  clearInterval(staffTimer);staffTimer=setInterval(()=>{const el=$('#cd');if(!el){clearInterval(staffTimer);return}const l=300-Math.floor(Date.now()/1000)%300;el.textContent=`${Math.floor(l/60)}:${String(l%60).padStart(2,'0')}`;if(l===300)staffSheet()},1000);
+}
+function about(){
+  sheet(`<h3>Prototype C</h3><p class="sm">The game with the agreed economy, in the style of Stonk’s build. Everything is simulated: no X, no wallet, no chain.</p>
+    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel. Pen at 3, sticker or postcard at 7, keychain at 14.</small></div></div>
+    <div class="row"><div class="grow"><b>Pieces</b><small>From booth packs, the wheel and trades. Three puzzles: tote, Frog’s NFT, pants or T-shirt.</small></div></div>
+    <div class="row"><div class="grow"><b>Skips</b><small>Dashed orange buttons skip real actions so the flow can be walked in a minute.</small></div></div></div>
+    <button class="btn pri" data-act="close">Close</button>`);
+}
+
+/* simulator: 200 guests who do every task and every activity */
+function simGuest(trade){
+  const P={},add=id=>P[id]=(P[id]||0)+1;let pts=0,spins=0,pot=0,extra=0;
+  XT.forEach(t=>{pts+=t.p;spins+=t.s});RT.forEach(t=>{if(t.k!=='trade')pts+=t.p});
+  Object.keys(ACT).forEach(k=>{add(drawPiece(k,P));add(randomPiece())});
+  while(spins>0){spins--;const ok=k=>!(k==='potion'&&pot>=CAP.potion)&&!(k==='spin'&&extra>=CAP.spin);const k=rnd(SEG.filter(ok));
+    if(k==='piece')add(randomPiece());else if(k==='point')pts++;else if(k==='potion')pot++;else if(k==='spin'){extra++;spins++}}
+  let trades=0;
+  if(trade){let go=true;while(go&&trades<TRADEMAX){go=false;const want=J.flatMap(j=>j.pieces.map((_,i)=>j.id+'-'+i)).filter(id=>!has(id,P)&&id!==SEAL);
+    const dups=Object.keys(P).filter(id=>P[id]>1&&id!==SEAL);let pair=null;
+    for(const w of [...want.filter(id=>id.startsWith('j3')),...want.filter(id=>id.startsWith('j1')),...want.filter(id=>id.startsWith('j2'))]){const d=dups.find(id=>okTrade(id,w));if(d){pair=[d,w];break}}
+    if(pair){P[pair[0]]--;add(pair[1]);trades++;go=true}}
+    if(trades)pts++}
+  return {pts,j:J.map(j=>jDone(j,P)),trades};
+}
+function simSheet(){
+  const N=200,run=t=>{const r=Array.from({length:N},()=>simGuest(t));const pct=f=>Math.round(r.filter(f).length/N*100);
+    return {j:J.map((_,i)=>pct(x=>x.j[i])),avg:(r.reduce((a,x)=>a+x.pts,0)/N).toFixed(1),rung:LADDER.map(l=>pct(x=>x.pts>=l.at)),tr:(r.reduce((a,x)=>a+x.trades,0)/N).toFixed(1)}};
+  const a=run(false),b=run(true);
+  const row=(l,x,y)=>`<tr><td>${l}</td><td>${x}</td><td>${y}</td></tr>`;
+  sheet(`<h3>200 guests, all in</h3><p class="sm mu">Each guest does every task and every activity, and spends every spin. Run it a few times: the numbers move with luck.</p>
+    <table class="tbl"><tr><td></td><td class="mu">No trades</td><td class="mu">Up to 2 trades</td></tr>
+    ${J.map((j,i)=>row(`Finish ${esc(j.n)}`,a.j[i]+'%',b.j[i]+'%')).join('')}
+    ${LADDER.map((l,i)=>row(`Reach ${l.at} pts · ${esc(l.n.toLowerCase())}`,a.rung[i]+'%',b.rung[i]+'%')).join('')}
+    ${row('Average points',a.avg,b.avg)}${row('Trades per guest',0,b.tr)}</table>
+    <p class="xs mu">Real guests won't all do everything, so treat these as the ceiling. Supply: ${STOCK0.tote} totes, ${STOCK0.pants+STOCK0.tee} pants or T-shirts, ${STOCK0.key} keychains.</p>
+    <div class="rowbtns"><button class="btn" data-act="sim">Run again</button><button class="btn pri" data-act="close">Close</button></div>`);
+}
+
+/* ================= Events ================= */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const a=el.dataset.act,v=el.dataset.v;
+  if(a==='bg'){if(e.target===el)close();return}
+  switch(a){
+    case 'close':close();break;
+    case 'tab':S.tab=v;close();render();scrollTo({top:0});break;
+    case 'login':login();break;
+    case 'xauth':xauth();break;
+    case 'authorize':enter();break;
+    case 'wallet':walletSheet();break;
+    case 'logout':S=fresh();close();render();toast('X disconnected');break;
+    case 'xtask':xtask(v);break;
+    case 'xopen':toast('Prototype: X would open here');break;
+    case 'xcheck':xcheck(v,false);break;
+    case 'xskip':xcheck(v,true);break;
+    case 'rtask':rtask(v);break;
+    case 'rsubmit':rsubmit(v);break;
+    case 'rskip':rdone(v);if(document.querySelector('.sheet h3')&&$('.sheet h3').textContent==='Staff desk')staffSheet();break;
+    case 'code':codeSheet();break;
+    case 'bcsubmit':bcsubmit();break;
+    case 'bcskip':openPack(v);break;
+    case 'reveal':reveal(v);break;
+    case 'donepack':close();break;
+    case 'trade':tradeSheet();break;
+    case 'pick':document.querySelectorAll(`[data-g="${el.dataset.g}"]`).forEach(b=>b.setAttribute('aria-pressed',b===el));break;
+    case 'dotrade':doTrade();break;
+    case 'spin':doSpin();break;
+    case 'claim':claim(v);break;
+    case 'pickmid':showStaff('mid',v);break;
+    case 'picktop':showStaff('pz_j3',v);break;
+    case 'handover':handover(v);break;
+    case 'potion':sheet(`<h3>Witch’s potion</h3><div class="code" style="color:var(--teal)">Potion</div><p class="sm mu" style="text-align:center">${esc(S.h)} · show at the drinks counter</p><button class="btn proto" data-act="drank">Prototype: counter taps Drank it</button>`);break;
+    case 'drank':S.potDrank=Math.min(S.potWon,S.potDrank+1);close();render();toast('Cheers');break;
+    case 'staff':staffSheet();break;
+    case 'bonus':if(S.bonus<CAP.bonus){S.bonus++;openPack('bonus',true)}break;
+    case 'about':about();break;
+    case 'sim':simSheet();break;
+    case 'resetme':S={...fresh(),in:S.in,h:S.h,wallet:S.wallet};wheelRot=0;close();render();toast('Progress reset. Still signed in.');break;
+    case 'reset':S=fresh();G={...STOCK0};wheelRot=0;close();render();toast('Prototype reset');break;
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+render();
+})();
+</script>
+</body>
+</html>
