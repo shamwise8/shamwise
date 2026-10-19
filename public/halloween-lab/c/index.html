@@ -158,6 +158,7 @@ const RT=[
 ];
 const LADDER=[                                   // at = cost. Points are spent on claim; each item once.
   {at:2,k:'pen',n:'Pen',stock:['pen']},
+  {at:2,k:'pen2',n:'Second pen, another colour',stock:['pen'],after:'pen'},
   {at:4,k:'mid',n:'Sticker set or postcard',stock:['sticker','postcard']},
   {at:10,k:'key',n:'Keychain',stock:['key']}
 ];
@@ -177,7 +178,7 @@ const $=s=>document.querySelector(s);
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const hex=n=>Array.from({length:n},()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join('');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const fresh=()=>({in:false,h:'',wallet:'',tab:'home',pts:0,spins:0,x:{},xs:{},room:{},bonus:0,pieces:{},acts:{},claims:{},mid:'',top:'',potWon:0,potDrank:0,extra:0,nft:'',log:[],lootcard:false});
+const fresh=()=>({pzb:{},in:false,h:'',wallet:'',tab:'home',pts:0,spins:0,x:{},xs:{},room:{},bonus:0,pieces:{},acts:{},claims:{},mid:'',top:'',potWon:0,potDrank:0,extra:0,nft:'',log:[],lootcard:false});
 let S=load()||fresh(),G=loadG()||{...STOCK0},wheelRot=0,spinning=false;
 function load(){try{return JSON.parse(localStorage.getItem('hwC'))}catch(_){return null}}
 function loadG(){try{return JSON.parse(localStorage.getItem('hwC_stock'))}catch(_){return null}}
@@ -192,7 +193,9 @@ const allIds=()=>J.flatMap(j=>j.pieces.map((_,i)=>j.id+'-'+i));
 function toast(m){const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
 function sheet(html){$('#layer').innerHTML=`<div class="sheetwrap" data-act="bg"><div class="sheet" role="dialog" aria-modal="true"><button class="x" data-act="close" aria-label="Close">×</button>${html}</div></div>`}
 function close(){$('#layer').innerHTML=''}
-function nextRung(){return LADDER.find(r=>!S.claims[r.k]&&S.pts<r.at)}
+const PZPTS=2;   // points for each finished puzzle, once
+function checkPuzzles(){S.pzb=S.pzb||{};J.forEach(j=>{if(jDone(j)&&!S.pzb[j.id]){S.pzb[j.id]=1;addPts(PZPTS,'Finished '+j.n);setTimeout(()=>toast(`${j.n} finished · +${PZPTS} points`),400)}})}
+function nextRung(){return LADDER.find(r=>!r.after&&!S.claims[r.k]&&S.pts<r.at)}
 function addPts(n,why){
   const before=S.pts;S.pts+=n;S.log.unshift(`+${n} pt · ${why}`);
   LADDER.forEach(r=>{if(!S.claims[r.k]&&before<r.at&&S.pts>=r.at)setTimeout(()=>toast(`You can afford the ${r.n.toLowerCase()} now. Claims.`),900)});
@@ -228,7 +231,7 @@ function vHome(){
     </section>`;
   const how=`<section><div class="steps3">
       <div class="row"><span class="num">01</span><div class="grow"><b>Play</b><small>Finish an activity at a booth. Staff show you a code for a pack of 2 pieces.</small></div></div>
-      <div class="row"><span class="num">02</span><div class="grow"><b>Collect</b><small>Complete a four-piece puzzle to unlock its treat. Trade your doubles.</small></div></div>
+      <div class="row"><span class="num">02</span><div class="grow"><b>Collect</b><small>Complete a four-piece puzzle to unlock its treat and 2 points. Trade your doubles.</small></div></div>
       <div class="row"><span class="num">03</span><div class="grow"><b>Earn</b><small>Tasks give points for merch, and spins for the wheel.</small></div></div>
     </div><p class="xs mu center" style="text-align:center">${esc(EVENT.date)} · ${esc(EVENT.venue)} · ${esc(EVENT.hosts)}</p></section>`;
   if(!S.in)return intro+how;
@@ -299,7 +302,7 @@ function vPuzzles(){
 function vClaims(){
   if(!S.in)return `<section class="center"><h2>Claims</h2></section>`+gate('see your claims');
   const st=k=>S.claims[k];
-  const lad=LADDER.map(r=>{const ok=S.pts>=r.at,c=st(r.k),left=r.stock.reduce((a,s)=>a+G[s],0);
+  const lad=LADDER.filter(r=>!r.after||S.claims[r.after]).map(r=>{const ok=S.pts>=r.at,c=st(r.k),left=r.stock.reduce((a,s)=>a+G[s],0);
     return `<div class="row ${c?'done':''}"><span class="ic">${c?'✓':ok?'★':'·'}</span><div class="grow"><b>${esc(r.n)}</b><small>Costs ${r.at} points · ${left} left</small></div>
       <div class="end">${c?`<small>${c==='shown'?'Show staff':'Collected'}</small>`:ok?`<button class="btn or" style="padding:6px 14px;width:auto" data-act="claim" data-v="${r.k}" ${left?'':'disabled'}>${left?'Claim':'Gone'}</button>`:'<small>Locked</small>'}</div></div>`}).join('');
   const pz=J.map(j=>{const ok=jDone(j),k='pz_'+j.id,c=st(k);let left=j.stock?j.stock.reduce((a,s)=>a+G[s],0):null;
@@ -407,7 +410,7 @@ function openPack(k,bonus){
   sheet(`<div class="pack"><small>HALLOWEEN PACK</small>${esc(a.n)}<small>2 PIECES</small></div><button class="jag full" data-act="reveal" data-v="${p1},${p2}${a.grotto?',G':''}">Reveal</button>`);
 }
 function reveal(v){
-  const [p1,p2,g]=v.split(',');[p1,p2].forEach(id=>S.pieces[id]=(S.pieces[id]||0)+1);
+  const [p1,p2,g]=v.split(',');[p1,p2].forEach(id=>S.pieces[id]=(S.pieces[id]||0)+1);checkPuzzles();
   const card=g&&!S.lootcard&&G.lootcard>0;if(card){S.lootcard=true;G.lootcard--}
   const doneNow=J.filter(j=>jDone(j)&&[p1,p2].some(id=>id.startsWith(j.id)));
   sheet(`<h3 style="text-align:center">You got</h3><div class="reveal">${tile(p1,1)}${tile(p2,1)}</div>
@@ -430,7 +433,7 @@ function doTrade(){
   const give=document.querySelector('[data-g="give"][aria-pressed="true"]'),want=document.querySelector('[data-g="want"][aria-pressed="true"]');
   if(!give||!want)return;
   if(!okTrade(give.dataset.v,want.dataset.v))return toast('Crown pieces only trade for other Crown pieces');
-  S.pieces[give.dataset.v]--;S.pieces[want.dataset.v]=(S.pieces[want.dataset.v]||0)+1;
+  S.pieces[give.dataset.v]--;S.pieces[want.dataset.v]=(S.pieces[want.dataset.v]||0)+1;checkPuzzles();
   const first=!S.room.trade;if(first){S.room.trade=1;addPts(1,'First trade')}
   close();render();toast(`Traded · you got ${pieceName(want.dataset.v)}${first?' · +1 pt':''}`);
 }
@@ -450,7 +453,7 @@ function doSpin(){
 }
 function land(k){
   let body='';
-  if(k==='piece'){const id=randomPiece();S.pieces[id]=(S.pieces[id]||0)+1;body=`<div class="reveal">${tile(id,1)}</div>${S.pieces[id]>1?'<p class="sm mu" style="text-align:center">A double. Good for trading.</p>':''}`}
+  if(k==='piece'){const id=randomPiece();S.pieces[id]=(S.pieces[id]||0)+1;checkPuzzles();body=`<div class="reveal">${tile(id,1)}</div>${S.pieces[id]>1?'<p class="sm mu" style="text-align:center">A double. Good for trading.</p>':''}`}
   else if(k==='point'){const n=wheelPts();addPts(n,'Wheel');body=`<p class="code">+${n} point${n>1?'s':''}</p>`}
   else if(k==='potion'){S.potWon++;G.potion=Math.max(0,G.potion-1);body=`<p class="code" style="color:var(--teal)">Potion ×${S.potWon-S.potDrank}</p><p class="sm mu" style="text-align:center">A special drink at the counter, no points needed. Show it from Claims.${S.potWon-S.potDrank>=CAP.potion?` That’s the most you can hold. Drink one to win more.`:''}</p>`}
   else if(k==='spin'){S.extra++;S.spins++;body='<p class="code">+1 spin</p>'}
@@ -467,7 +470,7 @@ function claim(k){
     setTimeout(()=>{S.nft='0x'+hex(4)+'…'+hex(4);S.claims[k]='done';render();sheet(`<h3>It’s yours</h3><p class="sm mu">Frog’s team1 Thailand illustration is in your wallet. Holders hear about our next event first.</p><div class="note">Prototype: simulated mint.</div><button class="btn pri" data-act="close">Nice</button>`)},1700);return}
   showStaff(k);
 }
-const ITEM={pen:'Pen',key:'Keychain',pz_j1:'Tote bag'};
+const ITEM={pen:'Pen',pen2:'Pen · second colour',key:'Keychain',pz_j1:'Tote bag'};
 function showStaff(k,item){
   const L=LADDER.find(r=>r.k===k);
   if(L){if(S.claims[k])return;if(S.pts<L.at)return toast('Not enough points');S.pts-=L.at;S.log.unshift(`-${L.at} pts · ${L.n}`)}
@@ -475,7 +478,7 @@ function showStaff(k,item){
   sheet(`<h3>Show this at the merch desk</h3><div class="code">${esc(n)}</div><p class="sm mu" style="text-align:center">${esc(S.h)}</p><button class="btn proto" data-act="handover" data-v="${k}">Prototype: staff hands it over</button>`);
 }
 function handover(k){
-  const item=S.claims[k+'_item']||{pen:'pen',key:'key',pz_j1:'tote'}[k];if(item&&G[item]>0)G[item]--;
+  const item=S.claims[k+'_item']||{pen:'pen',pen2:'pen',key:'key',pz_j1:'tote'}[k];if(item&&G[item]>0)G[item]--;
   S.claims[k]='done';close();render();toast('Collected');
 }
 
@@ -493,7 +496,7 @@ function staffSheet(){
 }
 function about(){
   sheet(`<h3>Prototype C</h3><p class="sm">The game with the agreed economy, in the style of Stonk’s build. Everything is simulated: no X, no wallet, no chain.</p>
-    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 2, sticker or postcard 4, keychain 10. Each item once.</small></div></div>
+    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 2, twice in two colours. Sticker or postcard 4, keychain 10. Finished puzzles give 2 points each.</small></div></div>
     <div class="row"><div class="grow"><b>Pieces</b><small>From booth packs, the wheel and trades. Three puzzles: tote, Frog’s NFT, pants or T-shirt.</small></div></div>
     <div class="row"><div class="grow"><b>Skips</b><small>Dashed orange buttons skip real actions so the flow can be walked in a minute.</small></div></div></div>
     <button class="btn pri" data-act="close">Close</button>`);
@@ -512,9 +515,10 @@ function simGuest(trade){
     for(const w of [...want.filter(id=>id.startsWith('j3')),...want.filter(id=>id.startsWith('j1')),...want.filter(id=>id.startsWith('j2'))]){const d=dups.find(id=>okTrade(id,w));if(d){pair=[d,w];break}}
     if(pair){P[pair[0]]--;add(pair[1]);trades++;go=true}}
     if(trades)pts++}
+  pts+=J.filter(j=>jDone(j,P)).length*PZPTS;
   return {pts,j:J.map(j=>jDone(j,P)),trades};
 }
-const AFFORD=[[2+10,'pen + keychain'],[4+10,'sticker or postcard + keychain'],[2+4+10,'all three']];
+const AFFORD=[[2+4+10,'pen, sticker or postcard, keychain'],[2+2+4+10,'all of it, both pens']];
 function simSheet(){
   const N=200,run=t=>{const r=Array.from({length:N},()=>simGuest(t));const pct=f=>Math.round(r.filter(f).length/N*100);
     return {j:J.map((_,i)=>pct(x=>x.j[i])),avg:(r.reduce((a,x)=>a+x.pts,0)/N).toFixed(1),rung:AFFORD.map(([c])=>pct(x=>x.pts>=c)),tr:(r.reduce((a,x)=>a+x.trades,0)/N).toFixed(1)}};
