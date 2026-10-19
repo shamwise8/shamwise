@@ -131,7 +131,7 @@ footer.proto button{font-size:14px;color:var(--or2);border:1px dashed rgba(240,1
 /* ================= Config: the agreed economy ================= */
 const EVENT={date:'31 Oct',venue:'Zilla Space',hosts:'team1 Thailand × Bitkub'};
 const J=[
-  {id:'j1',pts:1,n:'The Tote',reward:'team1 tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
+  {id:'j1',pts:2,n:'The Tote',reward:'team1 tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
   {id:'j2',pts:2,n:'team1 TH, by Frog',reward:'Collectible NFT of Frog’s illustration',c:['#b394ea','#2b1d48'],pieces:['Top left','Top right','Bottom left','Bottom right'],egg:true},
   {id:'j3',pts:1,n:'The Pants',reward:'Pants, or a T-shirt when pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto piece']}
 ];
@@ -193,7 +193,7 @@ const allIds=()=>J.flatMap(j=>j.pieces.map((_,i)=>j.id+'-'+i));
 function toast(m){const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
 function sheet(html){$('#layer').innerHTML=`<div class="sheetwrap" data-act="bg"><div class="sheet" role="dialog" aria-modal="true"><button class="x" data-act="close" aria-label="Close">×</button>${html}</div></div>`}
 function close(){$('#layer').innerHTML=''}
-// points for each finished puzzle, once: see pts on each puzzle (Frog 2, the others 1)
+// points for each finished puzzle, once: see pts on each puzzle (Tote 2, Frog 2, Pants 1)
 function checkPuzzles(){S.pzb=S.pzb||{};J.forEach(j=>{if(jDone(j)&&!S.pzb[j.id]){S.pzb[j.id]=1;addPts(j.pts,'Finished '+j.n);setTimeout(()=>toast(`${j.n} finished · +${j.pts} point${j.pts>1?'s':''}`),400)}})}
 function nextRung(){return LADDER.find(r=>!r.after&&!S.claims[r.k]&&S.pts<r.at)}
 function addPts(n,why){
@@ -514,7 +514,7 @@ function staffSheet(){
 }
 function about(){
   sheet(`<h3>Prototype C</h3><p class="sm">The game with the agreed economy, in the style of Stonk’s build. Everything is simulated: no X, no wallet, no chain.</p>
-    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 3, twice in two colours. Sticker or postcard 5, keychain 12. Finished puzzles give points: Frog 2, the others 1.</small></div></div>
+    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 3, twice in two colours. Sticker or postcard 5, keychain 12. Finished puzzles give points: the Tote 2, Frog 2, the Pants 1.</small></div></div>
     <div class="row"><div class="grow"><b>Pieces</b><small>From booth packs, the wheel and trades. Three puzzles: tote, Frog’s NFT, pants or T-shirt.</small></div></div>
     <div class="row"><div class="grow"><b>Skips</b><small>Dashed orange buttons skip real actions so the flow can be walked in a minute.</small></div></div></div>
     <button class="btn pri" data-act="close">Close</button>`);
