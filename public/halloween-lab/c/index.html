@@ -133,14 +133,14 @@ const EVENT={date:'31 Oct',venue:'Zilla Space',hosts:'team1 Thailand × Bitkub'}
 const J=[
   {id:'j1',pts:1,n:'The Tote',reward:'team1 tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
   {id:'j2',pts:2,n:'team1 TH, by Frog',reward:'Collectible NFT of Frog’s illustration',c:['#b394ea','#2b1d48'],pieces:['Top left','Top right','Bottom left','Bottom right'],egg:true},
-  {id:'j3',pts:1,n:'The Pants',reward:'Pants, or a T-shirt when pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto seal']}
+  {id:'j3',pts:1,n:'The Pants',reward:'Pants, or a T-shirt when pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto piece']}
 ];
-const SEAL='j3-3';                       // only from Grotto activities, cannot be traded
+const SEAL='j3-3';                       // the Grotto piece: from either Grotto activity, cannot be traded
 const ACT={
   t1:{n:'team1 booth quest',main:'j1'},
   bk:{n:'Bitkub booth',main:'j1'},
-  hall:{n:'The Grotto · the Hall',main:'j3',grotto:true},
-  games:{n:'The Grotto · free-play games',main:'j3',grotto:true},
+  hall:{n:'The Grotto · play any game',main:'j3',grotto:true},
+  games:{n:'The Grotto · a second, different game',main:'j3',grotto:true},
   crew:{n:'Find a team1 crew member',main:'j2',hidden:true}
 };
 const XT=[
@@ -295,7 +295,7 @@ function vPuzzles(){
       ${S.in?`<button class="jag" data-act="code">Enter a booth code</button>`:`<button class="jag" data-act="login">Join event</button>`}</section>
     <section><div class="pzwrap">${J.map(card).join('')}</div>
       ${S.in?`<button class="btn" data-act="trade" ${anyDup?'':'disabled'}>${anyDup?'Trade a double':'Trade a double · you have none yet'}</button>`:''}
-      <p class="xs mu">The Grotto seal comes only from the Hall and cannot be traded. Pants pieces only trade for other Pants pieces.</p></section>
+      <p class="xs mu">The Grotto piece comes from playing any Grotto game, on the desktop or your phone, and cannot be traded. Pants pieces only trade for other Pants pieces.</p></section>
     ${S.in?`<section><div class="hdr"><span>Activities</span><small class="mu">${Object.keys(S.acts).length}/${Object.keys(ACT).length}</small></div><div class="list">${acts}</div></section>`:''}`;
 }
 
@@ -406,7 +406,7 @@ function bcsubmit(){
 }
 function drawPiece(k,P=S.pieces){
   const a=ACT[k]||{main:rnd(J).id};
-  if(k==='hall'&&!has(SEAL,P))return SEAL;             // the Hall always gives the Grotto seal first
+  if((k==='hall'||k==='games')&&!has(SEAL,P))return SEAL;   // the first Grotto game played gives the Grotto piece
   const j=J.find(x=>x.id===a.main),ids=j.pieces.map((_,i)=>j.id+'-'+i).filter(id=>id!==SEAL||a.grotto);
   const missing=ids.filter(id=>!has(id,P));
   return missing.length?rnd(missing):rnd(ids);          // guided: the main piece fills a gap until the set is done
