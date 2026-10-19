@@ -153,7 +153,7 @@ const XT=[
   {k:'post',t:'Post about the event',sub:'Tags @Team1TH @AvaxTeam1 and Bitkub',p:2,s:2,kind:'post'}
 ];
 const RT=[
-  {k:'stage',t:'Scan the stage QR',sub:'Shown once, at the quest hint after the main sessions',p:2},
+  {k:'stage',t:'Scan the stage QR',sub:'At the quest hints, 20:15 · a pack drop too',p:2},
   {k:'tg',t:'Join the team1 Thailand Telegram',sub:'Find the code word pinned in the channel',p:1},
   {k:'trade',t:'Trade a piece',sub:'Your first trade counts',p:1},
   {k:'costume',t:'Come in a Halloween costume',sub:'Staff mark it at the photo wall',p:2,s:1}
@@ -383,7 +383,7 @@ function rtask(k){
   if(k==='costume')return sheet(`<h3>Costume check</h3><p class="sm mu">Show this screen to staff at the photo wall. They mark it from their desk.</p>
     <div class="code">${esc(S.h)}</div><button class="btn proto" data-act="rskip" data-v="costume">Prototype: staff marks it</button>`);
 }
-function rdone(k){const t=RT.find(x=>x.k===k);if(S.room[k])return;S.room[k]=1;S.spins+=t.s||0;addPts(t.p,t.t);close();render();toast(`Done · +${t.p} pt${t.p>1?'s':''}${t.s?`, +${t.s} spin`:''}`)}
+function rdone(k){const t=RT.find(x=>x.k===k);if(S.room[k])return;S.room[k]=1;S.spins+=t.s||0;addPts(t.p,t.t);close();render();if(k==='stage'){setTimeout(stagePack,300)}toast(`Done · +${t.p} pt${t.p>1?'s':''}${t.s?`, +${t.s} spin`:''}`)}
 function rsubmit(k){
   const v=($('#rc').value||'').trim().toUpperCase();
   if(k==='stage'&&v!==code('stage'))return toast('That is not the stage code');
@@ -415,6 +415,12 @@ function drawPiece(k,P=S.pieces){
 }
 const WEIGHT={j1:.55,j2:.28,j3:.17};
 const GAPFILL=.5;   // share of wheel pieces that fill a gap: the tote and Frog first, the pants once both are done
+// The stage drop at the quest hints: 2 pieces that fill tote or Frog gaps, never the pants, never the Grotto piece
+function stagePiece(P=S.pieces){const miss=allIds().filter(id=>!has(id,P)&&!id.startsWith('j3'));return miss.length?rnd(miss):randomPiece()}
+function stagePack(){
+  const p1=stagePiece(),p2=stagePiece({...S.pieces,[p1]:(S.pieces[p1]||0)+1});
+  sheet(`<div class="pack"><small>STAGE DROP</small>Quest hints<small>2 PIECES</small></div><p class="sm mu" style="text-align:center">Fills gaps in the Tote and Frog’s puzzle.</p><button class="jag full" data-act="reveal" data-v="${p1},${p2}">Reveal</button>`);
+}
 function wheelPiece(P=S.pieces){
   if(Math.random()<GAPFILL){const miss=allIds().filter(id=>!has(id,P)&&id!==SEAL);
     const early=miss.filter(id=>!id.startsWith('j3')),late=miss.filter(id=>id.startsWith('j3'));
@@ -529,6 +535,7 @@ function simGuest(trade){
   Object.keys(ACT).forEach(k=>{add(drawPiece(k,P));add(k==='crew'?drawPiece(k,P):randomPiece())});
   while(spins>0){spins--;const ok=k=>!(k==='potion'&&pot>=CAP.potion)&&!(k==='spin'&&extra>=CAP.spin);const k=rnd(SEG.filter(ok));
     if(k==='piece')add(wheelPiece(P));else if(k==='point')pts+=wheelPts();else if(k==='potion')pot++;else if(k==='spin'){extra++;spins++}}
+  for(let i=0;i<2;i++)add(stagePiece(P));   // the stage drop lands after most spins
   let trades=0;
   if(trade){let go=true;while(go&&trades<TRADEMAX){go=false;const want=J.flatMap(j=>j.pieces.map((_,i)=>j.id+'-'+i)).filter(id=>!has(id,P)&&id!==SEAL);
     const dups=Object.keys(P).filter(id=>P[id]>1&&id!==SEAL);let pair=null;
