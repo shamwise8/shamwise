@@ -133,7 +133,7 @@ const EVENT={date:'31 Oct',venue:'Zilla Space',hosts:'team1 Thailand × Bitkub'}
 const J=[
   {id:'j1',n:'The Tote',reward:'team1 tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
   {id:'j2',n:'team1 TH, by Frog',reward:'Collectible NFT of Frog’s illustration',c:['#b394ea','#2b1d48'],pieces:['Top left','Top right','Bottom left','Bottom right'],egg:true},
-  {id:'j3',n:'The Crown',reward:'Pants, or a T-shirt when pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto seal']}
+  {id:'j3',n:'The Pants',reward:'Pants, or a T-shirt when pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto seal']}
 ];
 const SEAL='j3-3';                       // only from Grotto activities, cannot be traded
 const ACT={
@@ -167,7 +167,7 @@ const SEG=['piece','point','piece','potion','piece','point','piece','boo','piece
 const KIND={piece:{l:'Piece',c:'#2a2420',i:'🧩'},point:{l:'+1 point',c:'#7a3a10',i:'★'},potion:{l:'Potion',c:'#174a45',i:'🧪'},boo:{l:'Boo',c:'#232323',i:'👻'},spin:{l:'+1 spin',c:'#3b2a5c',i:'↻'}};
 const CAP={potion:3,spin:2,bonus:2};   // potion: most a guest can hold at once. Drinking one frees a slot. Try 4.
 const TRADEMAX=2;
-const okTrade=(give,want)=>!want.startsWith('j3')||give.startsWith('j3');   // Crown pieces only trade for Crown pieces   // simulator: a realistic guest manages about two trades
+const okTrade=(give,want)=>!want.startsWith('j3')||give.startsWith('j3');   // Pants pieces only trade for Pants pieces   // simulator: a realistic guest manages about two trades
 const TGWORD='PUMPKIN';
 const FEEDBACK='https://events.team1.network/events/68hamvg';
 const STOCK0={pen:300,sticker:60,postcard:60,key:30,tote:115,pants:40,tee:15,potion:150,lootcard:100};
@@ -295,7 +295,7 @@ function vPuzzles(){
       ${S.in?`<button class="jag" data-act="code">Enter a booth code</button>`:`<button class="jag" data-act="login">Join event</button>`}</section>
     <section><div class="pzwrap">${J.map(card).join('')}</div>
       ${S.in?`<button class="btn" data-act="trade" ${anyDup?'':'disabled'}>${anyDup?'Trade a double':'Trade a double · you have none yet'}</button>`:''}
-      <p class="xs mu">The Grotto seal comes only from the Hall and cannot be traded. Crown pieces only trade for other Crown pieces.</p></section>
+      <p class="xs mu">The Grotto seal comes only from the Hall and cannot be traded. Pants pieces only trade for other Pants pieces.</p></section>
     ${S.in?`<section><div class="hdr"><span>Activities</span><small class="mu">${Object.keys(S.acts).length}/${Object.keys(ACT).length}</small></div><div class="list">${acts}</div></section>`:''}`;
 }
 
@@ -424,7 +424,7 @@ function tradeSheet(){
   const dups=Object.entries(S.pieces).filter(([id,n])=>n>1&&id!==SEAL).map(([id])=>id);
   const want=allIds().filter(id=>!has(id)&&id!==SEAL);
   if(!want.length)return toast('You have every tradable piece already');
-  sheet(`<h3>Trade a double</h3><p class="sm mu">In the real app you scan another guest’s code and both agree. Here a ghost guest takes your offer. Crown pieces only trade for other Crown pieces.</p>
+  sheet(`<h3>Trade a double</h3><p class="sm mu">In the real app you scan another guest’s code and both agree. Here a ghost guest takes your offer. Pants pieces only trade for other Pants pieces.</p>
     <p class="xs mu">You give</p><div class="sel" id="tg1">${dups.map((id,i)=>`<button data-act="pick" data-g="give" data-v="${id}" aria-pressed="${i===0}">${esc(pieceName(id))}<br><small class="mu">${esc(pieceJ(id).n)}</small></button>`).join('')}</div>
     <p class="xs mu">You get</p><div class="sel" id="tg2">${want.map((id,i)=>`<button data-act="pick" data-g="want" data-v="${id}" aria-pressed="${i===0}">${esc(pieceName(id))}<br><small class="mu">${esc(pieceJ(id).n)}</small></button>`).join('')}</div>
     <button class="btn pri" data-act="dotrade">Trade with @night_owl</button>`);
@@ -432,7 +432,7 @@ function tradeSheet(){
 function doTrade(){
   const give=document.querySelector('[data-g="give"][aria-pressed="true"]'),want=document.querySelector('[data-g="want"][aria-pressed="true"]');
   if(!give||!want)return;
-  if(!okTrade(give.dataset.v,want.dataset.v))return toast('Crown pieces only trade for other Crown pieces');
+  if(!okTrade(give.dataset.v,want.dataset.v))return toast('Pants pieces only trade for other Pants pieces');
   S.pieces[give.dataset.v]--;S.pieces[want.dataset.v]=(S.pieces[want.dataset.v]||0)+1;checkPuzzles();
   const first=!S.room.trade;if(first){S.room.trade=1;addPts(1,'First trade')}
   close();render();toast(`Traded · you got ${pieceName(want.dataset.v)}${first?' · +1 pt':''}`);
