@@ -148,7 +148,7 @@ const XT=[
   {k:'rt',t:'Repost Avalanche Halloween',sub:'The event post',p:1,s:1,kind:'repost'},
   {k:'f2',t:'Follow @AvaxTeam1',sub:'team1 global',p:1,s:1,kind:'follow',h:'AvaxTeam1'},
   {k:'rtb',t:'Repost Bitkub’s event post',sub:'Bitkub · co-host of the night',p:1,s:1,kind:'repost'},
-  {k:'fg',t:'Follow @TheGrottoL1',sub:'The Grotto',p:1,s:1,kind:'follow',h:'TheGrottoL1'},
+  {k:'fg',t:'Follow @TheGrottoL1',sub:'The Grotto',p:1,s:0,kind:'follow',h:'TheGrottoL1'},
   {k:'rtg',t:'Repost The Grotto’s video',sub:'Their newest feature video',p:2,s:2,kind:'repost'},
   {k:'post',t:'Post about the event',sub:'Tags @Team1TH @AvaxTeam1 and Bitkub',p:2,s:2,kind:'post'}
 ];
@@ -251,7 +251,7 @@ function vTasks(){
   const xrow=t=>{const d=S.x[t.k];return `<button class="row ${d?'done':''}" data-act="xtask" data-v="${t.k}" ${d?'disabled':''}>
       <span class="ic">${d?'✓':t.kind==='follow'?'＋':t.kind==='repost'?'⟲':'✎'}</span>
       <span class="grow"><b>${esc(t.t)}</b><small>${esc(t.sub)} · ${t.p} point${t.p>1?'s':''}</small></span>
-      <span class="end">${d?'<small>Done</small>':`<span>+${t.s} spin${t.s>1?'s':''}</span><small>Start ↗</small>`}</span></button>`};
+      <span class="end">${d?'<small>Done</small>':`<span>${t.s?`+${t.s} spin${t.s>1?'s':''}`:`+${t.p} pt${t.p>1?'s':''}`}</span><small>Start ↗</small>`}</span></button>`};
   const rrow=t=>{const d=S.room[t.k];return `<button class="row ${d?'done':''}" data-act="rtask" data-v="${t.k}" ${d?'disabled':''}>
       <span class="ic">${d?'✓':'◆'}</span>
       <span class="grow"><b>${esc(t.t)}</b><small>${esc(t.sub)}</small></span>
@@ -372,7 +372,7 @@ function xtask(k){
 function xcheck(k,skipped){
   const t=XT.find(x=>x.k===k);if(S.x[k])return;
   sheet(`<h3>${skipped?'Skipping…':'Checking with X…'}</h3><div class="check"><div><b>…</b>${skipped?'Prototype: no X call':'Looking for it on your account'}</div></div>`);
-  setTimeout(()=>{S.x[k]=1;S.spins+=t.s;addPts(t.p,t.t);close();render();toast(`Done · +${t.p} pt${t.p>1?'s':''}, +${t.s} spin${t.s>1?'s':''}`)},skipped?300:1100);
+  setTimeout(()=>{S.x[k]=1;S.spins+=t.s;addPts(t.p,t.t);close();render();toast(`Done · +${t.p} pt${t.p>1?'s':''}${t.s?`, +${t.s} spin${t.s>1?'s':''}`:''}`)},skipped?300:1100);
 }
 function rtask(k){
   if(k==='trade'){S.tab='puzzles';render();toast('Trade a double in Puzzles');return}
