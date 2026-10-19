@@ -154,12 +154,12 @@ const RT=[
   {k:'stage',t:'Scan the stage QR',sub:'Shown once, at the quest hint after the main sessions',p:2},
   {k:'tg',t:'Join the team1 Thailand Telegram',sub:'Find the code word pinned in the channel',p:1},
   {k:'trade',t:'Trade a piece',sub:'Your first trade counts',p:1},
-  {k:'costume',t:'Costume at the photo wall',sub:'Staff mark it for you',p:2}
+  {k:'costume',t:'Come in a Halloween costume',sub:'Staff mark it at the photo wall',p:3}
 ];
 const LADDER=[                                   // at = cost. Points are spent on claim; each item once.
-  {at:2,k:'pen',n:'Pen',stock:['pen']},
-  {at:2,k:'pen2',n:'Second pen, another colour',stock:['pen'],after:'pen'},
-  {at:4,k:'mid',n:'Sticker set or postcard',stock:['sticker','postcard']},
+  {at:3,k:'pen',n:'Pen',stock:['pen']},
+  {at:3,k:'pen2',n:'Second pen, another colour',stock:['pen'],after:'pen'},
+  {at:5,k:'mid',n:'Sticker set or postcard',stock:['sticker','postcard']},
   {at:12,k:'key',n:'Keychain',stock:['key']}
 ];
 const wheelPts=()=>{const r=Math.random()*25;return r<15?1:r<23?2:3};   // within the 25% point slots: +1 15%, +2 8%, +3 2%
@@ -514,7 +514,7 @@ function staffSheet(){
 }
 function about(){
   sheet(`<h3>Prototype C</h3><p class="sm">The game with the agreed economy, in the style of Stonk’s build. Everything is simulated: no X, no wallet, no chain.</p>
-    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 2, twice in two colours. Sticker or postcard 4, keychain 12. Finished puzzles give points: Frog 2, the others 1.</small></div></div>
+    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 3, twice in two colours. Sticker or postcard 5, keychain 12. Finished puzzles give points: Frog 2, the others 1.</small></div></div>
     <div class="row"><div class="grow"><b>Pieces</b><small>From booth packs, the wheel and trades. Three puzzles: tote, Frog’s NFT, pants or T-shirt.</small></div></div>
     <div class="row"><div class="grow"><b>Skips</b><small>Dashed orange buttons skip real actions so the flow can be walked in a minute.</small></div></div></div>
     <button class="btn pri" data-act="close">Close</button>`);
@@ -536,7 +536,7 @@ function simGuest(trade){
   pts+=J.filter(j=>jDone(j,P)).reduce((a,j)=>a+j.pts,0);
   return {pts,j:J.map(j=>jDone(j,P)),trades};
 }
-const AFFORD=[[2+4+12,'pen, sticker or postcard, keychain'],[2+2+4+12,'all of it, both pens']];
+const AFFORD=[[3+5+12,'pen, sticker or postcard, keychain'],[3+3+5+12,'all of it, both pens']];
 function simSheet(){
   const N=200,run=t=>{const r=Array.from({length:N},()=>simGuest(t));const pct=f=>Math.round(r.filter(f).length/N*100);
     return {j:J.map((_,i)=>pct(x=>x.j[i])),avg:(r.reduce((a,x)=>a+x.pts,0)/N).toFixed(1),rung:AFFORD.map(([c])=>pct(x=>x.pts>=c)),tr:(r.reduce((a,x)=>a+x.trades,0)/N).toFixed(1)}};
