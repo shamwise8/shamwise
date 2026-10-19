@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bigelow+Rules&family=Eczar:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Matches the Stonk build: Bigelow Rules headings, Eczar body, near-black, cream, orange. */
+/* Matches the Blurry Logics build: Bigelow Rules headings, Eczar body, near-black, cream, orange. */
 :root{--bg:#111;--bg2:#171513;--bg3:#1f1c19;--ink:#ebe6dd;--cream:#f1e7d4;--mu:#a9a39a;--mu2:#77716a;--or:#f07a24;--or2:#ff9d55;--red:#e6212f;--gr:#8fd0a2;--pu:#b394ea;--teal:#5cc2b8;--ln:rgba(241,231,212,.12);--ln2:rgba(241,231,212,.28);--spook:'Bigelow Rules',Georgia,serif;--serif:'Eczar',Georgia,serif}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.45 var(--serif);-webkit-text-size-adjust:100%}
@@ -506,7 +506,7 @@ function handover(k){
 let staffTimer=null;
 function staffSheet(){
   const left=300-Math.floor(Date.now()/1000)%300;
-  sheet(`<h3>Staff desk</h3><p class="sm mu">In the real app this is on the team1 and Stonk devices. Staff show a code only after a guest finishes the activity.</p>
+  sheet(`<h3>Staff desk</h3><p class="sm mu">In the real app this is on the team1 and Blurry Logics devices. Staff show a code only after a guest finishes the activity.</p>
     <table class="tbl">${Object.entries(ACT).map(([k,a])=>`<tr><td>${esc(a.n)}</td><td><b>${code(k)}</b></td></tr>`).join('')}<tr><td>Stage QR, at the quest hint</td><td><b>${code('stage')}</b></td></tr><tr><td>Telegram code word</td><td><b>${TGWORD}</b></td></tr></table>
     <p class="xs mu">New codes in <span id="cd">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span></p>
     ${S.in?`<div class="rowbtns"><button class="btn" data-act="rskip" data-v="costume" ${S.room.costume?'disabled':''}>Mark costume</button><button class="btn" data-act="bonus" ${S.bonus>=CAP.bonus?'disabled':''}>Bonus pack (${S.bonus}/${CAP.bonus})</button></div>`:''}
@@ -515,7 +515,7 @@ function staffSheet(){
   clearInterval(staffTimer);staffTimer=setInterval(()=>{const el=$('#cd');if(!el){clearInterval(staffTimer);return}const l=300-Math.floor(Date.now()/1000)%300;el.textContent=`${Math.floor(l/60)}:${String(l%60).padStart(2,'0')}`;if(l===300)staffSheet()},1000);
 }
 function about(){
-  sheet(`<h3>Prototype C</h3><p class="sm">The game with the agreed economy, in the style of Stonk’s build. Everything is simulated: no X, no wallet, no chain.</p>
+  sheet(`<h3>Prototype C</h3><p class="sm">The game with the agreed economy, in the style of the Blurry Logics build. Everything is simulated: no X, no wallet, no chain.</p>
     <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 3, twice in two colours. Sticker or postcard 6, keychain 15. Finished puzzles give points: the Tote 2, Frog 2, the Pants 1.</small></div></div>
     <div class="row"><div class="grow"><b>Pieces</b><small>From booth packs, the wheel and trades. Three puzzles: tote, Frog’s NFT, pants or T-shirt.</small></div></div>
     <div class="row"><div class="grow"><b>Skips</b><small>Dashed orange buttons skip real actions so the flow can be walked in a minute.</small></div></div></div>
