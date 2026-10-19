@@ -170,15 +170,15 @@ const TRADEMAX=2;
 const okTrade=(give,want)=>!want.startsWith('j3')||give.startsWith('j3');   // Pants pieces only trade for Pants pieces   // simulator: a realistic guest manages about two trades
 const TGWORD='PUMPKIN';
 const FEEDBACK='https://events.team1.network/events/68hamvg';
-const STOCK0={pen:300,sticker:60,postcard:60,key:30,tote:115,pants:45,tee:15,potion:150,lootcard:100};
-const STOCKNAME={pen:'Pen',sticker:'Sticker set',postcard:'Postcard',key:'Keychain',tote:'Tote bag',pants:'Pants',tee:'T-shirt',potion:'Potion',lootcard:'Grotto lootbox card'};
+const STOCK0={pen:300,sticker:60,postcard:60,key:30,tote:115,pants:45,tee:15,potion:150,lootcard:100,keyrev:50};
+const STOCKNAME={pen:'Pen',sticker:'Sticker set',postcard:'Postcard',key:'Keychain',tote:'Tote bag',pants:'Pants',tee:'T-shirt',potion:'Potion',lootcard:'Grotto lootbox card',keyrev:'Review keychain'};
 
 /* ================= State ================= */
 const $=s=>document.querySelector(s);
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const hex=n=>Array.from({length:n},()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join('');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const fresh=()=>({pzb:{},in:false,h:'',wallet:'',tab:'home',pts:0,spins:0,x:{},xs:{},room:{},bonus:0,pieces:{},acts:{},claims:{},mid:'',top:'',potWon:0,potDrank:0,extra:0,nft:'',log:[],lootcard:false});
+const fresh=()=>({rev:0,pzb:{},in:false,h:'',wallet:'',tab:'home',pts:0,spins:0,x:{},xs:{},room:{},bonus:0,pieces:{},acts:{},claims:{},mid:'',top:'',potWon:0,potDrank:0,extra:0,nft:'',log:[],lootcard:false});
 let S=load()||fresh(),G=loadG()||{...STOCK0},wheelRot=0,spinning=false;
 function load(){try{return JSON.parse(localStorage.getItem('hwC'))}catch(_){return null}}
 function loadG(){try{return JSON.parse(localStorage.getItem('hwC_stock'))}catch(_){return null}}
@@ -208,12 +208,12 @@ function tile(id,big){
 }
 
 /* ================= Render ================= */
-const TABS=[['home','home'],['tasks','tasks'],['spin','spin'],['puzzles','puzzles'],['claims','claims']];
+const TABS=[['home','home'],['tasks','tasks'],['spin','spin'],['puzzles','puzzles'],['claims','claims'],['review','review']];
 function render(){
   $('#top').innerHTML=`<div class="logo"><small>AVALANCHE</small><b>Halloween</b></div>
     <div class="me">${S.in?`<span class="pill or">${S.pts} pts</span><span class="pill">${S.spins} spin${S.spins===1?'':'s'}</span><button class="who" data-act="wallet">${esc(S.h)}</button>`:`<button class="pill" data-act="login">connect X</button>`}</div>`;
   $('#tabs').innerHTML=TABS.map(([k,l])=>`<button data-act="tab" data-v="${k}" ${S.tab===k?'aria-current="page"':''}>${l}</button>`).join('');
-  const V={home:vHome,tasks:vTasks,spin:vSpin,puzzles:vPuzzles,claims:vClaims}[S.tab]||vHome;
+  const V={home:vHome,tasks:vTasks,spin:vSpin,puzzles:vPuzzles,claims:vClaims,review:vReview}[S.tab]||vHome;
   $('#main').innerHTML=V();
   if(S.tab==='spin')drawWheel();
   save();
@@ -314,7 +314,18 @@ function vClaims(){
     <section><div class="hdr"><span>Points</span><small class="mu">${S.pts} pts</small></div><div class="list">${lad}</div></section>
     <section><div class="hdr"><span>Puzzles</span><small class="mu">${J.filter(jDone).length}/3</small></div><div class="list">${pz}</div></section>
     <section><div class="hdr"><span>Potions</span></div><div class="list">${pots}</div></section>
-    <section><div class="hdr"><span>Feedback</span></div><a class="row" href="${FEEDBACK}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="ic">✎</span><div class="grow"><b>Review the event</b><small>One keychain per guest, outside the points. 50 for reviews.</small></div><div class="end"><span>Review ↗</span></div></a></section>`;
+    <section><div class="hdr"><span>Feedback</span></div><button class="row" data-act="tab" data-v="review"><span class="ic">${S.rev>=3?'✓':'✎'}</span><span class="grow"><b>Review the event</b><small>A keychain outside the points. ${G.keyrev} left.</small></span><span class="end">${S.rev>=3?'<small>Collected</small>':'<span>Review tab</span>'}</span></button></section>`;
+}
+
+function vReview(){
+  const r=S.rev||0,step=(n,t,sub,state,btn)=>`<div class="row ${state==='done'?'done':''}"><span class="num" style="width:24px;font-size:13px;color:var(--mu)">0${n}</span><div class="grow"><b>${t}</b><small>${sub}</small></div><div class="end">${btn}</div></div>`;
+  return `<section class="center"><h2>Review.<br>Get a treat.</h2><p class="mu">A team1 keychain for your honest review. One per guest, ${G.keyrev} left.</p></section>
+    ${S.in?`<section><div class="list">
+      ${step(1,'Write a review','On the team1 events page for this night',r>=1?'done':'',r>=1?'<small>Done</small>':`<a class="btn" style="padding:6px 12px;width:auto;text-decoration:none" href="${FEEDBACK}" target="_blank" rel="noopener" data-act="revopen">Write ↗</a>`)}
+      ${step(2,'Add a screenshot','So staff can see it’s posted',r>=2?'done':'',r>=2?'<small>Added</small>':r>=1?`<label class="btn" style="padding:6px 12px;width:auto" for="revshot">Add</label><input type="file" id="revshot" accept="image/*" hidden>`:'<small>After step 1</small>')}
+      ${step(3,'Collect your keychain','Show this tab at the merch desk',r>=3?'done':'',r>=3?'<small>Collected</small>':r>=2?`<button class="btn or" style="padding:6px 12px;width:auto" data-act="revshow">Show</button>`:'<small>After step 2</small>')}
+    </div>${r<2?`<button class="btn proto" data-act="revskip">Prototype: skip, mark the review written</button>`:''}</section>`:gate('leave a review')}
+    <section><p class="xs mu">The review keychain sits outside the points. Open question: one keychain per guest whichever way, or one from the review and one from points.</p></section>`;
 }
 
 /* ================= Flows ================= */
@@ -578,11 +589,16 @@ document.addEventListener('click',e=>{
     case 'staff':staffSheet();break;
     case 'bonus':if(S.bonus<CAP.bonus){S.bonus++;openPack('bonus',true)}break;
     case 'about':about();break;
+    case 'revopen':setTimeout(()=>{if((S.rev||0)<1){S.rev=1;render()}},400);break;
+    case 'revskip':S.rev=2;render();toast('Review marked written');break;
+    case 'revshow':sheet(`<h3>Show this at the merch desk</h3><div class="code">Review keychain</div><p class="sm mu" style="text-align:center">${esc(S.h)}</p><button class="btn proto" data-act="revhand">Prototype: staff hands it over</button>`);break;
+    case 'revhand':if(G.keyrev>0)G.keyrev--;S.rev=3;close();render();toast('Collected');break;
     case 'sim':simSheet();break;
     case 'resetme':S={...fresh(),in:S.in,h:S.h,wallet:S.wallet};wheelRot=0;close();render();toast('Progress reset. Still signed in.');break;
     case 'reset':S=fresh();G={...STOCK0};wheelRot=0;close();render();toast('Prototype reset');break;
   }
 });
+document.addEventListener('change',e=>{if(e.target.id==='revshot'&&e.target.files&&e.target.files[0]){S.rev=2;render();toast('Screenshot added')}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 render();
 })();
