@@ -131,9 +131,9 @@ footer.proto button{font-size:14px;color:var(--or2);border:1px dashed rgba(240,1
 /* ================= Config: the agreed economy ================= */
 const EVENT={date:'31 Oct',venue:'Zilla Space',hosts:'team1 Thailand × Bitkub'};
 const J=[
-  {id:'j1',n:'The Tote',reward:'team1 tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
-  {id:'j2',n:'team1 TH, by Frog',reward:'Collectible NFT of Frog’s illustration',c:['#b394ea','#2b1d48'],pieces:['Top left','Top right','Bottom left','Bottom right'],egg:true},
-  {id:'j3',n:'The Pants',reward:'Pants, or a T-shirt when pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto seal']}
+  {id:'j1',pts:1,n:'The Tote',reward:'team1 tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
+  {id:'j2',pts:2,n:'team1 TH, by Frog',reward:'Collectible NFT of Frog’s illustration',c:['#b394ea','#2b1d48'],pieces:['Top left','Top right','Bottom left','Bottom right'],egg:true},
+  {id:'j3',pts:1,n:'The Pants',reward:'Pants, or a T-shirt when pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto seal']}
 ];
 const SEAL='j3-3';                       // only from Grotto activities, cannot be traded
 const ACT={
@@ -160,7 +160,7 @@ const LADDER=[                                   // at = cost. Points are spent 
   {at:2,k:'pen',n:'Pen',stock:['pen']},
   {at:2,k:'pen2',n:'Second pen, another colour',stock:['pen'],after:'pen'},
   {at:4,k:'mid',n:'Sticker set or postcard',stock:['sticker','postcard']},
-  {at:10,k:'key',n:'Keychain',stock:['key']}
+  {at:12,k:'key',n:'Keychain',stock:['key']}
 ];
 const wheelPts=()=>{const r=Math.random()*25;return r<15?1:r<23?2:3};   // within the 25% point slots: +1 15%, +2 8%, +3 2%
 const SEG=['piece','point','piece','potion','piece','point','piece','boo','piece','point','piece','potion','piece','point','spin','piece','point','piece','potion','boo']; // 20 slots: 45/25/15/10/5
@@ -170,7 +170,7 @@ const TRADEMAX=2;
 const okTrade=(give,want)=>!want.startsWith('j3')||give.startsWith('j3');   // Pants pieces only trade for Pants pieces   // simulator: a realistic guest manages about two trades
 const TGWORD='PUMPKIN';
 const FEEDBACK='https://events.team1.network/events/68hamvg';
-const STOCK0={pen:300,sticker:60,postcard:60,key:30,tote:115,pants:40,tee:15,potion:150,lootcard:100};
+const STOCK0={pen:300,sticker:60,postcard:60,key:30,tote:115,pants:45,tee:15,potion:150,lootcard:100};
 const STOCKNAME={pen:'Pen',sticker:'Sticker set',postcard:'Postcard',key:'Keychain',tote:'Tote bag',pants:'Pants',tee:'T-shirt',potion:'Potion',lootcard:'Grotto lootbox card'};
 
 /* ================= State ================= */
@@ -193,8 +193,8 @@ const allIds=()=>J.flatMap(j=>j.pieces.map((_,i)=>j.id+'-'+i));
 function toast(m){const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
 function sheet(html){$('#layer').innerHTML=`<div class="sheetwrap" data-act="bg"><div class="sheet" role="dialog" aria-modal="true"><button class="x" data-act="close" aria-label="Close">×</button>${html}</div></div>`}
 function close(){$('#layer').innerHTML=''}
-const PZPTS=2;   // points for each finished puzzle, once
-function checkPuzzles(){S.pzb=S.pzb||{};J.forEach(j=>{if(jDone(j)&&!S.pzb[j.id]){S.pzb[j.id]=1;addPts(PZPTS,'Finished '+j.n);setTimeout(()=>toast(`${j.n} finished · +${PZPTS} points`),400)}})}
+// points for each finished puzzle, once: see pts on each puzzle (Frog 2, the others 1)
+function checkPuzzles(){S.pzb=S.pzb||{};J.forEach(j=>{if(jDone(j)&&!S.pzb[j.id]){S.pzb[j.id]=1;addPts(j.pts,'Finished '+j.n);setTimeout(()=>toast(`${j.n} finished · +${j.pts} point${j.pts>1?'s':''}`),400)}})}
 function nextRung(){return LADDER.find(r=>!r.after&&!S.claims[r.k]&&S.pts<r.at)}
 function addPts(n,why){
   const before=S.pts;S.pts+=n;S.log.unshift(`+${n} pt · ${why}`);
@@ -231,7 +231,7 @@ function vHome(){
     </section>`;
   const how=`<section><div class="steps3">
       <div class="row"><span class="num">01</span><div class="grow"><b>Play</b><small>Finish an activity at a booth. Staff show you a code for a pack of 2 pieces.</small></div></div>
-      <div class="row"><span class="num">02</span><div class="grow"><b>Collect</b><small>Complete a four-piece puzzle to unlock its treat and 2 points. Trade your doubles.</small></div></div>
+      <div class="row"><span class="num">02</span><div class="grow"><b>Collect</b><small>Complete a four-piece puzzle to unlock its treat and bonus points. Trade your doubles.</small></div></div>
       <div class="row"><span class="num">03</span><div class="grow"><b>Earn</b><small>Tasks give points for merch, and spins for the wheel.</small></div></div>
     </div><p class="xs mu center" style="text-align:center">${esc(EVENT.date)} · ${esc(EVENT.venue)} · ${esc(EVENT.hosts)}</p></section>`;
   if(!S.in)return intro+how;
@@ -400,13 +400,20 @@ function drawPiece(k,P=S.pieces){
   const missing=ids.filter(id=>!has(id,P));
   return missing.length?rnd(missing):rnd(ids);          // guided: the main piece fills a gap until the set is done
 }
-const WEIGHT={j1:.55,j2:.28,j3:.17};                                  // random pieces lean to the tote, away from the crown
+const WEIGHT={j1:.55,j2:.28,j3:.17};
+const GAPFILL=.5;   // share of wheel pieces that fill a gap: the tote and Frog first, the pants once both are done
+function wheelPiece(P=S.pieces){
+  if(Math.random()<GAPFILL){const miss=allIds().filter(id=>!has(id,P)&&id!==SEAL);
+    const early=miss.filter(id=>!id.startsWith('j3')),late=miss.filter(id=>id.startsWith('j3'));
+    if(early.length)return rnd(early);if(late.length)return rnd(late)}
+  return randomPiece();
+}                                  // random pieces lean to the tote, away from the crown
 function randomPiece(){let r=Math.random(),j='j3';for(const [k,w] of Object.entries(WEIGHT)){if(r<w){j=k;break}r-=w}
   return rnd(allIds().filter(id=>id.startsWith(j)&&id!==SEAL))}       // can repeat: doubles are for trading
 function openPack(k,bonus){
   const a=ACT[k]||{n:'Staff bonus',main:rnd(J).id};
   if(!bonus){if(S.acts[k])return toast('You already opened this activity’s pack');S.acts[k]=1}
-  const p1=drawPiece(k),p2=randomPiece();
+  const p1=drawPiece(k),p2=k==='crew'?drawPiece(k,{...S.pieces,[p1]:(S.pieces[p1]||0)+1}):randomPiece();   // the hidden crew pack: 2 Frog pieces you lack
   sheet(`<div class="pack"><small>HALLOWEEN PACK</small>${esc(a.n)}<small>2 PIECES</small></div><button class="jag full" data-act="reveal" data-v="${p1},${p2}${a.grotto?',G':''}">Reveal</button>`);
 }
 function reveal(v){
@@ -453,7 +460,7 @@ function doSpin(){
 }
 function land(k){
   let body='';
-  if(k==='piece'){const id=randomPiece();S.pieces[id]=(S.pieces[id]||0)+1;checkPuzzles();body=`<div class="reveal">${tile(id,1)}</div>${S.pieces[id]>1?'<p class="sm mu" style="text-align:center">A double. Good for trading.</p>':''}`}
+  if(k==='piece'){const id=wheelPiece();S.pieces[id]=(S.pieces[id]||0)+1;checkPuzzles();body=`<div class="reveal">${tile(id,1)}</div>${S.pieces[id]>1?'<p class="sm mu" style="text-align:center">A double. Good for trading.</p>':''}`}
   else if(k==='point'){const n=wheelPts();addPts(n,'Wheel');body=`<p class="code">+${n} point${n>1?'s':''}</p>`}
   else if(k==='potion'){S.potWon++;G.potion=Math.max(0,G.potion-1);body=`<p class="code" style="color:var(--teal)">Potion ×${S.potWon-S.potDrank}</p><p class="sm mu" style="text-align:center">A special drink at the counter, no points needed. Show it from Claims.${S.potWon-S.potDrank>=CAP.potion?` That’s the most you can hold. Drink one to win more.`:''}</p>`}
   else if(k==='spin'){S.extra++;S.spins++;body='<p class="code">+1 spin</p>'}
@@ -496,7 +503,7 @@ function staffSheet(){
 }
 function about(){
   sheet(`<h3>Prototype C</h3><p class="sm">The game with the agreed economy, in the style of Stonk’s build. Everything is simulated: no X, no wallet, no chain.</p>
-    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 2, twice in two colours. Sticker or postcard 4, keychain 10. Finished puzzles give 2 points each.</small></div></div>
+    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 2, twice in two colours. Sticker or postcard 4, keychain 12. Finished puzzles give points: Frog 2, the others 1.</small></div></div>
     <div class="row"><div class="grow"><b>Pieces</b><small>From booth packs, the wheel and trades. Three puzzles: tote, Frog’s NFT, pants or T-shirt.</small></div></div>
     <div class="row"><div class="grow"><b>Skips</b><small>Dashed orange buttons skip real actions so the flow can be walked in a minute.</small></div></div></div>
     <button class="btn pri" data-act="close">Close</button>`);
@@ -506,19 +513,19 @@ function about(){
 function simGuest(trade){
   const P={},add=id=>P[id]=(P[id]||0)+1;let pts=0,spins=0,pot=0,extra=0;
   XT.forEach(t=>{pts+=t.p;spins+=t.s});RT.forEach(t=>{if(t.k!=='trade')pts+=t.p});
-  Object.keys(ACT).forEach(k=>{add(drawPiece(k,P));add(randomPiece())});
+  Object.keys(ACT).forEach(k=>{add(drawPiece(k,P));add(k==='crew'?drawPiece(k,P):randomPiece())});
   while(spins>0){spins--;const ok=k=>!(k==='potion'&&pot>=CAP.potion)&&!(k==='spin'&&extra>=CAP.spin);const k=rnd(SEG.filter(ok));
-    if(k==='piece')add(randomPiece());else if(k==='point')pts+=wheelPts();else if(k==='potion')pot++;else if(k==='spin'){extra++;spins++}}
+    if(k==='piece')add(wheelPiece(P));else if(k==='point')pts+=wheelPts();else if(k==='potion')pot++;else if(k==='spin'){extra++;spins++}}
   let trades=0;
   if(trade){let go=true;while(go&&trades<TRADEMAX){go=false;const want=J.flatMap(j=>j.pieces.map((_,i)=>j.id+'-'+i)).filter(id=>!has(id,P)&&id!==SEAL);
     const dups=Object.keys(P).filter(id=>P[id]>1&&id!==SEAL);let pair=null;
     for(const w of [...want.filter(id=>id.startsWith('j3')),...want.filter(id=>id.startsWith('j1')),...want.filter(id=>id.startsWith('j2'))]){const d=dups.find(id=>okTrade(id,w));if(d){pair=[d,w];break}}
     if(pair){P[pair[0]]--;add(pair[1]);trades++;go=true}}
     if(trades)pts++}
-  pts+=J.filter(j=>jDone(j,P)).length*PZPTS;
+  pts+=J.filter(j=>jDone(j,P)).reduce((a,j)=>a+j.pts,0);
   return {pts,j:J.map(j=>jDone(j,P)),trades};
 }
-const AFFORD=[[2+4+10,'pen, sticker or postcard, keychain'],[2+2+4+10,'all of it, both pens']];
+const AFFORD=[[2+4+12,'pen, sticker or postcard, keychain'],[2+2+4+12,'all of it, both pens']];
 function simSheet(){
   const N=200,run=t=>{const r=Array.from({length:N},()=>simGuest(t));const pct=f=>Math.round(r.filter(f).length/N*100);
     return {j:J.map((_,i)=>pct(x=>x.j[i])),avg:(r.reduce((a,x)=>a+x.pts,0)/N).toFixed(1),rung:AFFORD.map(([c])=>pct(x=>x.pts>=c)),tr:(r.reduce((a,x)=>a+x.trades,0)/N).toFixed(1)}};
