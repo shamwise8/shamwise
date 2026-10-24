@@ -131,9 +131,9 @@ footer.proto button{font-size:14px;color:var(--or2);border:1px dashed rgba(240,1
 /* ================= Config: the agreed economy ================= */
 const EVENT={date:'30 Oct',venue:'Zilla Space',hosts:'team1 Thailand × Bitkub'};
 const J=[
-  {id:'j1',pts:2,n:'The Tote',reward:'team1 tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
-  {id:'j2',pts:2,n:'team1 TH, by Frog',reward:'Collectible NFT of Frog’s illustration',c:['#b394ea','#2b1d48'],pieces:['Top left','Top right','Bottom left','Bottom right'],egg:true},
-  {id:'j3',pts:1,n:'The Pants',reward:'Pants, or a T-shirt when pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto piece']}
+  {id:'j1',pts:2,n:'Pumpkin Patch',reward:'NFT + tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
+  {id:'j2',pts:2,n:'Halloween Crew',reward:'Collectible artwork NFT, by Frog',c:['#b394ea','#2b1d48'],pieces:['Top left','Top right','Bottom left','Bottom right'],egg:true},
+  {id:'j3',pts:1,n:'Midnight Manor',reward:'NFT + pants, T-shirt after pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto piece']}
 ];
 const SEAL='j3-3';                       // the Grotto piece: from either Grotto activity, cannot be traded
 const ACT={
@@ -155,7 +155,7 @@ const XT=[
 const RT=[
   {k:'stage',t:'Scan the stage QR',sub:'At the quest hints, 20:15 · a pack drop too',p:2},
   {k:'tg',t:'Join the team1 Thailand Telegram',sub:'Find the code word pinned in the channel',p:1},
-  {k:'trade',t:'Trade a piece',sub:'Your first trade counts',p:1},
+  {k:'trade',t:'Send a piece',sub:'Give a piece to another guest · first successful send',p:1},
   {k:'costume',t:'Come in a Halloween costume',sub:'Staff mark it at the photo wall',p:2,s:1}
 ];
 const LADDER=[                                   // at = cost. Points are spent on claim; each item once.
@@ -169,7 +169,9 @@ const SEG=['piece','point','piece','potion','piece','point','piece','boo','piece
 const KIND={piece:{l:'Piece',c:'#2a2420',i:'🧩'},point:{l:'+1 point',c:'#7a3a10',i:'★'},potion:{l:'Potion',c:'#174a45',i:'🧪'},boo:{l:'Boo',c:'#232323',i:'👻'},spin:{l:'+1 spin',c:'#3b2a5c',i:'↻'}};
 const CAP={potion:3,spin:2,bonus:2};   // potion: most a guest can hold at once. Drinking one frees a slot. Try 4.
 const TRADEMAX=2;
-const okTrade=(give,want)=>!want.startsWith('j3')||give.startsWith('j3');   // Pants pieces only trade for Pants pieces   // simulator: a realistic guest manages about two trades
+const FREESPIN=1;   // Blurry build: one free spin on entry
+const RECV=2;      // simulator: a guest receives at most 2 pieces from others
+const okTrade=()=>true;   // Blurry build: one-way transfers, no swap rules   // Pants pieces only trade for Pants pieces   // simulator: a realistic guest manages about two trades
 const TGWORD='PUMPKIN';
 const FEEDBACK='https://events.team1.network/events/68hamvg';
 const STOCK0={pen:300,sticker:60,postcard:60,key:30,tote:115,pants:45,tee:15,potion:150,lootcard:100,keyrev:50};
@@ -296,8 +298,8 @@ function vPuzzles(){
   return `<section class="center"><h2>Puzzles</h2><p class="mu">Finish an activity, get the code from staff, open a pack of 2 pieces. One pack per activity.</p>
       ${S.in?`<button class="jag" data-act="code">Enter a booth code</button>`:`<button class="jag" data-act="login">Join event</button>`}</section>
     <section><div class="pzwrap">${J.map(card).join('')}</div>
-      ${S.in?`<button class="btn" data-act="trade" ${anyDup?'':'disabled'}>${anyDup?'Trade a double':'Trade a double · you have none yet'}</button>`:''}
-      <p class="xs mu">The Grotto piece comes from playing any Grotto game, on the desktop or your phone, and cannot be traded. Pants pieces only trade for other Pants pieces.</p></section>
+      ${S.in?`<button class="btn" data-act="trade">Send or ask for a piece</button>`:''}
+      <p class="xs mu">The Grotto piece comes from playing any Grotto game, on the desktop or your phone, and cannot be sent. Other pieces move one way: send or ask.</p></section>
     ${S.in?`<section><div class="hdr"><span>Activities</span><small class="mu">${Object.keys(S.acts).length}/${Object.keys(ACT).length}</small></div><div class="list">${acts}</div></section>`:''}`;
 }
 
@@ -345,9 +347,9 @@ function xauth(){
 function enter(){
   let h=($('#hh')&&$('#hh').value||'').trim().replace(/^@/,'')||'guest'+Math.floor(Math.random()*900+100);
   h='@'+h.replace(/[^A-Za-z0-9_]/g,'').slice(0,15);
-  S.in=true;S.h=h;S.wallet='0x'+hex(40);
-  const steps=[`Signed in as ${esc(h)} on X`,`Avalanche wallet created · ${S.wallet.slice(0,6)}…${S.wallet.slice(-4)}`,'Gas covered by team1, so you never need AVAX','Next: finish an activity or do a task'];
-  sheet(`<h3>Entering the haunt…</h3><div class="check">${steps.map((s,i)=>`<div style="animation-delay:${i*.45}s"><b>${i<3?'✓':'→'}</b>${s}</div>`).join('')}</div>`);
+  S.in=true;S.h=h;S.wallet='0x'+hex(40);S.spins+=FREESPIN;
+  const steps=[`Signed in as ${esc(h)} on X`,`Avalanche wallet created · ${S.wallet.slice(0,6)}…${S.wallet.slice(-4)}`,'Gas covered by team1, so you never need AVAX',`Your first spin is free`,'Next: finish an activity or do a task'];
+  sheet(`<h3>Entering the haunt…</h3><div class="check">${steps.map((s,i)=>`<div style="animation-delay:${i*.45}s"><b>${i<4?'✓':'→'}</b>${s}</div>`).join('')}</div>`);
   setTimeout(()=>{close();S.tab='home';render()},2200);
 }
 function walletSheet(){
@@ -375,7 +377,7 @@ function xcheck(k,skipped){
   setTimeout(()=>{S.x[k]=1;S.spins+=t.s;addPts(t.p,t.t);close();render();toast(`Done · +${t.p} pt${t.p>1?'s':''}${t.s?`, +${t.s} spin${t.s>1?'s':''}`:''}`)},skipped?300:1100);
 }
 function rtask(k){
-  if(k==='trade'){S.tab='puzzles';render();toast('Trade a double in Puzzles');return}
+  if(k==='trade'){S.tab='puzzles';render();toast('Send a piece from Puzzles');return}
   if(k==='stage')return sheet(`<h3>Scan the stage QR</h3><p class="sm mu">It appears on the LED wall once, at the quest hint after the main sessions. Point your camera at it, or type the code.</p>
     <input class="in" id="rc" inputmode="numeric" placeholder="Stage code"><button class="btn pri" data-act="rsubmit" data-v="stage">Submit</button><button class="btn proto" data-act="rskip" data-v="stage">Prototype: skip, mark it done</button>`);
   if(k==='tg')return sheet(`<h3>Join our Telegram</h3><p class="sm mu">The code word is pinned in the team1 Thailand channel.</p>
@@ -433,7 +435,7 @@ function randomPiece(){let r=Math.random(),j='j3';for(const [k,w] of Object.entr
 function openPack(k,bonus){
   const a=ACT[k]||{n:'Staff bonus',main:rnd(J).id};
   if(!bonus){if(S.acts[k])return toast('You already opened this activity’s pack');S.acts[k]=1}
-  const p1=drawPiece(k),p2=k==='crew'?drawPiece(k,{...S.pieces,[p1]:(S.pieces[p1]||0)+1}):randomPiece();   // the hidden crew pack: 2 Frog pieces you lack
+  const p1=bonus?stagePiece():drawPiece(k),p2=k==='crew'?drawPiece(k,{...S.pieces,[p1]:(S.pieces[p1]||0)+1}):randomPiece();   // the hidden crew pack: 2 Frog pieces you lack
   sheet(`<div class="pack"><small>HALLOWEEN PACK</small>${esc(a.n)}<small>2 PIECES</small></div><button class="jag full" data-act="reveal" data-v="${p1},${p2}${a.grotto?',G':''}">Reveal</button>`);
 }
 function reveal(v){
@@ -441,28 +443,30 @@ function reveal(v){
   const card=g&&!S.lootcard&&G.lootcard>0;if(card){S.lootcard=true;G.lootcard--}
   const doneNow=J.filter(j=>jDone(j)&&[p1,p2].some(id=>id.startsWith(j.id)));
   sheet(`<h3 style="text-align:center">You got</h3><div class="reveal">${tile(p1,1)}${tile(p2,1)}</div>
-    ${[p1,p2].filter(id=>S.pieces[id]>1).length?'<p class="sm mu" style="text-align:center">A double. Trade it for a piece you need.</p>':''}
+    ${[p1,p2].filter(id=>S.pieces[id]>1).length?'<p class="sm mu" style="text-align:center">A double. Send it to someone who needs it.</p>':''}
     ${doneNow.map(j=>`<p class="sm ok" style="text-align:center">${esc(j.n)} complete. Claim it in Claims.</p>`).join('')}
     ${card?'<div class="note">Staff: hand over a Grotto lootbox card. Redeem it in The Grotto.</div>':''}
     <button class="btn pri" data-act="donepack">Done</button>`);
   render();
 }
 function tradeSheet(){
-  const dups=Object.entries(S.pieces).filter(([id,n])=>n>1&&id!==SEAL).map(([id])=>id);
+  const mine=Object.entries(S.pieces).filter(([id,n])=>n>0&&id!==SEAL).map(([id])=>id);
   const want=allIds().filter(id=>!has(id)&&id!==SEAL);
-  if(!want.length)return toast('You have every tradable piece already');
-  sheet(`<h3>Trade a double</h3><p class="sm mu">In the real app you scan another guest’s code and both agree. Here a ghost guest takes your offer. Pants pieces only trade for other Pants pieces.</p>
-    <p class="xs mu">You give</p><div class="sel" id="tg1">${dups.map((id,i)=>`<button data-act="pick" data-g="give" data-v="${id}" aria-pressed="${i===0}">${esc(pieceName(id))}<br><small class="mu">${esc(pieceJ(id).n)}</small></button>`).join('')}</div>
-    <p class="xs mu">You get</p><div class="sel" id="tg2">${want.map((id,i)=>`<button data-act="pick" data-g="want" data-v="${id}" aria-pressed="${i===0}">${esc(pieceName(id))}<br><small class="mu">${esc(pieceJ(id).n)}</small></button>`).join('')}</div>
-    <button class="btn pri" data-act="dotrade">Trade with @night_owl</button>`);
+  sheet(`<h3>Send or ask</h3><p class="sm mu">One way, as in the Blurry build. Sending gives the piece away for good. The Grotto piece can’t be sent. Your first successful send earns 1 point.</p>
+    <p class="xs mu">Send one of yours to @night_owl</p><div class="sel">${mine.map((id,i)=>`<button data-act="pick" data-g="give" data-v="${id}" aria-pressed="${i===0}">${esc(pieceName(id))}${S.pieces[id]>1?` ×${S.pieces[id]}`:''}<br><small class="mu">${esc(pieceJ(id).n)}</small></button>`).join('')||'<p class="xs mu">No pieces to send yet.</p>'}</div>
+    <button class="btn" data-act="dotrade" ${mine.length?'':'disabled'}>Send it</button>
+    <p class="xs mu">Ask the room for a piece you’re missing</p><div class="sel">${want.map((id,i)=>`<button data-act="pick" data-g="want" data-v="${id}" aria-pressed="${i===0}">${esc(pieceName(id))}<br><small class="mu">${esc(pieceJ(id).n)}</small></button>`).join('')}</div>
+    <button class="btn pri" data-act="doask" ${want.length?'':'disabled'}>Ask</button>`);
 }
 function doTrade(){
-  const give=document.querySelector('[data-g="give"][aria-pressed="true"]'),want=document.querySelector('[data-g="want"][aria-pressed="true"]');
-  if(!give||!want)return;
-  if(!okTrade(give.dataset.v,want.dataset.v))return toast('Pants pieces only trade for other Pants pieces');
-  S.pieces[give.dataset.v]--;S.pieces[want.dataset.v]=(S.pieces[want.dataset.v]||0)+1;checkPuzzles();
-  const first=!S.room.trade;if(first){S.room.trade=1;addPts(1,'First trade')}
-  close();render();toast(`Traded · you got ${pieceName(want.dataset.v)}${first?' · +1 pt':''}`);
+  const give=document.querySelector('[data-g="give"][aria-pressed="true"]');if(!give)return;
+  S.pieces[give.dataset.v]--;const first=!S.room.trade;if(first){S.room.trade=1;addPts(1,'First send')}
+  close();render();toast(`Sent ${pieceName(give.dataset.v)}${first?' · +1 pt':''}`);
+}
+function doAsk(){
+  const want=document.querySelector('[data-g="want"][aria-pressed="true"]');if(!want)return;
+  if(Math.random()<.5){S.pieces[want.dataset.v]=(S.pieces[want.dataset.v]||0)+1;checkPuzzles();close();render();toast(`@night_owl sent you ${pieceName(want.dataset.v)}`)}
+  else{close();toast('No one has a spare right now. Try again later.')}
 }
 
 /* wheel */
@@ -493,16 +497,18 @@ function land(k){
 function claim(k){
   if(k==='mid')return sheet(`<h3>Pick one</h3><div class="rowbtns"><button class="btn" data-act="pickmid" data-v="sticker" ${G.sticker?'':'disabled'}>Sticker set<br><small class="mu">${G.sticker} left</small></button><button class="btn" data-act="pickmid" data-v="postcard" ${G.postcard?'':'disabled'}>Postcard<br><small class="mu">${G.postcard} left</small></button></div>`);
   if(k==='pz_j3')return sheet(`<h3>Pick one</h3><div class="rowbtns"><button class="btn" data-act="picktop" data-v="pants" ${G.pants?'':'disabled'}>Pants<br><small class="mu">${G.pants} left</small></button><button class="btn" data-act="picktop" data-v="tee" ${G.tee?'':'disabled'}>T-shirt<br><small class="mu">${G.tee} left</small></button></div>`);
-  if(k==='pz_j2'){S.claims[k]='minting';sheet(`<h3>Minting…</h3><div class="check"><div><b>✓</b>Frog’s illustration, assembled from your 4 pieces</div><div style="animation-delay:.5s"><b>✓</b>Minting to ${S.wallet.slice(0,6)}…${S.wallet.slice(-4)}</div><div style="animation-delay:1s"><b>✓</b>Gas covered by team1</div></div>`);
-    setTimeout(()=>{S.nft='0x'+hex(4)+'…'+hex(4);S.claims[k]='done';render();sheet(`<h3>It’s yours</h3><p class="sm mu">Frog’s team1 Thailand illustration is in your wallet. Holders hear about our next event first.</p><div class="note">Prototype: simulated mint.</div><button class="btn pri" data-act="close">Nice</button>`)},1700);return}
+  if(k==='pz_j2'){redeem(k);S.claims[k]='minting';sheet(`<h3>Minting…</h3><div class="check"><div><b>✓</b>Halloween Crew artwork by Frog, from your 4 pieces</div><div style="animation-delay:.5s"><b>✓</b>Minting to ${S.wallet.slice(0,6)}…${S.wallet.slice(-4)}</div><div style="animation-delay:1s"><b>✓</b>Gas covered by team1</div></div>`);
+    setTimeout(()=>{S.nft='0x'+hex(4)+'…'+hex(4);S.claims[k]='done';render();sheet(`<h3>It’s yours</h3><p class="sm mu">Frog’s Halloween Crew artwork is in your wallet. Holders hear about our next event first.</p><div class="note">Prototype: simulated mint.</div><button class="btn pri" data-act="close">Nice</button>`)},1700);return}
   showStaff(k);
 }
 const ITEM={pen:'Pen',pen2:'Pen · second colour',key:'Keychain',pz_j1:'Tote bag'};
+function redeem(k){const j=J.find(x=>'pz_'+x.id===k);if(!j)return;j.pieces.forEach((_,i)=>S.pieces[j.id+'-'+i]--);S.nfts=(S.nfts||0)+1}   // uses one copy of each piece, mints the NFT
 function showStaff(k,item){
   const L=LADDER.find(r=>r.k===k);
   if(L){if(S.claims[k])return;if(S.pts<L.at)return toast('Not enough points');S.pts-=L.at;S.log.unshift(`-${L.at} pts · ${L.n}`)}
+  if(k.startsWith('pz_'))redeem(k);
   S.claims[k]='shown';const n=item?STOCKNAME[item]:ITEM[k]||k;S.claims[k+'_item']=item||'';render();
-  sheet(`<h3>Show this at the merch desk</h3><div class="code">${esc(n)}</div><p class="sm mu" style="text-align:center">${esc(S.h)}</p><button class="btn proto" data-act="handover" data-v="${k}">Prototype: staff hands it over</button>`);
+  sheet(`<h3>Show this at the merch desk</h3><div class="code">${esc(n)}</div><p class="sm mu" style="text-align:center">${esc(S.h)}${k.startsWith('pz_')?' · the puzzle NFT is minted to your wallet':''}</p><button class="btn proto" data-act="handover" data-v="${k}">Prototype: staff hands it over</button>`);
 }
 function handover(k){
   const item=S.claims[k+'_item']||{pen:'pen',pen2:'pen',key:'key',pz_j1:'tote'}[k];if(item&&G[item]>0)G[item]--;
@@ -523,42 +529,46 @@ function staffSheet(){
   clearInterval(staffTimer);staffTimer=setInterval(()=>{const el=$('#cd');if(!el){clearInterval(staffTimer);return}const l=300-Math.floor(Date.now()/1000)%300;el.textContent=`${Math.floor(l/60)}:${String(l%60).padStart(2,'0')}`;if(l===300)staffSheet()},1000);
 }
 function about(){
-  sheet(`<h3>Prototype C</h3><p class="sm">The game with the agreed economy, in the style of the Blurry Logics build. Everything is simulated: no X, no wallet, no chain.</p>
+  sheet(`<h3>Prototype C</h3><p class="sm">Mirrors the Blurry Logics build as of 24 Oct: free first spin, one-way sends, an NFT for every puzzle. Everything is simulated: no X, no wallet, no chain.</p>
     <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 3, twice in two colours. Sticker or postcard 6, keychain 15. Finished puzzles give points: the Tote 2, Frog 2, the Pants 1.</small></div></div>
-    <div class="row"><div class="grow"><b>Pieces</b><small>From booth packs, the wheel and trades. Three puzzles: tote, Frog’s NFT, pants or T-shirt.</small></div></div>
+    <div class="row"><div class="grow"><b>Pieces</b><small>From booth packs, the wheel, the stage drop and sends. Three puzzles: Pumpkin Patch (tote), Halloween Crew (Frog’s art), Midnight Manor (pants).</small></div></div>
     <div class="row"><div class="grow"><b>Skips</b><small>Dashed orange buttons skip real actions so the flow can be walked in a minute.</small></div></div></div>
     <button class="btn pri" data-act="close">Close</button>`);
 }
 
-/* simulator: 200 guests who do every task and every activity */
-function simGuest(trade){
-  const P={},add=id=>P[id]=(P[id]||0)+1;let pts=0,spins=0,pot=0,extra=0;
+/* simulator: a room of 200 guests who do every task and every activity, with one-way sends between them */
+function simGuest(){
+  const P={},add=id=>P[id]=(P[id]||0)+1;let pts=0,spins=FREESPIN,pot=0,extra=0;
   XT.forEach(t=>{pts+=t.p;spins+=t.s});RT.forEach(t=>{if(t.k!=='trade'){pts+=t.p;spins+=t.s||0}});
   Object.keys(ACT).forEach(k=>{add(drawPiece(k,P));add(k==='crew'?drawPiece(k,P):randomPiece())});
   while(spins>0){spins--;const ok=k=>!(k==='potion'&&pot>=CAP.potion)&&!(k==='spin'&&extra>=CAP.spin);const k=rnd(SEG.filter(ok));
     if(k==='piece')add(wheelPiece(P));else if(k==='point')pts+=wheelPts();else if(k==='potion')pot++;else if(k==='spin'){extra++;spins++}}
   for(let i=0;i<2;i++)add(stagePiece(P));   // the stage drop lands after most spins
-  let trades=0;
-  if(trade){let go=true;while(go&&trades<TRADEMAX){go=false;const want=J.flatMap(j=>j.pieces.map((_,i)=>j.id+'-'+i)).filter(id=>!has(id,P)&&id!==SEAL);
-    const dups=Object.keys(P).filter(id=>P[id]>1&&id!==SEAL);let pair=null;
-    for(const w of [...want.filter(id=>id.startsWith('j3')),...want.filter(id=>id.startsWith('j1')),...want.filter(id=>id.startsWith('j2'))]){const d=dups.find(id=>okTrade(id,w));if(d){pair=[d,w];break}}
-    if(pair){P[pair[0]]--;add(pair[1]);trades++;go=true}}
-    if(trades)pts++}
-  pts+=J.filter(j=>jDone(j,P)).reduce((a,j)=>a+j.pts,0);
-  return {pts,j:J.map(j=>jDone(j,P)),trades};
+  return {P,pts,sent:0,got:0};
+}
+function simRoom(N,sends){
+  const R=Array.from({length:N},simGuest);
+  if(sends){   // one-way: a guest missing a piece receives a spare from someone holding a double, up to RECV each
+    const order=R.map((_,i)=>i).sort(()=>Math.random()-.5);
+    for(const gi of order){const g=R[gi];
+      const want=[...allIds().filter(id=>id.startsWith('j3')),...allIds().filter(id=>id.startsWith('j1')),...allIds().filter(id=>id.startsWith('j2'))].filter(id=>!has(id,g.P)&&id!==SEAL);
+      for(const w of want){if(g.got>=RECV)break;const d=R.find(o=>o!==g&&(o.P[w]||0)>1);if(!d)continue;d.P[w]--;g.P[w]=(g.P[w]||0)+1;g.got++;if(!d.sent)d.pts++;d.sent++}}
+  }
+  R.forEach(g=>{g.done=J.map(j=>jDone(j,g.P));g.pts+=J.filter(j=>jDone(j,g.P)).reduce((a,j)=>a+j.pts,0)});
+  return R;
 }
 const AFFORD=[[3+6+15,'pen, sticker or postcard, keychain'],[3+3+6+15,'all of it, both pens']];
 function simSheet(){
-  const N=200,run=t=>{const r=Array.from({length:N},()=>simGuest(t));const pct=f=>Math.round(r.filter(f).length/N*100);
-    return {j:J.map((_,i)=>pct(x=>x.j[i])),avg:(r.reduce((a,x)=>a+x.pts,0)/N).toFixed(1),rung:AFFORD.map(([c])=>pct(x=>x.pts>=c)),tr:(r.reduce((a,x)=>a+x.trades,0)/N).toFixed(1)}};
+  const N=200,run=t=>{const R=simRoom(N,t);const pct=f=>Math.round(R.filter(f).length/N*100);
+    return {j:J.map((_,i)=>pct(x=>x.done[i])),n:J.map((_,i)=>R.filter(x=>x.done[i]).length),avg:(R.reduce((a,x)=>a+x.pts,0)/N).toFixed(1),rung:AFFORD.map(([c])=>pct(x=>x.pts>=c)),tr:(R.reduce((a,x)=>a+x.got,0)/N).toFixed(1)}};
   const a=run(false),b=run(true);
   const row=(l,x,y)=>`<tr><td>${l}</td><td>${x}</td><td>${y}</td></tr>`;
-  sheet(`<h3>200 guests, all in</h3><p class="sm mu">Each guest does every task and every activity, and spends every spin. Run it a few times: the numbers move with luck.</p>
-    <table class="tbl"><tr><td></td><td class="mu">No trades</td><td class="mu">Up to 2 trades</td></tr>
-    ${J.map((j,i)=>row(`Finish ${esc(j.n)}`,a.j[i]+'%',b.j[i]+'%')).join('')}
+  sheet(`<h3>A room of 200, all in</h3><p class="sm mu">Every guest does every task and activity and spends every spin, with the free first spin. With sends, guests pass spare doubles to people missing them, up to ${RECV} received each. Run it a few times: luck moves the numbers.</p>
+    <table class="tbl"><tr><td></td><td class="mu">No sends</td><td class="mu">With sends</td></tr>
+    ${J.map((j,i)=>row(`Finish ${esc(j.n)}`,`${a.j[i]}% · ${a.n[i]}`,`${b.j[i]}% · ${b.n[i]}`)).join('')}
     ${AFFORD.map(([c,l],i)=>row(`Afford ${l} · ${c} pts`,a.rung[i]+'%',b.rung[i]+'%')).join('')}
-    ${row('Average points',a.avg,b.avg)}${row('Trades per guest',0,b.tr)}</table>
-    <p class="xs mu">Real guests won't all do everything, so treat these as the ceiling. Supply: ${STOCK0.tote} totes, ${STOCK0.pants+STOCK0.tee} pants or T-shirts, ${STOCK0.key} keychains.</p>
+    ${row('Average points',a.avg,b.avg)}${row('Pieces received per guest',0,b.tr)}</table>
+    <p class="xs mu">These are the ceiling: real guests won’t all do everything. Stock: ${STOCK0.tote} totes, ${STOCK0.pants} pants + ${STOCK0.tee} T-shirts, ${STOCK0.key} keychains.</p>
     <div class="rowbtns"><button class="btn" data-act="sim">Run again</button><button class="btn pri" data-act="close">Close</button></div>`);
 }
 
@@ -590,6 +600,7 @@ document.addEventListener('click',e=>{
     case 'trade':tradeSheet();break;
     case 'pick':document.querySelectorAll(`[data-g="${el.dataset.g}"]`).forEach(b=>b.setAttribute('aria-pressed',b===el));break;
     case 'dotrade':doTrade();break;
+    case 'doask':doAsk();break;
     case 'spin':doSpin();break;
     case 'claim':claim(v);break;
     case 'pickmid':showStaff('mid',v);break;
