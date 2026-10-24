@@ -201,7 +201,7 @@ const fresh=()=>({rev:0,pzb:{},in:false,h:'',wallet:'',tab:'home',pts:0,spins:0,
 let S=load()||fresh(),G=loadG()||{...STOCK0},wheelRot=0,spinning=false;
 /* ---- Tune: every number below can be changed on the page and is saved in this browser ---- */
 const DEF={wheel:{piece:35,point:30,potion:15,boo:15,spin:5},gap:25,wt:{j1:55,j2:28,j3:17},
-  packs:{booth:{on:1,n:3},grotto:{on:1,n:3},crew:{on:1,n:3},costume:{on:1,n:2},tasks:{on:1,n:2},stage:{on:0,n:2}},
+  packs:{booth:{on:1,n:2},grotto:{on:1,n:3},crew:{on:1,n:2},costume:{on:1,n:2},tasks:{on:1,n:2},stage:{on:0,n:2}},
   mix:{booth:85,grotto:65,crew:35,costume:75,tasks:50,stage:70},recv:2};
 let CFG=(()=>{try{const c=JSON.parse(localStorage.getItem('hwD_cfg'));return c?{...structuredClone(DEF),...c,packs:{...structuredClone(DEF.packs),...c.packs}}:structuredClone(DEF)}catch(_){return structuredClone(DEF)}})();
 const packOn=k=>!!(CFG.packs[k]&&CFG.packs[k].on);
@@ -330,7 +330,7 @@ function vPuzzles(){
   const acts=Object.entries(ACT).filter(([k])=>packOn(k)).map(([k,a])=>{const d=S.acts[k];if(a.hidden&&!d)return `<div class="row"><span class="ic">?</span><div class="grow"><b>One more, somewhere</b><small>Ask around.</small></div></div>`;
     return `<div class="row ${d?'done':''}"><span class="ic">${d?'✓':'◆'}</span><div class="grow"><b>${esc(a.n)}</b><small>${slotsFor(k).length} pieces · leans to ${esc(J.find(x=>x.id===a.main).n)}</small></div><div class="end"><small>${d?'Opened':'Not yet'}</small></div></div>`}).join('')
     +[['costume',S.room.costume],['tasks',S.tasksPack],['stage',S.room.stage]].filter(([k])=>packOn(k)).map(([k,d])=>`<div class="row ${d?'done':''}"><span class="ic">${d?'✓':'+'}</span><div class="grow"><b>${esc(EXTRA[k].n)}</b><small>${slotsFor(k).length} pieces · ${esc(EXTRA[k].how)}</small></div><div class="end"><small>${d?'Opened':'Not yet'}</small></div></div>`).join('');
-  return `<section class="center"><h2>Puzzles</h2><p class="mu">Three packs of 3 pieces, one per place: the team1 & Cascade booth, The Grotto, and a hidden crew member. Small extra packs come from the photo booth and your social tasks.</p>
+  return `<section class="center"><h2>Puzzles</h2><p class="mu">One pack per place: the team1 & Cascade booth, The Grotto (3 pieces) and a hidden crew member. Small extra packs come from the photo booth and your social tasks.</p>
       ${S.in?`<button class="jag" data-act="code">Enter a booth code</button>`:`<button class="jag" data-act="login">Join event</button>`}</section>
     <section><div class="pzwrap">${J.map(card).join('')}</div>
       ${S.in?`<button class="btn" data-act="trade">Send or ask for a piece</button>`:''}
@@ -574,7 +574,7 @@ function staffSheet(){
   clearInterval(staffTimer);staffTimer=setInterval(()=>{const el=$('#cd');if(!el){clearInterval(staffTimer);return}const l=300-Math.floor(Date.now()/1000)%300;el.textContent=`${Math.floor(l/60)}:${String(l%60).padStart(2,'0')}`;if(l===300)staffSheet()},1000);
 }
 function about(){
-  sheet(`<h3>Prototype D</h3><p class="sm">Fewer, bigger packs. Three core packs of 3 pieces: the team1 & Cascade booth, The Grotto, the hidden crew member. Small 2-piece extras: a photo booth head start, a pack for finishing the social tasks, and a stage drop staff can open on the night. Wheel 35% pieces, gap-fill 25%. Everything is simulated.</p>
+  sheet(`<h3>Prototype D</h3><p class="sm">One pack per place: the team1 & Cascade booth (2 pieces), The Grotto (3 pieces), the hidden crew member (2 pieces). Small 2-piece extras: a photo booth head start, a pack for finishing the social tasks, and a stage drop staff can open on the night. Wheel 35% pieces, gap-fill 25%. Everything is simulated.</p>
     <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 3, twice in two colours. Postcard 6 or sticker set 8, keychain 15. Finished puzzles give points: the Tote 2, Frog 2, the Pants 1.</small></div></div>
     <div class="row"><div class="grow"><b>Pieces</b><small>From the three core packs, the extra packs, the wheel and sends. Three puzzles: Pumpkin Patch (tote), Halloween Crew (Frog’s art), Midnight Manor (pants).</small></div></div>
     <div class="row"><div class="grow"><b>Skips</b><small>Dashed orange buttons skip real actions so the flow can be walked in a minute.</small></div></div></div>
