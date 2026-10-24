@@ -147,7 +147,7 @@ const J=[
 const SEAL='j3-3';                       // the Grotto piece: from either Grotto activity, cannot be traded
 // Build D: 3 core packs of 3 pieces, one per place. Slots: G guided to the pack's puzzle, SEAL the Grotto piece, R random, GAP fills a gap.
 const ACT={
-  booth:{n:'team1 & Cascade booth · quiz or Cascade quest',main:'j1',slots:['G','G','R']},
+  booth:{n:'team1 & Cascade booth · Quark’s quiz',main:'j1',slots:['G','G','R']},
   grotto:{n:'The Grotto · play any game',main:'j3',grotto:true,slots:['SEAL','G','R']},
   crew:{n:'Find a team1 crew member',main:'j2',hidden:true,slots:['G','G','R']}
 };
@@ -170,7 +170,8 @@ const XT=[
 const RT=[
   {k:'tg',t:'Join the team1 Thailand Telegram',sub:'Find the code word pinned in the channel',p:1},
   {k:'trade',t:'Send a piece',sub:'Give a piece to another guest · first successful send',p:1},
-  {k:'costume',t:'Take a photo at the photo booth',sub:'Staff give you a head-start pack',p:0,s:0},
+  {k:'photo',t:'Take a photo at the photo booth',sub:'Staff give you a head-start pack',p:0,s:0},
+  {k:'costume',t:'Come in a Halloween costume',sub:'Staff mark it · +1 spin too',p:2,s:1},
   {k:'stage',t:'Scan the stage QR',sub:'Only when staff open it · a 2-piece pack',p:0,s:0}
 ];
 const LADDER=[                                   // at = cost. Points are spent on claim; each item once.
@@ -202,7 +203,7 @@ let S=load()||fresh(),G=loadG()||{...STOCK0},wheelRot=0,spinning=false;
 /* ---- Tune: every number below can be changed on the page and is saved in this browser ---- */
 const DEF={wheel:{piece:35,point:30,potion:15,boo:15,spin:5},gap:25,wt:{j1:55,j2:28,j3:17},
   packs:{booth:{on:1,n:2},grotto:{on:1,n:3},crew:{on:1,n:2},costume:{on:1,n:2},tasks:{on:1,n:2},stage:{on:0,n:2}},
-  mix:{booth:85,grotto:65,crew:35,costume:75,tasks:50,stage:70},recv:2};
+  mix:{booth:85,grotto:65,crew:35,costume:75,dress:50,tasks:50,stage:70},recv:2};
 let CFG=(()=>{try{const c=JSON.parse(localStorage.getItem('hwD_cfg'));return c?{...structuredClone(DEF),...c,packs:{...structuredClone(DEF.packs),...c.packs}}:structuredClone(DEF)}catch(_){return structuredClone(DEF)}})();
 const packOn=k=>!!(CFG.packs[k]&&CFG.packs[k].on);
 const activeActs=()=>Object.keys(ACT).filter(packOn);
@@ -291,7 +292,7 @@ function vTasks(){
   const rrow=t=>{const d=S.room[t.k];return `<button class="row ${d?'done':''}" data-act="rtask" data-v="${t.k}" ${d?'disabled':''}>
       <span class="ic">${d?'✓':'◆'}</span>
       <span class="grow"><b>${esc(t.t)}</b><small>${esc(t.sub)}</small></span>
-      <span class="end">${d?'<small>Done</small>':`<span>+${t.p} pt${t.p>1?'s':''}${t.s?` · +${t.s} spin`:''}</span><small>${t.k==='trade'?'In puzzles':'Open'}</small>`}</span></button>`};
+      <span class="end">${d?'<small>Done</small>':`<span>${t.p?`+${t.p} pt${t.p>1?'s':''}${t.s?` · +${t.s} spin`:''}`:'+ pack'}</span><small>${t.k==='trade'?'In puzzles':'Open'}</small>`}</span></button>`};
   return `<section class="center"><h2>Earn points</h2><p class="mu">Points unlock merch. Spins turn the wheel.</p></section>
     <section><div class="hdr"><span>𝕏 Tasks</span><small class="mu">${xd}/${XT.length} completed</small></div>
       <div class="bar"><i style="width:${xd/XT.length*100}%"></i></div>
@@ -329,7 +330,7 @@ function vPuzzles(){
       <p class="sm ${c?'ok':'mu'}">${c?'Complete · claim it in Claims':`${j.pieces.filter((_,i)=>has(j.id+'-'+i)).length}/4 pieces`}</p></div></div>`};
   const acts=Object.entries(ACT).filter(([k])=>packOn(k)).map(([k,a])=>{const d=S.acts[k];if(a.hidden&&!d)return `<div class="row"><span class="ic">?</span><div class="grow"><b>One more, somewhere</b><small>Ask around.</small></div></div>`;
     return `<div class="row ${d?'done':''}"><span class="ic">${d?'✓':'◆'}</span><div class="grow"><b>${esc(a.n)}</b><small>${slotsFor(k).length} pieces · leans to ${esc(J.find(x=>x.id===a.main).n)}</small></div><div class="end"><small>${d?'Opened':'Not yet'}</small></div></div>`}).join('')
-    +[['costume',S.room.costume],['tasks',S.tasksPack],['stage',S.room.stage]].filter(([k])=>packOn(k)).map(([k,d])=>`<div class="row ${d?'done':''}"><span class="ic">${d?'✓':'+'}</span><div class="grow"><b>${esc(EXTRA[k].n)}</b><small>${slotsFor(k).length} pieces · ${esc(EXTRA[k].how)}</small></div><div class="end"><small>${d?'Opened':'Not yet'}</small></div></div>`).join('');
+    +[['costume',S.room.photo],['tasks',S.tasksPack],['stage',S.room.stage]].filter(([k])=>packOn(k)).map(([k,d])=>`<div class="row ${d?'done':''}"><span class="ic">${d?'✓':'+'}</span><div class="grow"><b>${esc(EXTRA[k].n)}</b><small>${slotsFor(k).length} pieces · ${esc(EXTRA[k].how)}</small></div><div class="end"><small>${d?'Opened':'Not yet'}</small></div></div>`).join('');
   return `<section class="center"><h2>Puzzles</h2><p class="mu">One pack per place: the team1 & Cascade booth, The Grotto (3 pieces) and a hidden crew member. Small extra packs come from the photo booth and your social tasks.</p>
       ${S.in?`<button class="jag" data-act="code">Enter a booth code</button>`:`<button class="jag" data-act="login">Join event</button>`}</section>
     <section><div class="pzwrap">${J.map(card).join('')}</div>
@@ -417,11 +418,14 @@ function rtask(k){
     <input class="in" id="rc" inputmode="numeric" placeholder="Stage code"><button class="btn pri" data-act="rsubmit" data-v="stage">Submit</button><button class="btn proto" data-act="rskip" data-v="stage">Prototype: skip, mark it done</button>`);
   if(k==='tg')return sheet(`<h3>Join our Telegram</h3><p class="sm mu">The code word is pinned in the team1 Thailand channel.</p>
     <input class="in" id="rc" placeholder="Code word" autocapitalize="characters"><button class="btn pri" data-act="rsubmit" data-v="tg">Submit</button><button class="btn proto" data-act="rskip" data-v="tg">Prototype: skip, mark it done</button>`);
-  if(k==='costume')return sheet(`<h3>Photo booth</h3><p class="sm mu">Take a photo at the photo booth, costume or not. Staff there give you a head-start pack.</p>
-    <div class="code">${esc(S.h)}</div><button class="btn proto" data-act="rskip" data-v="costume">Prototype: staff give the pack</button>`);
+  if(k==='costume')return sheet(`<h3>Costume check</h3><p class="sm mu">Show staff your costume. They mark it from the admin.</p>
+    <div class="code">${esc(S.h)}</div><button class="btn proto" data-act="rskip" data-v="costume">Prototype: staff mark it</button>`);
+  if(k==='photo')return sheet(`<h3>Photo booth</h3><p class="sm mu">Take a photo at the photo booth, costume or not. Staff there give you a head-start pack.</p>
+    <div class="code">${esc(S.h)}</div><button class="btn proto" data-act="rskip" data-v="photo">Prototype: staff give the pack</button>`);
 }
 function rdone(k){const t=RT.find(x=>x.k===k);if(S.room[k])return;S.room[k]=1;S.spins+=t.s||0;if(t.p)addPts(t.p,t.t);close();render();
-  if((k==='costume'||k==='stage')&&packOn(k)){setTimeout(()=>openPack(k),300);return}
+  if(k==='photo'&&packOn('costume')){setTimeout(()=>openPack('costume'),300);return}
+  if(k==='stage'&&packOn('stage')){setTimeout(()=>openPack('stage'),300);return}
   if(k==='tg')checkTasksPack();
   toast(`Done${t.p?` · +${t.p} pt${t.p>1?'s':''}`:''}${t.s?`, +${t.s} spin`:''}`)}
 function rsubmit(k){
@@ -568,7 +572,7 @@ function staffSheet(){
     <table class="tbl">${Object.entries(ACT).filter(([k])=>packOn(k)).map(([k,a])=>`<tr><td>${esc(a.n)}</td><td><b>${code(k)}</b></td></tr>`).join('')}<tr><td>Telegram code word</td><td><b>${TGWORD}</b></td></tr></table>
     <p class="xs mu">New codes in <span id="cd">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span></p>
     <p class="xs mu">Stage drop, a lever for the night: open it only if supply allows</p><div class="rowbtns"><button class="btn ${G.stageOn?'':'pri'}" data-act="stageon" data-v="0">Closed</button><button class="btn ${G.stageOn?'pri':''}" data-act="stageon" data-v="1">Open${G.stageOn?` · code ${code('stage')}`:''}</button></div>
-    ${S.in?`<div class="rowbtns"><button class="btn" data-act="rskip" data-v="costume" ${S.room.costume?'disabled':''}>Photo booth pack</button><button class="btn" data-act="bonus" ${S.bonus>=CAP.bonus?'disabled':''}>Bonus pack (${S.bonus}/${CAP.bonus})</button></div>`:''}
+    ${S.in?`<div class="rowbtns"><button class="btn" data-act="rskip" data-v="photo" ${S.room.photo?'disabled':''}>Photo booth pack</button><button class="btn" data-act="rskip" data-v="costume" ${S.room.costume?'disabled':''}>Costume +2 +1</button><button class="btn" data-act="bonus" ${S.bonus>=CAP.bonus?'disabled':''}>Bonus pack (${S.bonus}/${CAP.bonus})</button></div>`:''}
     <p class="xs mu">Stock</p><table class="tbl">${Object.keys(STOCK0).map(k=>`<tr><td>${STOCKNAME[k]}</td><td>${G[k]} / ${STOCK0[k]}</td></tr>`).join('')}</table>
     <button class="btn ghost" data-act="reset">Reset the prototype</button>`);
   clearInterval(staffTimer);staffTimer=setInterval(()=>{const el=$('#cd');if(!el){clearInterval(staffTimer);return}const l=300-Math.floor(Date.now()/1000)%300;el.textContent=`${Math.floor(l/60)}:${String(l%60).padStart(2,'0')}`;if(l===300)staffSheet()},1000);
@@ -619,6 +623,8 @@ function simGuest(mixed){
   const P={},add=id=>P[id]=(P[id]||0)+1;let pts=0,spins=FREESPIN,pot=0,extra=0;
   const allTasks=!mixed||Math.random()<MIX.tasks, share=allTasks?1:.3+Math.random()*.5;
   XT.forEach(t=>{if(allTasks||Math.random()<share){pts+=t.p;spins+=t.s}});
+  if(!mixed||Math.random()<(MIX.dress??.5)){pts+=2;spins+=1}   // costume: 2 points + 1 spin
+  if(allTasks)pts+=1;   // Telegram
   const packs=activeActs().filter(k=>!mixed||Math.random()<MIX[k]);
   if(packOn('costume')&&(!mixed||Math.random()<MIX.costume))packs.push('costume');
   if(packOn('tasks')&&allTasks)packs.push('tasks');
@@ -664,7 +670,7 @@ function tuneSheet(){
     <p class="xs mu">Wheel pieces</p>
     <table class="tbl"><tr><td>Gap-fill share, %</td><td style="width:90px">${num('gap',CFG.gap,100,5)}</td></tr>${J.map(j=>`<tr><td>Random mix · ${esc(j.n)}</td><td style="width:90px">${num('wt.'+j.id,CFG.wt[j.id],100)}</td></tr>`).join('')}</table>
     <p class="xs mu">Mixed crowd: share of guests who do each, in percent</p>
-    <table class="tbl">${pk.map(([k,n])=>`<tr><td>${n}</td><td style="width:90px">${num('mix.'+k,CFG.mix[k],100,5)}</td></tr>`).join('')}<tr><td>Pieces a guest can receive by sends. A simulator assumption, not a game rule: 2 is a realistic room, 99 means every spare finds someone</td><td style="width:90px">${num('recv',CFG.recv,99)}</td></tr></table>
+    <table class="tbl">${pk.map(([k,n])=>`<tr><td>${n}</td><td style="width:90px">${num('mix.'+k,CFG.mix[k],100,5)}</td></tr>`).join('')}<tr><td>Wear a costume</td><td style="width:90px">${num('mix.dress',CFG.mix.dress??50,100,5)}</td></tr><tr><td>Pieces a guest can receive by sends. A simulator assumption, not a game rule: 2 is a realistic room, 99 means every spare finds someone</td><td style="width:90px">${num('recv',CFG.recv,99)}</td></tr></table>
     <div class="rowbtns"><button class="btn" data-act="tunereset">Reset to D</button><button class="btn pri" data-act="tuneapply">Apply and run</button></div>`);
 }
 function tuneApply(){
