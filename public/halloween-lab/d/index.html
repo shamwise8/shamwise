@@ -140,9 +140,9 @@ footer.proto button{font-size:14px;color:var(--or2);border:1px dashed rgba(240,1
 /* ================= Config: the agreed economy ================= */
 const EVENT={date:'30 Oct',venue:'Zilla Space',hosts:'team1 Thailand × Bitkub'};
 const J=[
-  {id:'j1',pts:2,n:'Pumpkin Patch',reward:'NFT + tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
-  {id:'j2',pts:2,n:'Halloween Crew',reward:'Collectible artwork NFT, by Frog',c:['#b394ea','#2b1d48'],pieces:['Top left','Top right','Bottom left','Bottom right'],egg:true},
-  {id:'j3',pts:1,n:'Midnight Manor',reward:'NFT + pants, T-shirt after pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto piece']}
+  {id:'j1',pts:2,n:'Avalanche Halloween',reward:'NFT + tote bag',stock:['tote'],c:['#f07a24','#6a2c08'],pieces:['Pumpkin','Lantern','Candle','Gate']},
+  {id:'j2',pts:2,n:'Team1 Thailand Crew',reward:'Collectible artwork NFT, by Frog',c:['#b394ea','#2b1d48'],pieces:['Top left','Top right','Bottom left','Bottom right'],egg:true},
+  {id:'j3',pts:1,n:'Midnight Bangkok',reward:'NFT + pants, T-shirt after pants run out',stock:['pants','tee'],c:['#e6212f','#2b0a0d'],pieces:['Skull','Reaper','Cabinet','Grotto piece']}
 ];
 const SEAL='j3-3';                       // the Grotto piece: from either Grotto activity, cannot be traded
 // Build D: 3 core packs of 3 pieces, one per place. Slots: G guided to the pack's puzzle, SEAL the Grotto piece, R random, GAP fills a gap.
@@ -169,7 +169,7 @@ const XT=[
 ];
 const RT=[
   {k:'tg',t:'Join the team1 Thailand Telegram',sub:'Find the code word pinned in the channel',p:1},
-  {k:'trade',t:'Send a piece',sub:'Give a piece to another guest · first successful send',p:1},
+  {k:'trade',t:'Send a piece',sub:'Give a piece to another guest · first successful send',p:2},
   {k:'photo',t:'Take a photo at the photo booth',sub:'Staff give you a head-start pack',p:0,s:0},
   {k:'costume',t:'Come in a Halloween costume',sub:'Staff mark it · +1 spin too',p:2,s:1},
   {k:'stage',t:'Scan the stage QR',sub:'Only when staff open it · a 2-piece pack',p:0,s:0}
@@ -501,7 +501,7 @@ function pieceSheet(id){
 function tradeSheet(){
   const mine=Object.entries(S.pieces).filter(([id,n])=>n>0&&id!==SEAL).map(([id])=>id);
   const want=allIds().filter(id=>!has(id)&&id!==SEAL);
-  sheet(`<h3>Send or ask</h3><p class="sm mu">One way, as in the Blurry build. Sending gives the piece away for good. The Grotto piece can’t be sent. Your first successful send earns 1 point.</p>
+  sheet(`<h3>Send or ask</h3><p class="sm mu">One way, as in the Blurry build. Sending gives the piece away for good. The Grotto piece can’t be sent. Your first successful send earns 2 points.</p>
     <p class="xs mu">Send one of yours to @night_owl</p><div class="sel">${mine.map((id,i)=>`<button data-act="pick" data-g="give" data-v="${id}" aria-pressed="${i===0}">${esc(pieceName(id))}${S.pieces[id]>1?` ×${S.pieces[id]}`:''}<br><small class="mu">${esc(pieceJ(id).n)}</small></button>`).join('')||'<p class="xs mu">No pieces to send yet.</p>'}</div>
     <button class="btn" data-act="dotrade" ${mine.length?'':'disabled'}>Send it</button>
     <p class="xs mu">Ask the room for a piece you’re missing</p><div class="sel">${want.map((id,i)=>`<button data-act="pick" data-g="want" data-v="${id}" aria-pressed="${i===0}">${esc(pieceName(id))}<br><small class="mu">${esc(pieceJ(id).n)}</small></button>`).join('')}</div>
@@ -509,8 +509,8 @@ function tradeSheet(){
 }
 function doTrade(){
   const give=document.querySelector('[data-g="give"][aria-pressed="true"]');if(!give)return;
-  S.pieces[give.dataset.v]--;const first=!S.room.trade;if(first){S.room.trade=1;addPts(1,'First send')}
-  close();render();toast(`Sent ${pieceName(give.dataset.v)}${first?' · +1 pt':''}`);
+  S.pieces[give.dataset.v]--;const first=!S.room.trade;if(first){S.room.trade=1;addPts(2,'First send')}
+  close();render();toast(`Sent ${pieceName(give.dataset.v)}${first?' · +2 pts':''}`);
 }
 function doAsk(){
   const want=document.querySelector('[data-g="want"][aria-pressed="true"]');if(!want)return;
@@ -546,8 +546,8 @@ function land(k){
 function claim(k){
   if(k==='mid')return sheet(`<h3>Pick one</h3><div class="rowbtns"><button class="btn" data-act="pickmid" data-v="postcard" ${G.postcard&&S.pts>=6?'':'disabled'}>Postcard · 6 pts<br><small class="mu">${G.postcard} left</small></button><button class="btn" data-act="pickmid" data-v="sticker" ${G.sticker&&S.pts>=8?'':'disabled'}>Sticker set · 8 pts<br><small class="mu">${G.sticker} left</small></button></div>`);
   if(k==='pz_j3')return sheet(`<h3>Pick one</h3><div class="rowbtns"><button class="btn" data-act="picktop" data-v="pants" ${G.pants?'':'disabled'}>Pants<br><small class="mu">${G.pants} left</small></button><button class="btn" data-act="picktop" data-v="tee" ${G.tee?'':'disabled'}>T-shirt<br><small class="mu">${G.tee} left</small></button></div>`);
-  if(k==='pz_j2'){redeem(k);S.claims[k]='minting';sheet(`<h3>Minting…</h3><div class="check"><div><b>✓</b>Halloween Crew artwork by Frog, from your 4 pieces</div><div style="animation-delay:.5s"><b>✓</b>Minting to ${S.wallet.slice(0,6)}…${S.wallet.slice(-4)}</div><div style="animation-delay:1s"><b>✓</b>Gas covered by team1</div></div>`);
-    setTimeout(()=>{S.nft='0x'+hex(4)+'…'+hex(4);S.claims[k]='done';render();sheet(`<h3>It’s yours</h3><p class="sm mu">Frog’s Halloween Crew artwork is in your wallet. Holders hear about our next event first.</p><div class="note">Prototype: simulated mint.</div><button class="btn pri" data-act="close">Nice</button>`)},1700);return}
+  if(k==='pz_j2'){redeem(k);S.claims[k]='minting';sheet(`<h3>Minting…</h3><div class="check"><div><b>✓</b>Team1 Thailand Crew artwork by Frog, from your 4 pieces</div><div style="animation-delay:.5s"><b>✓</b>Minting to ${S.wallet.slice(0,6)}…${S.wallet.slice(-4)}</div><div style="animation-delay:1s"><b>✓</b>Gas covered by team1</div></div>`);
+    setTimeout(()=>{S.nft='0x'+hex(4)+'…'+hex(4);S.claims[k]='done';render();sheet(`<h3>It’s yours</h3><p class="sm mu">Frog’s Team1 Thailand Crew artwork is in your wallet. Holders hear about our next event first.</p><div class="note">Prototype: simulated mint.</div><button class="btn pri" data-act="close">Nice</button>`)},1700);return}
   showStaff(k);
 }
 const ITEM={pen:'Pen',pen2:'Pen · second colour',key:'Keychain',pz_j1:'Tote bag'};
@@ -580,7 +580,7 @@ function staffSheet(){
 function about(){
   sheet(`<h3>Prototype D</h3><p class="sm">One pack per place: the team1 & Cascade booth (2 pieces), The Grotto (3 pieces), the hidden crew member (2 pieces). Small 2-piece extras: a photo booth head start, a pack for finishing the social tasks, and a stage drop staff can open on the night. Wheel 35% pieces, gap-fill 25%. Everything is simulated.</p>
     <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 3, twice in two colours. Postcard 6 or sticker set 8, keychain 15. Finished puzzles give points: the Tote 2, Frog 2, the Pants 1.</small></div></div>
-    <div class="row"><div class="grow"><b>Pieces</b><small>From the three core packs, the extra packs, the wheel and sends. Three puzzles: Pumpkin Patch (tote), Halloween Crew (Frog’s art), Midnight Manor (pants).</small></div></div>
+    <div class="row"><div class="grow"><b>Pieces</b><small>From the three core packs, the extra packs, the wheel and sends. Three puzzles: Avalanche Halloween (tote), Team1 Thailand Crew (Frog’s art), Midnight Bangkok (pants).</small></div></div>
     <div class="row"><div class="grow"><b>Skips</b><small>Dashed orange buttons skip real actions so the flow can be walked in a minute.</small></div></div></div>
     <button class="btn pri" data-act="close">Close</button>`);
 }
@@ -640,7 +640,7 @@ function simRoom(N,sends,mixed){
     const order=R.map((_,i)=>i).sort(()=>Math.random()-.5);
     for(const gi of order){const g=R[gi];
       const want=[...allIds().filter(id=>id.startsWith('j3')),...allIds().filter(id=>id.startsWith('j1')),...allIds().filter(id=>id.startsWith('j2'))].filter(id=>!has(id,g.P)&&id!==SEAL);
-      for(const w of want){if(g.got>=RECV)break;const d=R.find(o=>o!==g&&(o.P[w]||0)>1);if(!d)continue;d.P[w]--;g.P[w]=(g.P[w]||0)+1;g.got++;if(!d.sent)d.pts++;d.sent++}}
+      for(const w of want){if(g.got>=RECV)break;const d=R.find(o=>o!==g&&(o.P[w]||0)>1);if(!d)continue;d.P[w]--;g.P[w]=(g.P[w]||0)+1;g.got++;if(!d.sent)d.pts+=2;d.sent++}}
   }
   R.forEach(g=>{g.done=J.map(j=>jDone(j,g.P));g.pts+=J.filter(j=>jDone(j,g.P)).reduce((a,j)=>a+j.pts,0)});
   return R;
@@ -708,7 +708,7 @@ document.addEventListener('click',e=>{
     case 'dotrade':doTrade();break;
     case 'doask':doAsk();break;
     case 'piece':pieceSheet(v);break;
-    case 'sendone':{S.pieces[v]--;const first=!S.room.trade;if(first){S.room.trade=1;addPts(1,'First send')}close();render();toast(`Sent ${pieceName(v)}${first?' · +1 pt':''}`);break}
+    case 'sendone':{S.pieces[v]--;const first=!S.room.trade;if(first){S.room.trade=1;addPts(2,'First send')}close();render();toast(`Sent ${pieceName(v)}${first?' · +2 pts':''}`);break}
     case 'askone':if(Math.random()<.5){S.pieces[v]=(S.pieces[v]||0)+1;checkPuzzles();close();render();toast(`@night_owl sent you ${pieceName(v)}`)}else{close();toast('No one has a spare right now. Try again later.')}break;
     case 'spin':doSpin();break;
     case 'claim':claim(v);break;
