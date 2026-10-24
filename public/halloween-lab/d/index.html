@@ -133,7 +133,7 @@ footer.proto button{font-size:14px;color:var(--or2);border:1px dashed rgba(240,1
   <nav class="tabs" id="tabs" aria-label="Sections"></nav>
   <main id="main"></main>
 </div>
-<footer class="proto"><button data-act="staff">Staff</button><button data-act="playnight">My night</button><button data-act="sim">Room of 200</button><button data-act="resetme">Reset</button><button data-act="about">?</button></footer>
+<footer class="proto"><button data-act="staff">Staff</button><button data-act="playnight">My night</button><button data-act="tune">Tune</button><button data-act="sim">Room of 200</button><button data-act="resetme">Reset</button><button data-act="about">?</button></footer>
 <div id="layer"></div>
 <script>
 (()=>{
@@ -180,12 +180,12 @@ const LADDER=[                                   // at = cost. Points are spent 
   {at:15,k:'key',n:'Keychain',stock:['key']}
 ];
 const wheelPts=()=>{const r=Math.random()*25;return r<15?1:r<23?2:3};   // within the 25% point slots: +1 15%, +2 8%, +3 2%
-const SEG=['piece','point','potion','piece','boo','point','piece','spin','point','piece','potion','boo','piece','point','piece','potion','point','boo','piece','point']; // 20 slots: piece 35, points 30, potion 15, boo 15, spin 5
+let SEG=[];   // 20 wheel slots, rebuilt from the Tune settings
 const KIND={piece:{l:'Piece',c:'#2a2420',i:'🧩'},point:{l:'+1 point',c:'#7a3a10',i:'★'},potion:{l:'Potion',c:'#174a45',i:'🧪'},boo:{l:'Boo',c:'#232323',i:'👻'},spin:{l:'+1 spin',c:'#3b2a5c',i:'↻'}};
 const CAP={potion:3,spin:2,bonus:2};   // potion: most a guest can hold at once. Drinking one frees a slot. Try 4.
 const TRADEMAX=2;
 const FREESPIN=1;   // Blurry build: one free spin on entry
-const RECV=2;      // simulator: a guest receives at most 2 pieces from others
+let RECV=2;        // simulator: a guest receives at most this many pieces from others
 const okTrade=()=>true;   // Blurry build: one-way transfers, no swap rules   // Pants pieces only trade for Pants pieces   // simulator: a realistic guest manages about two trades
 const TGWORD='PUMPKIN';
 const FEEDBACK='https://events.team1.network/events/68hamvg';
@@ -199,6 +199,22 @@ const hex=n=>Array.from({length:n},()=>'0123456789abcdef'[Math.floor(Math.random
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fresh=()=>({rev:0,pzb:{},in:false,h:'',wallet:'',tab:'home',pts:0,spins:0,x:{},xs:{},room:{},bonus:0,pieces:{},acts:{},claims:{},mid:'',top:'',potWon:0,potDrank:0,extra:0,nft:'',log:[],lootcard:false});
 let S=load()||fresh(),G=loadG()||{...STOCK0},wheelRot=0,spinning=false;
+/* ---- Tune: every number below can be changed on the page and is saved in this browser ---- */
+const DEF={wheel:{piece:35,point:30,potion:15,boo:15,spin:5},gap:25,wt:{j1:55,j2:28,j3:17},
+  packs:{booth:{on:1,n:3},grotto:{on:1,n:3},crew:{on:1,n:3},costume:{on:1,n:2},tasks:{on:1,n:2},stage:{on:0,n:2}},
+  mix:{booth:85,grotto:65,crew:35,costume:75,tasks:50,stage:70},recv:2};
+let CFG=(()=>{try{const c=JSON.parse(localStorage.getItem('hwD_cfg'));return c?{...structuredClone(DEF),...c,packs:{...structuredClone(DEF.packs),...c.packs}}:structuredClone(DEF)}catch(_){return structuredClone(DEF)}})();
+const packOn=k=>!!(CFG.packs[k]&&CFG.packs[k].on);
+const activeActs=()=>Object.keys(ACT).filter(packOn);
+function applyCfg(){
+  const w=CFG.wheel,keys=['piece','point','potion','boo','spin'],tot=keys.reduce((a,k)=>a+(+w[k]||0),0)||1;
+  const cnt=keys.map(k=>Math.round((+w[k]||0)/tot*20));let d=20-cnt.reduce((a,b)=>a+b,0);cnt[0]+=d;   // 20 slots
+  const bag=[];keys.forEach((k,i)=>{for(let n=0;n<Math.max(0,cnt[i]);n++)bag.push(k)});
+  SEG=[];const left=keys.map((k,i)=>Math.max(0,cnt[i]));let idx=0;while(SEG.length<bag.length){const k=keys[idx%5];if(left[idx%5]>0){SEG.push(k);left[idx%5]--}idx++}
+  GAPFILL=(+CFG.gap||0)/100;const wt=CFG.wt,wsum=(+wt.j1)+(+wt.j2)+(+wt.j3)||1;WEIGHT={j1:wt.j1/wsum,j2:wt.j2/wsum,j3:wt.j3/wsum};
+  MIX=Object.fromEntries(Object.entries(CFG.mix).map(([k,v])=>[k,(+v||0)/100]));RECV=+CFG.recv||0;G.stageOn=packOn('stage');
+}
+function saveCfg(){try{localStorage.setItem('hwD_cfg',JSON.stringify(CFG))}catch(_){}}
 function load(){try{return JSON.parse(localStorage.getItem('hwD'))}catch(_){return null}}
 function loadG(){try{return JSON.parse(localStorage.getItem('hwD_stock'))}catch(_){return null}}
 function save(){try{localStorage.setItem('hwD',JSON.stringify(S));localStorage.setItem('hwD_stock',JSON.stringify(G))}catch(_){}}
@@ -291,7 +307,7 @@ function vSpin(){
       ${S.in?`<button class="jag" data-act="spin" ${S.spins<1||spinning?'disabled':''}>Weave your luck</button>`:`<button class="jag" data-act="login">Join to spin</button>`}
     </section>
     <section><div class="hdr"><span>Wheel odds</span></div>
-      <table class="odds"><tr><td>🧩 A puzzle piece</td><td>35%</td></tr><tr><td>★ +1 point</td><td>18%</td></tr><tr><td>★ +2 points</td><td>9.6%</td></tr><tr><td>★ +3 points</td><td>2.4%</td></tr><tr><td>🧪 Potion · a drink at the counter, hold up to ${CAP.potion}</td><td>15%</td></tr><tr><td>👻 Boo · nothing</td><td>15%</td></tr><tr><td>↻ +1 spin, max ${CAP.spin}</td><td>5%</td></tr></table>
+      <table class="odds">${(()=>{const w=CFG.wheel,t=['piece','point','potion','boo','spin'].reduce((a,k)=>a+(+w[k]||0),0)||1,p=k=>Math.round((+w[k]||0)/t*1000)/10;return `<tr><td>🧩 A puzzle piece</td><td>${p('piece')}%</td></tr><tr><td>★ Points, +1 to +3</td><td>${p('point')}%</td></tr><tr><td>🧪 Potion · a drink at the counter, hold up to ${CAP.potion}</td><td>${p('potion')}%</td></tr><tr><td>👻 Boo · nothing</td><td>${p('boo')}%</td></tr><tr><td>↻ +1 spin, max ${CAP.spin}</td><td>${p('spin')}%</td></tr>`})()}</table>
       <p class="xs mu">The teal 🧪 slots are potions. When a cap is reached, that slot can no longer land and the others share its chance.</p></section>`;
 }
 function drawWheel(){
@@ -311,9 +327,9 @@ function vPuzzles(){
   const card=j=>{const c=jDone(j);return `<div class="pzc ${c?'complete':''}"><div class="pz">${j.pieces.map((_,i)=>tile(j.id+'-'+i)).join('')}</div>
       <div class="grow">${j.egg?'<span class="tag">Easter egg</span>':''}<h3>${esc(j.n)}</h3><p class="sm mu">${esc(j.reward)}</p>
       <p class="sm ${c?'ok':'mu'}">${c?'Complete · claim it in Claims':`${j.pieces.filter((_,i)=>has(j.id+'-'+i)).length}/4 pieces`}</p></div></div>`};
-  const acts=Object.entries(ACT).map(([k,a])=>{const d=S.acts[k];if(a.hidden&&!d)return `<div class="row"><span class="ic">?</span><div class="grow"><b>One more, somewhere</b><small>Ask around.</small></div></div>`;
-    return `<div class="row ${d?'done':''}"><span class="ic">${d?'✓':'◆'}</span><div class="grow"><b>${esc(a.n)}</b><small>${a.slots.length} pieces · leans to ${esc(J.find(x=>x.id===a.main).n)}</small></div><div class="end"><small>${d?'Opened':'Not yet'}</small></div></div>`}).join('')
-    +[['costume',S.room.costume],['tasks',S.tasksPack],...(G.stageOn?[['stage',S.room.stage]]:[])].map(([k,d])=>`<div class="row ${d?'done':''}"><span class="ic">${d?'✓':'+'}</span><div class="grow"><b>${esc(EXTRA[k].n)}</b><small>2 pieces · ${esc(EXTRA[k].how)}</small></div><div class="end"><small>${d?'Opened':'Not yet'}</small></div></div>`).join('');
+  const acts=Object.entries(ACT).filter(([k])=>packOn(k)).map(([k,a])=>{const d=S.acts[k];if(a.hidden&&!d)return `<div class="row"><span class="ic">?</span><div class="grow"><b>One more, somewhere</b><small>Ask around.</small></div></div>`;
+    return `<div class="row ${d?'done':''}"><span class="ic">${d?'✓':'◆'}</span><div class="grow"><b>${esc(a.n)}</b><small>${slotsFor(k).length} pieces · leans to ${esc(J.find(x=>x.id===a.main).n)}</small></div><div class="end"><small>${d?'Opened':'Not yet'}</small></div></div>`}).join('')
+    +[['costume',S.room.costume],['tasks',S.tasksPack],['stage',S.room.stage]].filter(([k])=>packOn(k)).map(([k,d])=>`<div class="row ${d?'done':''}"><span class="ic">${d?'✓':'+'}</span><div class="grow"><b>${esc(EXTRA[k].n)}</b><small>${slotsFor(k).length} pieces · ${esc(EXTRA[k].how)}</small></div><div class="end"><small>${d?'Opened':'Not yet'}</small></div></div>`).join('');
   return `<section class="center"><h2>Puzzles</h2><p class="mu">Three packs of 3 pieces, one per place: the team1 & Cascade booth, The Grotto, and a hidden crew member. Small extra packs come from the photo booth and your social tasks.</p>
       ${S.in?`<button class="jag" data-act="code">Enter a booth code</button>`:`<button class="jag" data-act="login">Join event</button>`}</section>
     <section><div class="pzwrap">${J.map(card).join('')}</div>
@@ -405,7 +421,7 @@ function rtask(k){
     <div class="code">${esc(S.h)}</div><button class="btn proto" data-act="rskip" data-v="costume">Prototype: staff give the pack</button>`);
 }
 function rdone(k){const t=RT.find(x=>x.k===k);if(S.room[k])return;S.room[k]=1;S.spins+=t.s||0;if(t.p)addPts(t.p,t.t);close();render();
-  if(k==='costume'||k==='stage'){setTimeout(()=>openPack(k),300);return}
+  if((k==='costume'||k==='stage')&&packOn(k)){setTimeout(()=>openPack(k),300);return}
   if(k==='tg')checkTasksPack();
   toast(`Done${t.p?` · +${t.p} pt${t.p>1?'s':''}`:''}${t.s?`, +${t.s} spin`:''}`)}
 function rsubmit(k){
@@ -422,20 +438,21 @@ function codeSheet(){
   sheet(`<h3>Enter a booth code</h3><p class="sm mu">Staff show it after you finish their activity. It changes every 5 minutes.</p>
     <input class="in" id="bc" inputmode="numeric" maxlength="4" placeholder="4-digit code"><button class="btn pri" data-act="bcsubmit">Open my pack</button>
     <p class="xs mu">Prototype: skip the code and pick the activity.</p>
-    <div class="sel">${Object.entries(ACT).map(([k,a])=>`<button data-act="bcskip" data-v="${k}" ${S.acts[k]?'disabled':''}>${esc(a.n)}${S.acts[k]?' ✓':''}</button>`).join('')}</div>`);
+    <div class="sel">${Object.entries(ACT).filter(([k])=>packOn(k)).map(([k,a])=>`<button data-act="bcskip" data-v="${k}" ${S.acts[k]?'disabled':''}>${esc(a.n)}${S.acts[k]?' ✓':''}</button>`).join('')}</div>`);
 }
 function bcsubmit(){
   const v=($('#bc').value||'').trim();
-  const k=Object.keys(ACT).find(a=>v===code(a)||v===code(a,-1));
+  const k=activeActs().find(a=>v===code(a)||v===code(a,-1));
   if(!k)return toast('That code is not live. Ask staff for the current one.');
   openPack(k);
 }
 function guidedPiece(jid,P=S.pieces){const ids=allIds().filter(id=>id.startsWith(jid)&&id!==SEAL),m=ids.filter(id=>!has(id,P));return m.length?rnd(m):rnd(ids)}
 function gapPiece(P=S.pieces){const miss=allIds().filter(id=>!has(id,P)&&id!==SEAL),e=miss.filter(id=>!id.startsWith('j3')),l=miss.filter(id=>id.startsWith('j3'));return e.length?rnd(e):l.length?rnd(l):randomPiece()}
 function slotPiece(sl,main,P){if(sl==='SEAL')return has(SEAL,P)?guidedPiece(main,P):SEAL;if(sl==='G')return guidedPiece(main,P);if(sl.startsWith('G:'))return guidedPiece(sl.slice(2),P);if(sl==='GAP')return gapPiece(P);return randomPiece()}
-function packPieces(a,P=S.pieces){const Q={...P},out=[];for(const sl of a.slots){const id=slotPiece(sl,a.main,Q);Q[id]=(Q[id]||0)+1;out.push(id)}return out}
-const WEIGHT={j1:.55,j2:.28,j3:.17};
-const GAPFILL=.25;   // share of wheel pieces that fill a gap: the tote and Frog first, the pants once both are done
+function slotsFor(k){const a=ACT[k]||EXTRA[k],n=Math.max(1,+((CFG.packs[k]||{}).n)||a.slots.length);return n<=a.slots.length?a.slots.slice(0,n):a.slots.concat(Array(n-a.slots.length).fill('R'))}
+function packPieces(k,P=S.pieces){const a=ACT[k]||EXTRA[k];const Q={...P},out=[];for(const sl of slotsFor(k)){const id=slotPiece(sl,a.main,Q);Q[id]=(Q[id]||0)+1;out.push(id)}return out}
+let WEIGHT={j1:.55,j2:.28,j3:.17};
+let GAPFILL=.25;   // share of wheel pieces that fill a gap: the tote and Frog first, the pants once both are done
 // The stage drop at the quest hints: 2 pieces that fill tote or Frog gaps, never the pants, never the Grotto piece
 const STAGESPINS=2;   // the stage reward when staff switch it to spins
 function stagePiece(P=S.pieces){const miss=allIds().filter(id=>!has(id,P)&&!id.startsWith('j3'));return miss.length?rnd(miss):randomPiece()}
@@ -454,7 +471,7 @@ function randomPiece(){let r=Math.random(),j='j3';for(const [k,w] of Object.entr
 function openPack(k){
   const a=ACT[k]||EXTRA[k];
   if(ACT[k]){if(S.acts[k])return toast('You already opened this pack');S.acts[k]=1}
-  const ps=packPieces(a);
+  const ps=packPieces(k);
   sheet(`<div class="pack"><small>${ACT[k]?'HALLOWEEN PACK':'EXTRA PACK'}</small>${esc(a.n)}<small>${ps.length} PIECES</small></div><button class="jag full" data-act="reveal" data-v="${ps.join(',')}${a.grotto?',G':''}">Reveal</button>`);
 }
 function reveal(v){
@@ -468,7 +485,7 @@ function reveal(v){
     <button class="btn pri" data-act="donepack">Done</button>`);
   render();
 }
-function checkTasksPack(){if(S.tasksPack)return;if(XT.every(t=>S.x[t.k])&&S.room.tg){S.tasksPack=1;setTimeout(()=>{toast('All social tasks done · extra pack unlocked');openPack('tasks')},700)}}
+function checkTasksPack(){if(S.tasksPack||!packOn('tasks'))return;if(XT.every(t=>S.x[t.k])&&S.room.tg){S.tasksPack=1;setTimeout(()=>{toast('All social tasks done · extra pack unlocked');openPack('tasks')},700)}}
 const SOURCE={j1:'The team1 & Cascade booth pack, the photo booth head start, the wheel, or a send from another guest.',j2:'The hidden team1 crew member, the wheel, or a send from another guest.',j3:'The Grotto pack, the wheel, or a send from another guest.'};
 function pieceSheet(id){
   const j=pieceJ(id),q=+id.split('-')[1],n=S.pieces[id]||0,isSeal=id===SEAL;
@@ -548,7 +565,7 @@ let staffTimer=null;
 function staffSheet(){
   const left=300-Math.floor(Date.now()/1000)%300;
   sheet(`<h3>Staff desk</h3><p class="sm mu">In the real app this is on the team1 and Blurry Logics devices. Staff show a code only after a guest finishes the activity.</p>
-    <table class="tbl">${Object.entries(ACT).map(([k,a])=>`<tr><td>${esc(a.n)}</td><td><b>${code(k)}</b></td></tr>`).join('')}<tr><td>Telegram code word</td><td><b>${TGWORD}</b></td></tr></table>
+    <table class="tbl">${Object.entries(ACT).filter(([k])=>packOn(k)).map(([k,a])=>`<tr><td>${esc(a.n)}</td><td><b>${code(k)}</b></td></tr>`).join('')}<tr><td>Telegram code word</td><td><b>${TGWORD}</b></td></tr></table>
     <p class="xs mu">New codes in <span id="cd">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span></p>
     <p class="xs mu">Stage drop, a lever for the night: open it only if supply allows</p><div class="rowbtns"><button class="btn ${G.stageOn?'':'pri'}" data-act="stageon" data-v="0">Closed</button><button class="btn ${G.stageOn?'pri':''}" data-act="stageon" data-v="1">Open${G.stageOn?` · code ${code('stage')}`:''}</button></div>
     ${S.in?`<div class="rowbtns"><button class="btn" data-act="rskip" data-v="costume" ${S.room.costume?'disabled':''}>Photo booth pack</button><button class="btn" data-act="bonus" ${S.bonus>=CAP.bonus?'disabled':''}>Bonus pack (${S.bonus}/${CAP.bonus})</button></div>`:''}
@@ -572,8 +589,8 @@ function playNight(){
   const add=(id,src)=>{S.pieces[id]=(S.pieces[id]||0)+1;got[src]++};
   XT.forEach(t=>{S.x[t.k]=1;S.spins+=t.s;S.pts+=t.p});
   RT.forEach(t=>{if(t.k==='trade')return;S.room[t.k]=1;S.spins+=t.s||0;S.pts+=t.p});
-  const P0=[...Object.keys(ACT),'costume','tasks',...(G.stageOn?['stage']:[])];S.tasksPack=1;
-  P0.forEach(k=>{if(ACT[k])S.acts[k]=1;packPieces(ACT[k]||EXTRA[k]).forEach(id=>add(id,'pack'))});
+  const P0=[...activeActs(),...['costume','tasks','stage'].filter(packOn)];S.tasksPack=1;
+  P0.forEach(k=>{if(ACT[k])S.acts[k]=1;packPieces(k).forEach(id=>add(id,'pack'))});
   const stageSpins=false;   // no stage QR in this setup
   while(S.spins>0){S.spins--;const ok=k=>!(k==='potion'&&S.potWon-S.potDrank>=CAP.potion)&&!(k==='spin'&&S.extra>=CAP.spin);const k=rnd(SEG.filter(ok));W[k]++;
     if(k==='piece')add(wheelPiece(),'wheel');else if(k==='point'){const n=wheelPts();S.pts+=n;ptsWheel+=n}else if(k==='potion')S.potWon++;else if(k==='spin'){S.extra++;S.spins++}}
@@ -597,16 +614,16 @@ function playNight(){
 
 /* simulator: a room of 200 guests who do every task and every activity, with one-way sends between them */
 // A guest profile: which packs they get and what share of the social tasks they do.
-const MIX={booth:.85,grotto:.65,crew:.35,costume:.75,tasks:.5,stage:.7};   // costume = the photo booth pack   // assumed share of a mixed crowd
+let MIX={booth:.85,grotto:.65,crew:.35,costume:.75,tasks:.5,stage:.7};   // costume = the photo booth pack   // assumed share of a mixed crowd
 function simGuest(mixed){
   const P={},add=id=>P[id]=(P[id]||0)+1;let pts=0,spins=FREESPIN,pot=0,extra=0;
   const allTasks=!mixed||Math.random()<MIX.tasks, share=allTasks?1:.3+Math.random()*.5;
   XT.forEach(t=>{if(allTasks||Math.random()<share){pts+=t.p;spins+=t.s}});
-  const packs=Object.keys(ACT).filter(k=>!mixed||Math.random()<MIX[k]);
-  if(!mixed||Math.random()<MIX.costume)packs.push('costume');
-  if(allTasks)packs.push('tasks');
+  const packs=activeActs().filter(k=>!mixed||Math.random()<MIX[k]);
+  if(packOn('costume')&&(!mixed||Math.random()<MIX.costume))packs.push('costume');
+  if(packOn('tasks')&&allTasks)packs.push('tasks');
   if(G.stageOn&&(!mixed||Math.random()<MIX.stage))packs.push('stage');
-  packs.forEach(k=>packPieces(ACT[k]||EXTRA[k],P).forEach(add));
+  packs.forEach(k=>packPieces(k,P).forEach(add));
   while(spins>0){spins--;const ok=k=>!(k==='potion'&&pot>=CAP.potion)&&!(k==='spin'&&extra>=CAP.spin);const k=rnd(SEG.filter(ok));
     if(k==='piece')add(wheelPiece(P));else if(k==='point')pts+=wheelPts();else if(k==='potion')pot++;else if(k==='spin'){extra++;spins++}}
   return {P,pts,sent:0,got:0,packs:packs.length};
@@ -628,12 +645,31 @@ function simSheet(){
     return {j:J.map((_,i)=>pct(x=>x.done[i])),n:J.map((_,i)=>R.filter(x=>x.done[i]).length),pk:(R.reduce((a,x)=>a+x.packs,0)/N).toFixed(1)}};
   const a=run(false,false),b=run(true,false),c=run(false,true),d=run(true,true);
   const cell=(x,i)=>`${x.j[i]}% · ${x.n[i]}`;
-  sheet(`<h3>A room of 200</h3><p class="sm mu">“All in” does everything. “Mixed” is a guess at a real room: ${Math.round(MIX.booth*100)}% visit the booth, ${Math.round(MIX.grotto*100)}% play The Grotto, ${Math.round(MIX.crew*100)}% find the crew member, ${Math.round(MIX.costume*100)}% use the photo booth, ${Math.round(MIX.tasks*100)}% finish every social task. Sends pass spares to people missing them, up to ${RECV} each. The stage drop is ${G.stageOn?'open':'closed'}.</p>
+  sheet(`<h3>A room of 200</h3><p class="sm mu">“All in” does everything. “Mixed” is a guess at a real room: ${Math.round(MIX.booth*100)}% visit the booth, ${Math.round(MIX.grotto*100)}% play The Grotto, ${Math.round(MIX.crew*100)}% find the crew member, ${Math.round(MIX.costume*100)}% use the photo booth, ${Math.round(MIX.tasks*100)}% finish every social task. Sends pass spares to people missing them, up to ${RECV} each. The stage drop is ${G.stageOn?'open':'closed'}. Packs: ${[...Object.keys(ACT),'costume','tasks','stage'].filter(packOn).map(k=>`${(ACT[k]||EXTRA[k]).n.split(' · ')[0]} ${slotsFor(k).length}`).join(', ')}. Wheel ${CFG.wheel.piece}% pieces, gap-fill ${CFG.gap}%.</p>
     <table class="tbl"><tr><td></td><td class="mu">All in</td><td class="mu">All in + sends</td><td class="mu">Mixed</td><td class="mu">Mixed + sends</td></tr>
     ${J.map((j,i)=>`<tr><td>${esc(j.n)}</td><td>${cell(a,i)}</td><td>${cell(b,i)}</td><td>${cell(c,i)}</td><td>${cell(d,i)}</td></tr>`).join('')}
     <tr><td>Packs per guest</td><td>${a.pk}</td><td>${b.pk}</td><td>${c.pk}</td><td>${d.pk}</td></tr></table>
     <p class="xs mu">Stock: ${STOCK0.tote} totes, ${STOCK0.pants} pants + ${STOCK0.tee} T-shirts. Open the stage drop from the staff desk and run again to see the lever.</p>
     <div class="rowbtns"><button class="btn" data-act="sim">Run again</button><button class="btn pri" data-act="close">Close</button></div>`);
+}
+
+function tuneSheet(){
+  const num=(path,val,max,step)=>`<input class="in" style="padding:6px;font-size:15px" type="number" min="0" max="${max}" step="${step||1}" data-cfg="${path}" value="${val}">`;
+  const pk=[['booth','team1 & Cascade booth'],['grotto','The Grotto'],['crew','Hidden crew member'],['costume','Photo booth'],['tasks','All social tasks'],['stage','Stage drop']];
+  sheet(`<h3>Tune</h3><p class="sm mu">Change the numbers, then run “Room of 200” or “My night”. Saved in this browser only.</p>
+    <p class="xs mu">Packs: on, and pieces per pack</p>
+    <table class="tbl">${pk.map(([k,n])=>`<tr><td><label><input type="checkbox" data-cfg="packs.${k}.on" ${packOn(k)?'checked':''}> ${n}</label></td><td style="width:90px">${num('packs.'+k+'.n',CFG.packs[k].n,6)}</td></tr>`).join('')}</table>
+    <p class="xs mu">Wheel odds, in percent. They don't have to add to 100: they're shared out over 20 slots.</p>
+    <table class="tbl">${[['piece','Puzzle piece'],['point','Points'],['potion','Potion'],['boo','Boo'],['spin','+1 spin']].map(([k,n])=>`<tr><td>${n}</td><td style="width:90px">${num('wheel.'+k,CFG.wheel[k],100,5)}</td></tr>`).join('')}</table>
+    <p class="xs mu">Wheel pieces</p>
+    <table class="tbl"><tr><td>Gap-fill share, %</td><td style="width:90px">${num('gap',CFG.gap,100,5)}</td></tr>${J.map(j=>`<tr><td>Random mix · ${esc(j.n)}</td><td style="width:90px">${num('wt.'+j.id,CFG.wt[j.id],100)}</td></tr>`).join('')}</table>
+    <p class="xs mu">Mixed crowd: share of guests who do each, in percent</p>
+    <table class="tbl">${pk.map(([k,n])=>`<tr><td>${n}</td><td style="width:90px">${num('mix.'+k,CFG.mix[k],100,5)}</td></tr>`).join('')}<tr><td>Pieces a guest can receive by sends</td><td style="width:90px">${num('recv',CFG.recv,10)}</td></tr></table>
+    <div class="rowbtns"><button class="btn" data-act="tunereset">Reset to D</button><button class="btn pri" data-act="tuneapply">Apply and run</button></div>`);
+}
+function tuneApply(){
+  document.querySelectorAll('[data-cfg]').forEach(el=>{const path=el.dataset.cfg.split('.');let o=CFG;for(let i=0;i<path.length-1;i++)o=o[path[i]];o[path[path.length-1]]=el.type==='checkbox'?(el.checked?1:0):(+el.value||0)});
+  saveCfg();applyCfg();render();simSheet();
 }
 
 /* ================= Events ================= */
@@ -677,13 +713,16 @@ document.addEventListener('click',e=>{
     case 'drank':S.potDrank=Math.min(S.potWon,S.potDrank+1);close();render();toast('Cheers');break;
     case 'staff':staffSheet();break;
     case 'bonus':if(S.bonus<CAP.bonus){S.bonus++;openPack('bonus')}break;
-    case 'stageon':G.stageOn=v==='1';save();staffSheet();render();break;
+    case 'stageon':CFG.packs.stage.on=v==='1'?1:0;saveCfg();applyCfg();save();staffSheet();render();break;
     case 'about':about();break;
     case 'revopen':setTimeout(()=>{if((S.rev||0)<1){S.rev=1;render()}},400);break;
     case 'revskip':S.rev=2;render();toast('Review marked written');break;
     case 'revshow':sheet(`<h3>Show this at the merch desk</h3><div class="code">Review keychain</div><p class="sm mu" style="text-align:center">${esc(S.h)}</p><button class="btn proto" data-act="revhand">Prototype: staff hands it over</button>`);break;
     case 'revhand':if(G.keyrev>0)G.keyrev--;S.rev=3;close();render();toast('Collected');break;
     case 'sim':simSheet();break;
+    case 'tune':tuneSheet();break;
+    case 'tuneapply':tuneApply();break;
+    case 'tunereset':CFG=structuredClone(DEF);saveCfg();applyCfg();render();tuneSheet();toast('Back to the D settings');break;
     case 'playnight':playNight();break;
     case 'stagemode':G.stageMode=v;save();staffSheet();break;
     case 'resetme':S={...fresh(),in:S.in,h:S.h,wallet:S.wallet};wheelRot=0;close();render();toast('Progress reset. Still signed in.');break;
@@ -692,6 +731,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{if(e.target.id==='revshot'&&e.target.files&&e.target.files[0]){S.rev=2;render();toast('Screenshot added')}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+applyCfg();
 render();
 })();
 </script>
