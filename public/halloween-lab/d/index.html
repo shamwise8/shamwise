@@ -154,7 +154,7 @@ const ACT={
 // Small extra packs of 2 pieces: a head start, a reward for the social tasks, and two staff levers.
 const EXTRA={
   costume:{n:'Photo booth head start',slots:['G:j1','R'],how:'Take a photo at the photo booth'},
-  tasks:{n:'All social tasks done',slots:['GAP','R'],how:'Unlocks by itself'},
+  tasks:{n:'All social tasks done',slots:['GAP','R'],how:'Every X task and one send · unlocks by itself'},
   stage:{n:'Stage drop',slots:['GAP','R'],how:'Only if staff open it'},
   bonus:{n:'Staff bonus',slots:['GAP','R'],how:'From staff'}
 };
@@ -426,7 +426,7 @@ function rtask(k){
 function rdone(k){const t=RT.find(x=>x.k===k);if(S.room[k])return;S.room[k]=1;S.spins+=t.s||0;if(t.p)addPts(t.p,t.t);close();render();
   if(k==='photo'&&packOn('costume')){setTimeout(()=>openPack('costume'),300);return}
   if(k==='stage'&&packOn('stage')){setTimeout(()=>openPack('stage'),300);return}
-  if(k==='tg')checkTasksPack();
+  if(k==='tg'||k==='trade')checkTasksPack();
   toast(`Done${t.p?` · +${t.p} pt${t.p>1?'s':''}`:''}${t.s?`, +${t.s} spin`:''}`)}
 function rsubmit(k){
   const v=($('#rc').value||'').trim().toUpperCase();
@@ -489,7 +489,7 @@ function reveal(v){
     <button class="btn pri" data-act="donepack">Done</button>`);
   render();
 }
-function checkTasksPack(){if(S.tasksPack||!packOn('tasks'))return;if(XT.every(t=>S.x[t.k])&&S.room.tg){S.tasksPack=1;setTimeout(()=>{toast('All social tasks done · extra pack unlocked');openPack('tasks')},700)}}
+function checkTasksPack(){if(S.tasksPack||!packOn('tasks'))return;if(XT.every(t=>S.x[t.k])&&S.room.trade){ /* every X task plus a first send; Telegram doesn't count */S.tasksPack=1;setTimeout(()=>{toast('All social tasks done · extra pack unlocked');openPack('tasks')},700)}}
 const SOURCE={j1:'The team1 & Cascade booth pack, the photo booth head start, the wheel, or a send from another guest.',j2:'The hidden team1 crew member, the wheel, or a send from another guest.',j3:'The Grotto pack, the wheel, or a send from another guest.'};
 function pieceSheet(id){
   const j=pieceJ(id),q=+id.split('-')[1],n=S.pieces[id]||0,isSeal=id===SEAL;
@@ -509,7 +509,7 @@ function tradeSheet(){
 }
 function doTrade(){
   const give=document.querySelector('[data-g="give"][aria-pressed="true"]');if(!give)return;
-  S.pieces[give.dataset.v]--;const first=!S.room.trade;if(first){S.room.trade=1;addPts(2,'First send')}
+  S.pieces[give.dataset.v]--;const first=!S.room.trade;if(first){S.room.trade=1;addPts(2,'First send');setTimeout(checkTasksPack,300)}
   close();render();toast(`Sent ${pieceName(give.dataset.v)}${first?' · +2 pts':''}`);
 }
 function doAsk(){
@@ -708,7 +708,7 @@ document.addEventListener('click',e=>{
     case 'dotrade':doTrade();break;
     case 'doask':doAsk();break;
     case 'piece':pieceSheet(v);break;
-    case 'sendone':{S.pieces[v]--;const first=!S.room.trade;if(first){S.room.trade=1;addPts(2,'First send')}close();render();toast(`Sent ${pieceName(v)}${first?' · +2 pts':''}`);break}
+    case 'sendone':{S.pieces[v]--;const first=!S.room.trade;if(first){S.room.trade=1;addPts(2,'First send')}close();render();checkTasksPack();toast(`Sent ${pieceName(v)}${first?' · +2 pts':''}`);break}
     case 'askone':if(Math.random()<.5){S.pieces[v]=(S.pieces[v]||0)+1;checkPuzzles();close();render();toast(`@night_owl sent you ${pieceName(v)}`)}else{close();toast('No one has a spare right now. Try again later.')}break;
     case 'spin':doSpin();break;
     case 'claim':claim(v);break;
