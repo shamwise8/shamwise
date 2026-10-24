@@ -162,7 +162,6 @@ const XT=[
   {k:'post',t:'Post about the event',sub:'Tags @Team1TH @AvaxTeam1 and Bitkub',p:2,s:2,kind:'post'}
 ];
 const RT=[
-  {k:'stage',t:'Scan the stage QR',sub:'At the quest hints, 20:15 · a pack drop too',p:2},
   {k:'tg',t:'Join the team1 Thailand Telegram',sub:'Find the code word pinned in the channel',p:1},
   {k:'trade',t:'Send a piece',sub:'Give a piece to another guest · first successful send',p:1},
   {k:'costume',t:'Come in a Halloween costume',sub:'Staff mark it at the photo wall',p:2,s:1}
@@ -170,11 +169,11 @@ const RT=[
 const LADDER=[                                   // at = cost. Points are spent on claim; each item once.
   {at:3,k:'pen',n:'Pen',stock:['pen']},
   {at:3,k:'pen2',n:'Second pen, another colour',stock:['pen'],after:'pen'},
-  {at:6,k:'mid',n:'Sticker set or postcard',stock:['sticker','postcard']},
+  {at:6,k:'mid',n:'Postcard 6 or sticker set 8',stock:['sticker','postcard']},
   {at:15,k:'key',n:'Keychain',stock:['key']}
 ];
 const wheelPts=()=>{const r=Math.random()*25;return r<15?1:r<23?2:3};   // within the 25% point slots: +1 15%, +2 8%, +3 2%
-const SEG=['piece','point','piece','potion','piece','point','piece','boo','piece','point','piece','potion','piece','point','spin','piece','point','piece','potion','boo']; // 20 slots: 45/25/15/10/5
+const SEG=['piece','point','potion','piece','boo','point','piece','spin','point','piece','potion','boo','piece','point','piece','potion','point','boo','piece','point']; // 20 slots: piece 35, points 30, potion 15, boo 15, spin 5
 const KIND={piece:{l:'Piece',c:'#2a2420',i:'🧩'},point:{l:'+1 point',c:'#7a3a10',i:'★'},potion:{l:'Potion',c:'#174a45',i:'🧪'},boo:{l:'Boo',c:'#232323',i:'👻'},spin:{l:'+1 spin',c:'#3b2a5c',i:'↻'}};
 const CAP={potion:3,spin:2,bonus:2};   // potion: most a guest can hold at once. Drinking one frees a slot. Try 4.
 const TRADEMAX=2;
@@ -183,7 +182,7 @@ const RECV=2;      // simulator: a guest receives at most 2 pieces from others
 const okTrade=()=>true;   // Blurry build: one-way transfers, no swap rules   // Pants pieces only trade for Pants pieces   // simulator: a realistic guest manages about two trades
 const TGWORD='PUMPKIN';
 const FEEDBACK='https://events.team1.network/events/68hamvg';
-const STOCK0={pen:300,sticker:60,postcard:60,key:30,tote:115,pants:45,tee:15,potion:150,lootcard:100,keyrev:50};
+const STOCK0={pen:250,sticker:60,postcard:60,key:30,tote:115,pants:45,tee:15,potion:150,lootcard:100,keyrev:50};
 const STOCKNAME={pen:'Pen',sticker:'Sticker set',postcard:'Postcard',key:'Keychain',tote:'Tote bag',pants:'Pants',tee:'T-shirt',potion:'Potion',lootcard:'Grotto lootbox card',keyrev:'Review keychain'};
 
 /* ================= State ================= */
@@ -285,7 +284,7 @@ function vSpin(){
       ${S.in?`<button class="jag" data-act="spin" ${S.spins<1||spinning?'disabled':''}>Weave your luck</button>`:`<button class="jag" data-act="login">Join to spin</button>`}
     </section>
     <section><div class="hdr"><span>Wheel odds</span></div>
-      <table class="odds"><tr><td>🧩 A puzzle piece</td><td>45%</td></tr><tr><td>★ +1 point</td><td>15%</td></tr><tr><td>★ +2 points</td><td>8%</td></tr><tr><td>★ +3 points</td><td>2%</td></tr><tr><td>🧪 Potion · a drink at the counter, hold up to ${CAP.potion}</td><td>15%</td></tr><tr><td>👻 Boo · nothing</td><td>10%</td></tr><tr><td>↻ +1 spin, max ${CAP.spin}</td><td>5%</td></tr></table>
+      <table class="odds"><tr><td>🧩 A puzzle piece</td><td>35%</td></tr><tr><td>★ +1 point</td><td>18%</td></tr><tr><td>★ +2 points</td><td>9.6%</td></tr><tr><td>★ +3 points</td><td>2.4%</td></tr><tr><td>🧪 Potion · a drink at the counter, hold up to ${CAP.potion}</td><td>15%</td></tr><tr><td>👻 Boo · nothing</td><td>15%</td></tr><tr><td>↻ +1 spin, max ${CAP.spin}</td><td>5%</td></tr></table>
       <p class="xs mu">The teal 🧪 slots are potions. When a cap is reached, that slot can no longer land and the others share its chance.</p></section>`;
 }
 function drawWheel(){
@@ -428,7 +427,7 @@ function drawPiece(k,P=S.pieces){
   return missing.length?rnd(missing):rnd(ids);          // guided: the main piece fills a gap until the set is done
 }
 const WEIGHT={j1:.55,j2:.28,j3:.17};
-const GAPFILL=.5;   // share of wheel pieces that fill a gap: the tote and Frog first, the pants once both are done
+const GAPFILL=.25;   // share of wheel pieces that fill a gap: the tote and Frog first, the pants once both are done
 // The stage drop at the quest hints: 2 pieces that fill tote or Frog gaps, never the pants, never the Grotto piece
 const STAGESPINS=2;   // the stage reward when staff switch it to spins
 function stagePiece(P=S.pieces){const miss=allIds().filter(id=>!has(id,P)&&!id.startsWith('j3'));return miss.length?rnd(miss):randomPiece()}
@@ -515,7 +514,7 @@ function land(k){
 
 /* claims */
 function claim(k){
-  if(k==='mid')return sheet(`<h3>Pick one</h3><div class="rowbtns"><button class="btn" data-act="pickmid" data-v="sticker" ${G.sticker?'':'disabled'}>Sticker set<br><small class="mu">${G.sticker} left</small></button><button class="btn" data-act="pickmid" data-v="postcard" ${G.postcard?'':'disabled'}>Postcard<br><small class="mu">${G.postcard} left</small></button></div>`);
+  if(k==='mid')return sheet(`<h3>Pick one</h3><div class="rowbtns"><button class="btn" data-act="pickmid" data-v="postcard" ${G.postcard&&S.pts>=6?'':'disabled'}>Postcard · 6 pts<br><small class="mu">${G.postcard} left</small></button><button class="btn" data-act="pickmid" data-v="sticker" ${G.sticker&&S.pts>=8?'':'disabled'}>Sticker set · 8 pts<br><small class="mu">${G.sticker} left</small></button></div>`);
   if(k==='pz_j3')return sheet(`<h3>Pick one</h3><div class="rowbtns"><button class="btn" data-act="picktop" data-v="pants" ${G.pants?'':'disabled'}>Pants<br><small class="mu">${G.pants} left</small></button><button class="btn" data-act="picktop" data-v="tee" ${G.tee?'':'disabled'}>T-shirt<br><small class="mu">${G.tee} left</small></button></div>`);
   if(k==='pz_j2'){redeem(k);S.claims[k]='minting';sheet(`<h3>Minting…</h3><div class="check"><div><b>✓</b>Halloween Crew artwork by Frog, from your 4 pieces</div><div style="animation-delay:.5s"><b>✓</b>Minting to ${S.wallet.slice(0,6)}…${S.wallet.slice(-4)}</div><div style="animation-delay:1s"><b>✓</b>Gas covered by team1</div></div>`);
     setTimeout(()=>{S.nft='0x'+hex(4)+'…'+hex(4);S.claims[k]='done';render();sheet(`<h3>It’s yours</h3><p class="sm mu">Frog’s Halloween Crew artwork is in your wallet. Holders hear about our next event first.</p><div class="note">Prototype: simulated mint.</div><button class="btn pri" data-act="close">Nice</button>`)},1700);return}
@@ -525,7 +524,7 @@ const ITEM={pen:'Pen',pen2:'Pen · second colour',key:'Keychain',pz_j1:'Tote bag
 function redeem(k){const j=J.find(x=>'pz_'+x.id===k);if(!j)return;j.pieces.forEach((_,i)=>S.pieces[j.id+'-'+i]--);S.nfts=(S.nfts||0)+1}   // uses one copy of each piece, mints the NFT
 function showStaff(k,item){
   const L=LADDER.find(r=>r.k===k);
-  if(L){if(S.claims[k])return;if(S.pts<L.at)return toast('Not enough points');S.pts-=L.at;S.log.unshift(`-${L.at} pts · ${L.n}`)}
+  if(L){if(S.claims[k])return;const cost=k==='mid'&&item==='sticker'?8:L.at;if(S.pts<cost)return toast('Not enough points');S.pts-=cost;S.log.unshift(`-${cost} pts · ${item?STOCKNAME[item]:L.n}`)}
   if(k.startsWith('pz_'))redeem(k);
   S.claims[k]='shown';const n=item?STOCKNAME[item]:ITEM[k]||k;S.claims[k+'_item']=item||'';render();
   sheet(`<h3>Show this at the merch desk</h3><div class="code">${esc(n)}</div><p class="sm mu" style="text-align:center">${esc(S.h)}${k.startsWith('pz_')?' · the puzzle NFT is minted to your wallet':''}</p><button class="btn proto" data-act="handover" data-v="${k}">Prototype: staff hands it over</button>`);
@@ -540,18 +539,17 @@ let staffTimer=null;
 function staffSheet(){
   const left=300-Math.floor(Date.now()/1000)%300;
   sheet(`<h3>Staff desk</h3><p class="sm mu">In the real app this is on the team1 and Blurry Logics devices. Staff show a code only after a guest finishes the activity.</p>
-    <table class="tbl">${Object.entries(ACT).map(([k,a])=>`<tr><td>${esc(a.n)}</td><td><b>${code(k)}</b></td></tr>`).join('')}<tr><td>Stage QR, at the quest hint</td><td><b>${code('stage')}</b></td></tr><tr><td>Telegram code word</td><td><b>${TGWORD}</b></td></tr></table>
+    <table class="tbl">${Object.entries(ACT).map(([k,a])=>`<tr><td>${esc(a.n)}</td><td><b>${code(k)}</b></td></tr>`).join('')}<tr><td>Telegram code word</td><td><b>${TGWORD}</b></td></tr></table>
     <p class="xs mu">New codes in <span id="cd">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span></p>
     ${S.in?`<div class="rowbtns"><button class="btn" data-act="rskip" data-v="costume" ${S.room.costume?'disabled':''}>Mark costume</button><button class="btn" data-act="bonus" ${S.bonus>=CAP.bonus?'disabled':''}>Bonus pack (${S.bonus}/${CAP.bonus})</button></div>`:''}
-    <p class="xs mu">Stage drop at 20:15, set from the stock on the night</p><div class="rowbtns"><button class="btn ${(G.stageMode||'pack')==='pack'?'pri':''}" data-act="stagemode" data-v="pack">Pack of 2 pieces</button><button class="btn ${G.stageMode==='spins'?'pri':''}" data-act="stagemode" data-v="spins">+${STAGESPINS} spins</button></div>
     <p class="xs mu">Stock</p><table class="tbl">${Object.keys(STOCK0).map(k=>`<tr><td>${STOCKNAME[k]}</td><td>${G[k]} / ${STOCK0[k]}</td></tr>`).join('')}</table>
     <button class="btn ghost" data-act="reset">Reset the prototype</button>`);
   clearInterval(staffTimer);staffTimer=setInterval(()=>{const el=$('#cd');if(!el){clearInterval(staffTimer);return}const l=300-Math.floor(Date.now()/1000)%300;el.textContent=`${Math.floor(l/60)}:${String(l%60).padStart(2,'0')}`;if(l===300)staffSheet()},1000);
 }
 function about(){
-  sheet(`<h3>Prototype C</h3><p class="sm">Mirrors the Blurry Logics build as of 24 Oct: free first spin, one-way sends, an NFT for every puzzle. Everything is simulated: no X, no wallet, no chain.</p>
-    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 3, twice in two colours. Sticker or postcard 6, keychain 15. Finished puzzles give points: the Tote 2, Frog 2, the Pants 1.</small></div></div>
-    <div class="row"><div class="grow"><b>Pieces</b><small>From booth packs, the wheel, the stage drop and sends. Three puzzles: Pumpkin Patch (tote), Halloween Crew (Frog’s art), Midnight Manor (pants).</small></div></div>
+  sheet(`<h3>Prototype C</h3><p class="sm">The Blurry Logics build as of 24 Oct, with Sam’s changes: wheel 35% pieces, gap-fill 25%, no stage QR, sticker set 8 and postcard 6, 250 pens. Everything is simulated: no X, no wallet, no chain.</p>
+    <div class="list sm"><div class="row"><div class="grow"><b>Points</b><small>Tasks and the wheel, spent on claim. Pen 3, twice in two colours. Postcard 6 or sticker set 8, keychain 15. Finished puzzles give points: the Tote 2, Frog 2, the Pants 1.</small></div></div>
+    <div class="row"><div class="grow"><b>Pieces</b><small>From booth packs, the wheel and sends. Three puzzles: Pumpkin Patch (tote), Halloween Crew (Frog’s art), Midnight Manor (pants).</small></div></div>
     <div class="row"><div class="grow"><b>Skips</b><small>Dashed orange buttons skip real actions so the flow can be walked in a minute.</small></div></div></div>
     <button class="btn pri" data-act="close">Close</button>`);
 }
@@ -565,16 +563,15 @@ function playNight(){
   XT.forEach(t=>{S.x[t.k]=1;S.spins+=t.s;S.pts+=t.p});
   RT.forEach(t=>{if(t.k==='trade')return;S.room[t.k]=1;S.spins+=t.s||0;S.pts+=t.p});
   Object.keys(ACT).forEach(k=>{S.acts[k]=1;const p1=drawPiece(k);add(p1,'pack');add(k==='crew'?drawPiece(k):randomPiece(),'pack')});
-  const stageSpins=(G.stageMode||'pack')==='spins';if(stageSpins)S.spins+=STAGESPINS;
+  const stageSpins=false;   // no stage QR in this setup
   while(S.spins>0){S.spins--;const ok=k=>!(k==='potion'&&S.potWon-S.potDrank>=CAP.potion)&&!(k==='spin'&&S.extra>=CAP.spin);const k=rnd(SEG.filter(ok));W[k]++;
     if(k==='piece')add(wheelPiece(),'wheel');else if(k==='point'){const n=wheelPts();S.pts+=n;ptsWheel+=n}else if(k==='potion')S.potWon++;else if(k==='spin'){S.extra++;S.spins++}}
-  if(!stageSpins)for(let i=0;i<2;i++)add(stagePiece(),'stage');
   const before=S.pts;S.pzb={};J.forEach(j=>{if(jDone(j)){S.pzb[j.id]=1;S.pts+=j.pts}});
   const spins=Object.values(W).reduce((a,b)=>a+b,0);
   render();
   const rows=J.map(j=>{const have=j.pieces.filter((_,i)=>has(j.id+'-'+i)).length,tot=j.pieces.reduce((a,_,i)=>a+(S.pieces[j.id+'-'+i]||0),0);
     return `<tr><td>${esc(j.n)}</td><td>${have}/4${tot>have?` · ${tot-have} spare`:''}</td><td>${have===4?'<span class="ok">Done</span>':`missing ${4-have}`}</td></tr>`}).join('');
-  const can=LADDER.filter(r=>!r.after).map(r=>`${r.n.toLowerCase()} ${r.at}`).join(', ');
+  const can=LADDER.filter(r=>!r.after).map(r=>r.k==='mid'?r.n.toLowerCase():`${r.n.toLowerCase()} ${r.at}`).join(', ');
   sheet(`<h3>Your night</h3><p class="sm mu">${esc(S.h)} did every task and activity and spent every spin. No sends, so this is what you'd have on your own.</p>
     <table class="tbl"><tr><td class="mu">Puzzle</td><td class="mu">Pieces</td><td></td></tr>${rows}</table>
     <table class="tbl">
@@ -594,7 +591,6 @@ function simGuest(){
   Object.keys(ACT).forEach(k=>{add(drawPiece(k,P));add(k==='crew'?drawPiece(k,P):randomPiece())});
   while(spins>0){spins--;const ok=k=>!(k==='potion'&&pot>=CAP.potion)&&!(k==='spin'&&extra>=CAP.spin);const k=rnd(SEG.filter(ok));
     if(k==='piece')add(wheelPiece(P));else if(k==='point')pts+=wheelPts();else if(k==='potion')pot++;else if(k==='spin'){extra++;spins++}}
-  for(let i=0;i<2;i++)add(stagePiece(P));   // the stage drop lands after most spins
   return {P,pts,sent:0,got:0};
 }
 function simRoom(N,sends){
@@ -608,7 +604,7 @@ function simRoom(N,sends){
   R.forEach(g=>{g.done=J.map(j=>jDone(j,g.P));g.pts+=J.filter(j=>jDone(j,g.P)).reduce((a,j)=>a+j.pts,0)});
   return R;
 }
-const AFFORD=[[3+6+15,'pen, sticker or postcard, keychain'],[3+3+6+15,'all of it, both pens']];
+const AFFORD=[[3+6+15,'pen, postcard, keychain'],[3+3+8+15,'both pens, sticker set, keychain']];
 function simSheet(){
   const N=200,run=t=>{const R=simRoom(N,t);const pct=f=>Math.round(R.filter(f).length/N*100);
     return {j:J.map((_,i)=>pct(x=>x.done[i])),n:J.map((_,i)=>R.filter(x=>x.done[i]).length),avg:(R.reduce((a,x)=>a+x.pts,0)/N).toFixed(1),rung:AFFORD.map(([c])=>pct(x=>x.pts>=c)),tr:(R.reduce((a,x)=>a+x.got,0)/N).toFixed(1)}};
