@@ -81,6 +81,12 @@ section:last-child{border-bottom:0}
 .pc .n{position:absolute;top:2px;right:3px;font-size:10px;background:#111;color:var(--or2);padding:0 3px}
 .pc.seal{outline:1px solid var(--or);outline-offset:-4px}
 .pc.art{border:0}
+.pc{cursor:pointer}
+.pc.ghost::before,.pieceart.missing::before{content:'';position:absolute;inset:0;background:var(--ghost);opacity:.22;filter:grayscale(1)}
+.pc.ghost>*,.pieceart.missing>*{position:relative}
+.pieceart{position:relative}
+.pieceart{width:200px;aspect-ratio:1;margin:0 auto;border:1px solid var(--ln2)}
+.pieceart.missing{border-style:dashed;display:grid;place-items:center;color:var(--mu);font-size:44px;font-family:var(--spook)}
 .pz{gap:0}
 .big.art{align-items:end;padding:0;overflow:hidden}.big.art span{display:block;width:100%;background:rgba(0,0,0,.65);font-size:11px;padding:3px 4px}
 .pzc .grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
@@ -214,7 +220,7 @@ function tile(id,big){
   const j=pieceJ(id),n=S.pieces[id]||0,isSeal=id===SEAL;
   const q=+id.split('-')[1],st=`background:url(${ART[j.id]}) ${QPOS[q]}/200% 200% no-repeat`;
   if(big)return `<div class="big art" style="${st}" title="${esc(pieceName(id))}"><span>${esc(j.n)} · piece ${q+1}${isSeal?' · Grotto piece':''}</span></div>`;
-  return `<div class="pc ${n?'have art':''} ${isSeal?'seal':''}" style="${n?st:''}" title="${esc(pieceName(id))}">${n?'':(isSeal?'Grotto only':'?')}${n>1?`<span class="n">×${n}</span>`:''}</div>`;
+  return `<button class="pc ${n?'have art':'ghost'} ${isSeal?'seal':''}" style="${n?st:`--ghost:url(${ART[j.id]}) ${QPOS[q]}/200% 200% no-repeat`}" data-act="piece" data-v="${id}" aria-label="${esc(j.n)}, piece ${q+1}, ${n?n+' owned':'missing'}">${n?'':(isSeal?'Grotto only':'?')}${n>1?`<span class="n">×${n}</span>`:''}</button>`;
 }
 
 /* ================= Render ================= */
@@ -455,6 +461,14 @@ function reveal(v){
     <button class="btn pri" data-act="donepack">Done</button>`);
   render();
 }
+const SOURCE={j1:'Quark’s quiz and the Cascade quest, the wheel, or a send from another guest.',j2:'The hidden team1 crew member, the wheel, or a send from another guest.',j3:'The two Grotto games, the wheel, or a send from another guest.'};
+function pieceSheet(id){
+  const j=pieceJ(id),q=+id.split('-')[1],n=S.pieces[id]||0,isSeal=id===SEAL;
+  const art=n?`<div class="pieceart" style="background:url(${ART[j.id]}) ${QPOS[q]}/200% 200% no-repeat"></div>`:`<div class="pieceart missing" style="--ghost:url(${ART[j.id]}) ${QPOS[q]}/200% 200% no-repeat"><span style="font:400 22px var(--spook);color:var(--cream)">Missing</span></div>`;
+  const how=isSeal?'Play a Grotto game to earn this piece. It cannot be sent.':SOURCE[j.id];
+  const act=!S.in?'':isSeal?'':n?`<button class="btn" data-act="sendone" data-v="${id}">Send this piece to @night_owl</button>`:`<button class="btn pri" data-act="askone" data-v="${id}">Ask the room</button>`;
+  sheet(`<h3 style="text-align:center">${esc(j.n)}</h3><p class="sm mu" style="text-align:center;margin-top:-6px">Piece ${q+1} · ${n} owned${isSeal?' · Grotto piece':''}</p>${art}<p class="sm" style="text-align:center">${how}</p>${act}<button class="btn ghost" data-act="close">Done</button>`);
+}
 function tradeSheet(){
   const mine=Object.entries(S.pieces).filter(([id,n])=>n>0&&id!==SEAL).map(([id])=>id);
   const want=allIds().filter(id=>!has(id)&&id!==SEAL);
@@ -638,6 +652,9 @@ document.addEventListener('click',e=>{
     case 'pick':document.querySelectorAll(`[data-g="${el.dataset.g}"]`).forEach(b=>b.setAttribute('aria-pressed',b===el));break;
     case 'dotrade':doTrade();break;
     case 'doask':doAsk();break;
+    case 'piece':pieceSheet(v);break;
+    case 'sendone':{S.pieces[v]--;const first=!S.room.trade;if(first){S.room.trade=1;addPts(1,'First send')}close();render();toast(`Sent ${pieceName(v)}${first?' · +1 pt':''}`);break}
+    case 'askone':if(Math.random()<.5){S.pieces[v]=(S.pieces[v]||0)+1;checkPuzzles();close();render();toast(`@night_owl sent you ${pieceName(v)}`)}else{close();toast('No one has a spare right now. Try again later.')}break;
     case 'spin':doSpin();break;
     case 'claim':claim(v);break;
     case 'pickmid':showStaff('mid',v);break;
