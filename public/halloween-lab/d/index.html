@@ -664,7 +664,7 @@ function tuneSheet(){
     <p class="xs mu">Wheel pieces</p>
     <table class="tbl"><tr><td>Gap-fill share, %</td><td style="width:90px">${num('gap',CFG.gap,100,5)}</td></tr>${J.map(j=>`<tr><td>Random mix · ${esc(j.n)}</td><td style="width:90px">${num('wt.'+j.id,CFG.wt[j.id],100)}</td></tr>`).join('')}</table>
     <p class="xs mu">Mixed crowd: share of guests who do each, in percent</p>
-    <table class="tbl">${pk.map(([k,n])=>`<tr><td>${n}</td><td style="width:90px">${num('mix.'+k,CFG.mix[k],100,5)}</td></tr>`).join('')}<tr><td>Pieces a guest can receive by sends</td><td style="width:90px">${num('recv',CFG.recv,10)}</td></tr></table>
+    <table class="tbl">${pk.map(([k,n])=>`<tr><td>${n}</td><td style="width:90px">${num('mix.'+k,CFG.mix[k],100,5)}</td></tr>`).join('')}<tr><td>Pieces a guest can receive by sends. A simulator assumption, not a game rule: 2 is a realistic room, 99 means every spare finds someone</td><td style="width:90px">${num('recv',CFG.recv,99)}</td></tr></table>
     <div class="rowbtns"><button class="btn" data-act="tunereset">Reset to D</button><button class="btn pri" data-act="tuneapply">Apply and run</button></div>`);
 }
 function tuneApply(){
