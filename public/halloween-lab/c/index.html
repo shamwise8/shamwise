@@ -127,7 +127,7 @@ footer.proto button{font-size:14px;color:var(--or2);border:1px dashed rgba(240,1
   <nav class="tabs" id="tabs" aria-label="Sections"></nav>
   <main id="main"></main>
 </div>
-<footer class="proto"><button data-act="staff">Staff desk</button><button data-act="sim">Simulate 200</button><button data-act="resetme">Reset progress</button><button data-act="about">?</button></footer>
+<footer class="proto"><button data-act="staff">Staff</button><button data-act="playnight">My night</button><button data-act="sim">Room of 200</button><button data-act="resetme">Reset</button><button data-act="about">?</button></footer>
 <div id="layer"></div>
 <script>
 (()=>{
@@ -542,6 +542,37 @@ function about(){
     <button class="btn pri" data-act="close">Close</button>`);
 }
 
+/* play one full night for this guest with the current rules, then show what happened */
+function playNight(){
+  const keep=S.in?{h:S.h,wallet:S.wallet}:{h:'@guest'+Math.floor(Math.random()*900+100),wallet:'0x'+hex(40)};
+  S={...fresh(),in:true,h:keep.h,wallet:keep.wallet,tab:'puzzles'};S.spins=FREESPIN;
+  const W={piece:0,point:0,potion:0,boo:0,spin:0},got={pack:0,wheel:0,stage:0};let ptsWheel=0;
+  const add=(id,src)=>{S.pieces[id]=(S.pieces[id]||0)+1;got[src]++};
+  XT.forEach(t=>{S.x[t.k]=1;S.spins+=t.s;S.pts+=t.p});
+  RT.forEach(t=>{if(t.k==='trade')return;S.room[t.k]=1;S.spins+=t.s||0;S.pts+=t.p});
+  Object.keys(ACT).forEach(k=>{S.acts[k]=1;const p1=drawPiece(k);add(p1,'pack');add(k==='crew'?drawPiece(k):randomPiece(),'pack')});
+  const stageSpins=(G.stageMode||'pack')==='spins';if(stageSpins)S.spins+=STAGESPINS;
+  while(S.spins>0){S.spins--;const ok=k=>!(k==='potion'&&S.potWon-S.potDrank>=CAP.potion)&&!(k==='spin'&&S.extra>=CAP.spin);const k=rnd(SEG.filter(ok));W[k]++;
+    if(k==='piece')add(wheelPiece(),'wheel');else if(k==='point'){const n=wheelPts();S.pts+=n;ptsWheel+=n}else if(k==='potion')S.potWon++;else if(k==='spin'){S.extra++;S.spins++}}
+  if(!stageSpins)for(let i=0;i<2;i++)add(stagePiece(),'stage');
+  const before=S.pts;S.pzb={};J.forEach(j=>{if(jDone(j)){S.pzb[j.id]=1;S.pts+=j.pts}});
+  const spins=Object.values(W).reduce((a,b)=>a+b,0);
+  render();
+  const rows=J.map(j=>{const have=j.pieces.filter((_,i)=>has(j.id+'-'+i)).length,tot=j.pieces.reduce((a,_,i)=>a+(S.pieces[j.id+'-'+i]||0),0);
+    return `<tr><td>${esc(j.n)}</td><td>${have}/4${tot>have?` · ${tot-have} spare`:''}</td><td>${have===4?'<span class="ok">Done</span>':`missing ${4-have}`}</td></tr>`}).join('');
+  const can=LADDER.filter(r=>!r.after).map(r=>`${r.n.toLowerCase()} ${r.at}`).join(', ');
+  sheet(`<h3>Your night</h3><p class="sm mu">${esc(S.h)} did every task and activity and spent every spin. No sends, so this is what you'd have on your own.</p>
+    <table class="tbl"><tr><td class="mu">Puzzle</td><td class="mu">Pieces</td><td></td></tr>${rows}</table>
+    <table class="tbl">
+      <tr><td>Spins</td><td>${spins}, including the free one${stageSpins?` and ${STAGESPINS} from the stage`:''}</td></tr>
+      <tr><td>Wheel</td><td>${W.piece} pieces · ${W.point} points (+${ptsWheel}) · ${W.potion} potions · ${W.spin} extra spins · ${W.boo} boo</td></tr>
+      <tr><td>Pieces</td><td>${got.pack} from packs · ${got.wheel} from the wheel${got.stage?` · ${got.stage} from the stage`:''}</td></tr>
+      <tr><td>Points</td><td><b>${S.pts}</b>${S.pts>before?` · includes ${S.pts-before} for finished puzzles`:''}</td></tr>
+      <tr><td>Potions</td><td>${S.potWon}</td></tr></table>
+    <p class="xs mu">Prices: ${esc(can)}. Spend them in Claims. Send or ask for missing pieces in Puzzles.</p>
+    <div class="rowbtns"><button class="btn" data-act="playnight">Play another night</button><button class="btn pri" data-act="close">See my puzzles</button></div>`);
+}
+
 /* simulator: a room of 200 guests who do every task and every activity, with one-way sends between them */
 function simGuest(){
   const P={},add=id=>P[id]=(P[id]||0)+1;let pts=0,spins=FREESPIN,pot=0,extra=0;
@@ -622,6 +653,7 @@ document.addEventListener('click',e=>{
     case 'revshow':sheet(`<h3>Show this at the merch desk</h3><div class="code">Review keychain</div><p class="sm mu" style="text-align:center">${esc(S.h)}</p><button class="btn proto" data-act="revhand">Prototype: staff hands it over</button>`);break;
     case 'revhand':if(G.keyrev>0)G.keyrev--;S.rev=3;close();render();toast('Collected');break;
     case 'sim':simSheet();break;
+    case 'playnight':playNight();break;
     case 'stagemode':G.stageMode=v;save();staffSheet();break;
     case 'resetme':S={...fresh(),in:S.in,h:S.h,wallet:S.wallet};wheelRot=0;close();render();toast('Progress reset. Still signed in.');break;
     case 'reset':S=fresh();G={...STOCK0};wheelRot=0;close();render();toast('Prototype reset');break;
