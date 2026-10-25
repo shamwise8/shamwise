@@ -53,7 +53,8 @@ p{margin:0}.mu{color:var(--mu)}.sm{font-size:15px}.xs{font-size:13px}
 .match .col{display:flex;flex-direction:column;gap:8px}
 .mi{padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);font-size:15px;text-align:left;min-height:52px}
 .mi[aria-pressed=true]{border-color:var(--gold)}
-.mi.p0{border-color:#ff7a3c}.mi.p1{border-color:#4ab3ff}.mi.p2{border-color:#b98cff}
+.mi.p0{border-color:#ff7a3c}.mi.p1{border-color:#4ab3ff}.mi.p2{border-color:#b98cff}.mi.p3{border-color:#3ccf7a}.mi.p4{border-color:#ffc24a}
+.mi.logo{display:flex;align-items:center;gap:10px}.lg{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;border:1px dashed #555;font-size:9px;letter-spacing:.08em;color:#777;flex:none}
 .ordn{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--red);font-size:13px;font-weight:500;flex:none}
 .slider{width:100%;accent-color:var(--red)}
 .big{font-size:56px;font-weight:500;text-align:center;line-height:1}
@@ -93,14 +94,14 @@ const Q=[
  {type:'order',label:'Put in order',q:'Put tonight’s programme in order, earliest first.',opts:['Registration','Opening speech','Panel discussion','Halloween Quest Hints','Costume contest'],a:[0,1,2,3,4]},
  {type:'slider',label:'Guess the number',q:'How many puzzles are in tonight’s game?',min:1,max:10,a:3,tol:0},
  {type:'text',label:'Type the answer',q:'Finish the puzzle name: “Midnight ______”',a:['bangkok'],show:'Bangkok'},
- {type:'match',label:'Match the pairs',q:'Match each puzzle to its prize.',left:['Avalanche Halloween','Team1 Thailand Crew','Midnight Bangkok'],right:['Tote bag','Collectible art NFT','Pants'],a:[0,1,2]},
+ {type:'match',label:'Match the logo',q:'Match each Avalanche app to its logo.',logos:true,left:['Core','LFJ','BENQI','GMX','Dexalot'],right:['Wallet','Swaps','Lending and staking','Perpetuals','Order book'],a:[0,1,2,3,4]},
  {type:'odd',label:'Odd one out',q:'Which one is not part of tonight’s game?',opts:['Puzzle pieces','Spin wheel','Witch’s potion','Bingo card'],a:3},
  {type:'emoji',label:'Emoji riddle',q:'What do these emoji spell?',emoji:'🎃 👻 🍬',opts:['Halloween','Christmas','Songkran','Loy Krathong'],a:0}
 ];
 const TYPES=[
  ['Multiple choice','One right answer from 2 to 6 options'],['True or false','Fast, good for warm-ups'],['Pick the colour or image','Tap a picture, logo or colour'],
  ['Pick all that apply','Several right answers, partial credit'],['Put in order','Tap items in sequence, partial credit'],['Guess the number','A slider, points for getting close'],
- ['Type the answer','Free text, several spellings accepted'],['Match the pairs','Link two lists, partial credit'],['Odd one out','Spot the item that doesn’t belong'],
+ ['Type the answer','Free text, several spellings accepted'],['Match the pairs','Link two lists, such as app logos to app names, partial credit'],['Odd one out','Spot the item that doesn’t belong'],
  ['Emoji riddle','Guess a word from emoji'],['Image spot','Tap the right place on a photo'],['Audio clip','Name the sound or song, needs sound on'],
  ['Speed round','Several true or false in one timer'],['Poll','No right answer, shows how the room voted'],['Photo check','Snap something in the venue, staff approve']
 ];
@@ -147,7 +148,7 @@ function question(){
   if(q.type==='order'){q._o=q._o||shuffle(q.opts.map((t,i)=>({t,i})));S.sel=[];body=`<p class="xs mu">Tap them in order. Tap again to undo.</p><div class="opts">${q._o.map(o=>`<button class="opt" data-act="seq" data-v="${o.i}"><span class="ordn" style="visibility:hidden">0</span>${esc(o.t)}</button>`).join('')}</div><button class="btn" data-act="submit" disabled>Submit</button>`}
   if(q.type==='slider'){S.sel=Math.round((q.min+q.max)/2);body=`<div class="big" id="sv">${S.sel}</div><input class="slider" type="range" min="${q.min}" max="${q.max}" value="${S.sel}" id="sl"><div class="top xs mu"><span>${q.min}</span><span>${q.max}</span></div><button class="btn" data-act="submit">Lock it in</button>`}
   if(q.type==='text')body=`<input class="in" id="ta" placeholder="Your answer" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn" data-act="submit">Submit</button>`;
-  if(q.type==='match'){q._r=q._r||shuffle(q.right.map((t,i)=>({t,i})));S.sel={pairs:{},pick:null};body=`<p class="xs mu">Tap a puzzle, then its prize.</p><div class="match"><div class="col">${q.left.map((t,i)=>`<button class="mi" data-act="ml" data-v="${i}">${esc(t)}</button>`).join('')}</div><div class="col">${q._r.map(o=>`<button class="mi" data-act="mr" data-v="${o.i}">${esc(o.t)}</button>`).join('')}</div></div><button class="btn" data-act="submit" disabled>Submit</button>`}
+  if(q.type==='match'){q._r=q._r||shuffle(q.right.map((t,i)=>({t,i})));S.sel={pairs:{},pick:null};body=`<p class="xs mu">Tap a logo, then its app.</p><div class="match"><div class="col">${q.left.map((t,i)=>`<button class="mi logo" data-act="ml" data-v="${i}" aria-label="Logo ${i+1}"><span class="lg">LOGO</span><span class="xs mu">${esc(q.right[i])}</span></button>`).join('')}</div><div class="col">${q._r.map(o=>`<button class="mi" data-act="mr" data-v="${o.i}">${esc(q.left[o.i])}</button>`).join('')}</div></div><button class="btn" data-act="submit" disabled>Submit</button>`}
   $('#main').innerHTML=`<div class="top"><span class="chip red">${esc(q.label)}</span><span class="xs mu">Question ${n} of ${Q.length} · ${S.score} pts</span></div>
     <div class="progress"><i style="width:${(n-1)/Q.length*100}%"></i></div>
     <div class="timer"><i id="tb" style="width:100%"></i></div>
@@ -166,7 +167,7 @@ function grade(v){
   if(q.type==='order'){const s=v||[];let ok=0;q.a.forEach((x,i)=>{if(s[i]===x)ok++});f=ok/q.a.length;right=q.a.map(i=>q.opts[i]).join(' → ')}
   if(q.type==='slider'){const d=Math.abs((v??-99)-q.a);f=d<=q.tol?1:d<=1?.5:0;right=String(q.a)}
   if(q.type==='text'){const s=String(v||'').trim().toLowerCase().replace(/[^a-z]/g,'');f=q.a.includes(s)?1:0;right=q.show}
-  if(q.type==='match'){const p=(v&&v.pairs)||{};let ok=0;q.a.forEach((r,l)=>{if(p[l]===r)ok++});f=ok/q.a.length;right=q.left.map((t,i)=>`${t} = ${q.right[q.a[i]]}`).join(' · ')}
+  if(q.type==='match'){const p=(v&&v.pairs)||{};let ok=0;q.a.forEach((r,l)=>{if(p[l]===r)ok++});f=ok/q.a.length;right=q.left.map((t,i)=>`${t}: ${q.right[i].toLowerCase()}`).join(' · ')}
   const speed=v===null?0:Math.round(50*f*(S.left/LIMIT)),pts=Math.round(100*f)+speed;
   S.score+=pts;if(f===1)S.correct++;
   document.querySelectorAll('[data-act=pick],[data-act=toggle]').forEach(b=>{
