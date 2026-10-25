@@ -85,8 +85,8 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const LIMIT=20;   // seconds per question
 
-/* Ten sample questions, one per question type. Quark replaces the content; the types are what this mock-up shows. */
-const Q=[
+/* A pool of 20 sample questions. Each game draws 10 at random. Quark replaces the content. */
+const POOL=[
  {type:'mc',label:'Multiple choice',q:'What is the native token of Avalanche?',opts:['AVAX','ETH','SOL','DOT'],a:0},
  {type:'tf',label:'True or false',q:'Avalanche’s C-Chain runs EVM smart contracts, so Ethereum tools work on it.',a:true},
  {type:'color',label:'Pick the colour',q:'Which one is Avalanche red?',opts:['#E6212F','#E84142','#FF5A1F','#C2185B'],a:0},
@@ -96,8 +96,20 @@ const Q=[
  {type:'text',label:'Type the answer',q:'Finish the puzzle name: “Midnight ______”',a:['bangkok'],show:'Bangkok'},
  {type:'match',label:'Match the logo',q:'Match each Avalanche app to its logo.',logos:true,left:['Core','LFJ','BENQI','GMX','Dexalot'],right:['Wallet','Swaps','Lending and staking','Perpetuals','Order book'],a:[0,1,2,3,4]},
  {type:'odd',label:'Odd one out',q:'Which one is not part of tonight’s game?',opts:['Puzzle pieces','Spin wheel','Witch’s potion','Bingo card'],a:3},
- {type:'emoji',label:'Emoji riddle',q:'What do these emoji spell?',emoji:'🎃 👻 🍬',opts:['Halloween','Christmas','Songkran','Loy Krathong'],a:0}
+ {type:'emoji',label:'Emoji riddle',q:'What do these emoji spell?',emoji:'🎃 👻 🍬',opts:['Halloween','Christmas','Songkran','Loy Krathong'],a:0},
+ {type:'match',label:'Match the pairs',q:'Match each puzzle to its prize.',left:['Avalanche Halloween','Team1 Thailand Crew','Midnight Bangkok'],right:['Tote bag','Collectible art NFT','Pants'],a:[0,1,2]},
+ {type:'tf',label:'True or false',q:'Avalanche L1s used to be called subnets.',a:true},
+ {type:'mc',label:'Multiple choice',q:'Which Avalanche chain handles validators and staking?',opts:['P-Chain','C-Chain','X-Chain','Z-Chain'],a:0},
+ {type:'order',label:'Put in order',q:'Put tonight’s merch in order of points, cheapest first.',opts:['Pen','Postcard','Sticker set','Keychain'],a:[0,1,2,3]},
+ {type:'slider',label:'Guess the number',q:'How many pieces make one puzzle?',min:1,max:10,a:4,tol:0},
+ {type:'text',label:'Type the answer',q:'Finish the puzzle name: “Team1 Thailand ______”',a:['crew'],show:'Crew'},
+ {type:'multi',label:'Pick all that apply',q:'Which of these can earn you a pack tonight?',opts:['Quark’s quiz','The Grotto','The photo booth','The cloakroom'],a:[0,1,2]},
+ {type:'odd',label:'Odd one out',q:'Which one is not a Halloween creature?',opts:['Ghost','Witch','Mummy','Unicorn'],a:3},
+ {type:'emoji',label:'Emoji riddle',q:'Who is this?',emoji:'🦇 🧛 🩸',opts:['Vampire','Werewolf','Mummy','Zombie'],a:0},
+ {type:'mc',label:'Multiple choice',q:'Where in Bangkok are we tonight?',opts:['Zilla Space','Siam Paragon','ICONSIAM','Samyan Mitrtown'],a:0}
 ];
+const ROUND=10;   // questions per game, drawn from the pool
+let Q=POOL.slice(0,ROUND);
 const TYPES=[
  ['Multiple choice','One right answer from 2 to 6 options'],['True or false','Fast, good for warm-ups'],['Pick the colour or image','Tap a picture, logo or colour'],
  ['Pick all that apply','Several right answers, partial credit'],['Put in order','Tap items in sequence, partial credit'],['Guess the number','A slider, points for getting close'],
@@ -118,7 +130,7 @@ function home(){
   clearInterval(S.timer);
   $('#main').innerHTML=`<p class="kick">Halloween quest · team1 &amp; Cascade booth</p>
     <h1>The Haunted Quiz</h1>
-    <p class="mu">10 questions, 20 seconds each. Finish to earn your pack. Score high for the leaderboard.</p>
+    <p class="mu">10 questions, drawn at random from 20, with 20 seconds each. Finish to earn your pack. Score high for the leaderboard.</p>
     <div class="card" style="text-align:center"><h3>Scan to start</h3><div class="qr" id="qr"></div><p class="xs mu">Shown on the booth screen. Guests scan it with their phone camera.</p></div>
     <button class="btn" data-act="name">Start on this phone</button>
     <div class="row"><button class="btn ghost" data-act="board">Leaderboard</button><button class="btn ghost" data-act="types">Question types</button></div>`;
@@ -135,7 +147,7 @@ function nameScreen(){
 }
 function start(){
   const v=($('#nm').value||'').trim();
-  Q.forEach(q=>{delete q._o;delete q._r});
+  POOL.forEach(q=>{delete q._o;delete q._r});Q=shuffle(POOL).slice(0,ROUND);
   S={...S,name:v?(v.startsWith('@')?v:'@'+v):'@guest'+Math.floor(Math.random()*900+100),i:0,score:0,correct:0,started:Date.now()};question();
 }
 function question(){
@@ -200,7 +212,7 @@ function board(){
 function types(){
   clearInterval(S.timer);
   $('#main').innerHTML=`<p class="kick">For Quark</p><h2>Question types</h2>
-    <p class="sm mu">The first ten are in this mock-up, one per question. The last five are also buildable, but need images, sound, a shared server or staff.</p>
+    <p class="sm mu">The first ten are playable in this mock-up. The pool holds 20 questions across them, and each game draws 10 at random, so friends side by side get different questions. The last five types are also buildable, but need images, sound, a shared server or staff.</p>
     <div class="card types">${TYPES.map(([a,b],i)=>`<div><b>${i+1}. ${esc(a)}</b><span class="mu">${esc(b)}</span></div>`).join('')}</div>
     <button class="btn ghost" data-act="home">Back</button>`;
 }
