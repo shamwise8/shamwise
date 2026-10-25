@@ -101,7 +101,7 @@ const POOL=[
  {type:'mc',label:'Multiple choice',q:'Which Avalanche chain handles validators and staking?',opts:['P-Chain','C-Chain','X-Chain','Z-Chain'],a:0},
  {type:'order',label:'Put in order',q:'Put tonight’s merch in order of points, cheapest first.',opts:['Pen','Postcard','Sticker set','Keychain'],a:[0,1,2,3]},
  {type:'slider',label:'Guess the number',q:'How many pieces make one puzzle?',min:1,max:10,a:4,tol:0},
- {type:'text',label:'Type the answer',q:'Finish the puzzle name: “Team1 Thailand ______”',a:['crew'],show:'Crew'},
+ {type:'text',label:'Type the answer',q:'What’s the name of tonight’s event? “______ Halloween”',a:['avalanche'],show:'Avalanche'},
  {type:'multi',label:'Pick all that apply',q:'Which of these can earn you a pack tonight?',opts:['Quark’s quiz','The Grotto','The photo booth','The cloakroom'],a:[0,1,2]},
  {type:'odd',label:'Odd one out',q:'Which one is not a Halloween creature?',opts:['Ghost','Witch','Mummy','Unicorn'],a:3},
  {type:'emoji',label:'Emoji riddle',q:'Who is this?',emoji:'🦇 🧛 🩸',opts:['Vampire','Werewolf','Mummy','Zombie'],a:0},
@@ -112,7 +112,8 @@ const POOL=[
  {type:'mc',label:'Multiple choice',q:'Who is team1 Thailand’s community manager?',opts:['Sirada','Evelyn','Quark','Scott'],a:1},
  {type:'slider',label:'Guess the number',q:'team1 has over 600 members across how many countries?',min:10,max:100,step:5,a:60,tol:0,near:10},
  {type:'mc',label:'Multiple choice',q:'When did team1 Thailand officially launch?',opts:['24 September','1 August','10 October','15 June'],a:0},
- {type:'mc',label:'Multiple choice',q:'Where did team1 Thailand host its first hackathon, on 26 September?',opts:['Chulalongkorn University','Thammasat University','Kasetsart University','Zilla Space'],a:0}
+ {type:'mc',label:'Multiple choice',q:'Where did team1 Thailand host its first hackathon, on 26 September?',opts:['Chulalongkorn University','Thammasat University','Kasetsart University','Zilla Space'],a:0},
+ {type:'mc',label:'Multiple choice',q:'What project did Acre build on Avalanche?',opts:['FIFA Collect','AcreLabs','Arena','FlowFlow'],a:1}
 ];
 const ROUND=10;   // questions per game, drawn from the pool
 let Q=POOL.slice(0,ROUND);
