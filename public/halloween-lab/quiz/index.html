@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0a0a0a">
+<title>Avalanche Halloween Quiz · mock-up</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* team1 brand: Kanit 500 headings, 300 body, Avalanche red #E6212F. Fonts self-hosted with the sponsor page. */
+@font-face{font-family:Kanit;font-weight:300;font-display:swap;src:url(/halloween/assets/fonts/kanit-300.woff2) format("woff2")}
+@font-face{font-family:Kanit;font-weight:400;font-display:swap;src:url(/halloween/assets/fonts/kanit-400.woff2) format("woff2")}
+@font-face{font-family:Kanit;font-weight:500;font-display:swap;src:url(/halloween/assets/fonts/kanit-500.woff2) format("woff2")}
+:root{--bg:#0a0a0a;--panel:#141414;--panel2:#1c1c1c;--line:#2a2a2a;--ink:#f5f5f5;--mu:#a0a0a0;--red:#E6212F;--red2:#ff4a56;--ok:#3ccf7a;--bad:#ff5a5a;--gold:#ffc24a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:300 17px/1.5 Kanit,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+body{min-height:100vh;background:radial-gradient(120% 50% at 50% -10%,rgba(230,33,47,.22),transparent 60%),var(--bg)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:disabled{opacity:.4;cursor:default}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.app{max-width:520px;margin:0 auto;padding:0 16px 40px;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 12px;border-bottom:1px solid var(--line)}
+header img.t1{height:18px;max-width:52vw;flex:none}header img.av{height:13px;max-width:28vw}
+.by{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mu);display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
+html,body{overflow-x:hidden}
+main{flex:1;display:flex;flex-direction:column;gap:16px;padding-top:20px}
+h1,h2,h3{font-weight:500;margin:0;line-height:1.1}
+h1{font-size:40px}h2{font-size:26px}h3{font-size:20px}
+p{margin:0}.mu{color:var(--mu)}.sm{font-size:15px}.xs{font-size:13px}
+.kick{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--red2);font-weight:500}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.btn{display:block;width:100%;padding:15px 16px;border-radius:12px;background:var(--red);color:#fff;font-weight:500;text-align:center;font-size:17px}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.qr{background:#fff;border-radius:14px;padding:14px;width:220px;height:220px;margin:0 auto;display:grid;place-items:center}
+.in{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--ink);padding:14px;font:400 18px Kanit,sans-serif}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chip{display:inline-block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--mu)}
+.chip.red{border-color:var(--red);color:var(--red2)}
+.progress{height:4px;background:var(--line);border-radius:4px;overflow:hidden}.progress i{display:block;height:100%;background:var(--red)}
+.timer{height:6px;background:var(--line);border-radius:6px;overflow:hidden}.timer i{display:block;height:100%;background:var(--gold);transition:width .2s linear}
+.q{font-size:22px;font-weight:500;line-height:1.25}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);text-align:left;font-size:17px}
+.opt b{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#000;font-weight:500;font-size:14px;flex:none}
+.opt[aria-pressed=true]{border-color:var(--red);background:rgba(230,33,47,.12)}
+.opt.ok{border-color:var(--ok);background:rgba(60,207,122,.14)}.opt.bad{border-color:var(--bad);background:rgba(255,90,90,.12)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sw{aspect-ratio:1.4;border-radius:12px;border:3px solid transparent}.sw.ok{border-color:var(--ok)}.sw.bad{border-color:var(--bad)}
+.emoji{font-size:54px;text-align:center;letter-spacing:6px}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:flex;flex-direction:column;gap:8px}
+.mi{padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);font-size:15px;text-align:left;min-height:52px}
+.mi[aria-pressed=true]{border-color:var(--gold)}
+.mi.p0{border-color:#ff7a3c}.mi.p1{border-color:#4ab3ff}.mi.p2{border-color:#b98cff}
+.ordn{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--red);font-size:13px;font-weight:500;flex:none}
+.slider{width:100%;accent-color:var(--red)}
+.big{font-size:56px;font-weight:500;text-align:center;line-height:1}
+.feedback{border-radius:12px;padding:12px 14px;font-size:15px}.feedback.ok{background:rgba(60,207,122,.14);border:1px solid var(--ok)}.feedback.bad{background:rgba(255,90,90,.12);border:1px solid var(--bad)}
+.done{border:2px solid var(--ok);border-radius:18px;padding:18px;text-align:center;background:rgba(60,207,122,.08)}
+.done .big{color:var(--ok);font-size:64px}
+table.lb{width:100%;border-collapse:collapse;font-size:15px}table.lb td{padding:9px 4px;border-bottom:1px solid var(--line)}table.lb td:first-child{width:34px;color:var(--mu)}table.lb td:last-child{text-align:right;font-weight:500}
+table.lb tr.me td{color:var(--gold)}
+.types{display:flex;flex-direction:column;gap:8px;font-size:15px}.types div{display:flex;flex-direction:column}.types b{font-weight:500}
+.note{font-size:13px;color:var(--mu);border-left:2px solid var(--red);padding-left:10px}
+footer{padding-top:22px;text-align:center;font-size:12px;color:var(--mu)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <img class="t1" src="/halloween/assets/team1-thailand.svg" alt="team1 Thailand">
+    <span class="by">Powered by <img class="av" src="/halloween/assets/avalanche.svg" alt="Avalanche"></span>
+  </header>
+  <main id="main"></main>
+  <footer>Mock-up for Quark · team1 Thailand · Avalanche Halloween, 30 Oct 2026</footer>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const LIMIT=20;   // seconds per question
+
+/* Ten sample questions, one per question type. Quark replaces the content; the types are what this mock-up shows. */
+const Q=[
+ {type:'mc',label:'Multiple choice',q:'What is the native token of Avalanche?',opts:['AVAX','ETH','SOL','DOT'],a:0},
+ {type:'tf',label:'True or false',q:'Avalanche’s C-Chain runs EVM smart contracts, so Ethereum tools work on it.',a:true},
+ {type:'color',label:'Pick the colour',q:'Which one is Avalanche red?',opts:['#E6212F','#E84142','#FF5A1F','#C2185B'],a:0},
+ {type:'multi',label:'Pick all that apply',q:'Which of these are chains on Avalanche’s Primary Network?',opts:['C-Chain','P-Chain','X-Chain','Z-Chain'],a:[0,1,2]},
+ {type:'order',label:'Put in order',q:'Put tonight’s programme in order, earliest first.',opts:['Registration','Opening speech','Panel discussion','Halloween Quest Hints','Costume contest'],a:[0,1,2,3,4]},
+ {type:'slider',label:'Guess the number',q:'How many puzzles are in tonight’s game?',min:1,max:10,a:3,tol:0},
+ {type:'text',label:'Type the answer',q:'Finish the puzzle name: “Midnight ______”',a:['bangkok'],show:'Bangkok'},
+ {type:'match',label:'Match the pairs',q:'Match each puzzle to its prize.',left:['Avalanche Halloween','Team1 Thailand Crew','Midnight Bangkok'],right:['Tote bag','Collectible art NFT','Pants'],a:[0,1,2]},
+ {type:'odd',label:'Odd one out',q:'Which one is not part of tonight’s game?',opts:['Puzzle pieces','Spin wheel','Witch’s potion','Bingo card'],a:3},
+ {type:'emoji',label:'Emoji riddle',q:'What do these emoji spell?',emoji:'🎃 👻 🍬',opts:['Halloween','Christmas','Songkran','Loy Krathong'],a:0}
+];
+const TYPES=[
+ ['Multiple choice','One right answer from 2 to 6 options'],['True or false','Fast, good for warm-ups'],['Pick the colour or image','Tap a picture, logo or colour'],
+ ['Pick all that apply','Several right answers, partial credit'],['Put in order','Tap items in sequence, partial credit'],['Guess the number','A slider, points for getting close'],
+ ['Type the answer','Free text, several spellings accepted'],['Match the pairs','Link two lists, partial credit'],['Odd one out','Spot the item that doesn’t belong'],
+ ['Emoji riddle','Guess a word from emoji'],['Image spot','Tap the right place on a photo'],['Audio clip','Name the sound or song, needs sound on'],
+ ['Speed round','Several true or false in one timer'],['Poll','No right answer, shows how the room voted'],['Photo check','Snap something in the venue, staff approve']
+];
+
+let S={name:'',i:0,score:0,correct:0,started:0,t0:0,timer:null,left:LIMIT,locked:false,sel:null};
+const LB_KEY='quizLB';
+const SEED=[['@pumpkin_queen',1340,95],['@ghostbuilder',1295,110],['@night_owl',1210,88],['@avax_ape',1150,120],['@candy_corn',1080,101],['@witchy_dev',990,130],['@mummy_wrap',910,140],['@bat_signal',820,150]];
+function lb(){let L=[];try{L=JSON.parse(localStorage.getItem(LB_KEY))||[]}catch(_){}return [...SEED.map(([n,s,t])=>({n,s,t})),...L].sort((a,b)=>b.s-a.s||a.t-b.t)}
+function addLB(e){let L=[];try{L=JSON.parse(localStorage.getItem(LB_KEY))||[]}catch(_){}L.push(e);try{localStorage.setItem(LB_KEY,JSON.stringify(L.slice(-50)))}catch(_){}}
+function lbTable(me){const L=lb().slice(0,10);return `<table class="lb">${L.map((e,i)=>`<tr class="${me&&e.n===me.n&&e.s===me.s&&e.t===me.t?'me':''}"><td>${i+1}</td><td>${esc(e.n)}</td><td>${e.s}</td></tr>`).join('')}</table>`}
+
+/* ---------- screens ---------- */
+function home(){
+  clearInterval(S.timer);
+  $('#main').innerHTML=`<p class="kick">Halloween quest · team1 &amp; Cascade booth</p>
+    <h1>The Haunted Quiz</h1>
+    <p class="mu">10 questions, 20 seconds each. Finish to earn your pack. Score high for the leaderboard.</p>
+    <div class="card" style="text-align:center"><h3>Scan to start</h3><div class="qr" id="qr"></div><p class="xs mu">Shown on the booth screen. Guests scan it with their phone camera.</p></div>
+    <button class="btn" data-act="name">Start on this phone</button>
+    <div class="row"><button class="btn ghost" data-act="board">Leaderboard</button><button class="btn ghost" data-act="types">Question types</button></div>`;
+  const url=location.origin+location.pathname+'?play';
+  try{new QRCode($('#qr'),{text:url,width:192,height:192,colorDark:'#0a0a0a',colorLight:'#ffffff'})}catch(_){$('#qr').textContent=url}
+}
+function nameScreen(){
+  clearInterval(S.timer);
+  $('#main').innerHTML=`<p class="kick">Before we start</p><h2>What should we call you?</h2>
+    <input class="in" id="nm" placeholder="@yourhandle or a nickname" maxlength="20" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <p class="xs mu">Shown on the leaderboard. In the real game this can come from the guest’s X login.</p>
+    <button class="btn" data-act="go">Let’s go</button><button class="btn ghost" data-act="home">Back</button>`;
+  setTimeout(()=>$('#nm')&&$('#nm').focus(),50);
+}
+function start(){
+  const v=($('#nm').value||'').trim();
+  Q.forEach(q=>{delete q._o;delete q._r});
+  S={...S,name:v?(v.startsWith('@')?v:'@'+v):'@guest'+Math.floor(Math.random()*900+100),i:0,score:0,correct:0,started:Date.now()};question();
+}
+function question(){
+  clearInterval(S.timer);S.locked=false;S.sel=null;S.left=LIMIT;S.t0=Date.now();
+  const q=Q[S.i],n=S.i+1;let body='';
+  if(q.type==='mc'||q.type==='odd'||q.type==='emoji'){q._o=q._o||shuffle(q.opts.map((t,i)=>({t,i})));body=(q.emoji?`<div class="emoji">${q.emoji}</div>`:'')+`<div class="opts">${q._o.map((o,k)=>`<button class="opt" data-act="pick" data-v="${o.i}"><b>${'ABCDEF'[k]}</b>${esc(o.t)}</button>`).join('')}</div>`}
+  if(q.type==='tf')body=`<div class="grid2"><button class="opt" style="justify-content:center;font-size:20px" data-act="pick" data-v="1">True</button><button class="opt" style="justify-content:center;font-size:20px" data-act="pick" data-v="0">False</button></div>`;
+  if(q.type==='color'){q._o=q._o||shuffle(q.opts.map((t,i)=>({t,i})));body=`<div class="grid2">${q._o.map(o=>`<button class="sw" style="background:${o.t}" data-act="pick" data-v="${o.i}" aria-label="colour ${o.t}"></button>`).join('')}</div>`}
+  if(q.type==='multi'){q._o=q._o||shuffle(q.opts.map((t,i)=>({t,i})));S.sel=new Set();body=`<div class="opts">${q._o.map((o,k)=>`<button class="opt" data-act="toggle" data-v="${o.i}" aria-pressed="false"><b>${'ABCDEF'[k]}</b>${esc(o.t)}</button>`).join('')}</div><button class="btn" data-act="submit">Submit</button>`}
+  if(q.type==='order'){q._o=q._o||shuffle(q.opts.map((t,i)=>({t,i})));S.sel=[];body=`<p class="xs mu">Tap them in order. Tap again to undo.</p><div class="opts">${q._o.map(o=>`<button class="opt" data-act="seq" data-v="${o.i}"><span class="ordn" style="visibility:hidden">0</span>${esc(o.t)}</button>`).join('')}</div><button class="btn" data-act="submit" disabled>Submit</button>`}
+  if(q.type==='slider'){S.sel=Math.round((q.min+q.max)/2);body=`<div class="big" id="sv">${S.sel}</div><input class="slider" type="range" min="${q.min}" max="${q.max}" value="${S.sel}" id="sl"><div class="top xs mu"><span>${q.min}</span><span>${q.max}</span></div><button class="btn" data-act="submit">Lock it in</button>`}
+  if(q.type==='text')body=`<input class="in" id="ta" placeholder="Your answer" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn" data-act="submit">Submit</button>`;
+  if(q.type==='match'){q._r=q._r||shuffle(q.right.map((t,i)=>({t,i})));S.sel={pairs:{},pick:null};body=`<p class="xs mu">Tap a puzzle, then its prize.</p><div class="match"><div class="col">${q.left.map((t,i)=>`<button class="mi" data-act="ml" data-v="${i}">${esc(t)}</button>`).join('')}</div><div class="col">${q._r.map(o=>`<button class="mi" data-act="mr" data-v="${o.i}">${esc(o.t)}</button>`).join('')}</div></div><button class="btn" data-act="submit" disabled>Submit</button>`}
+  $('#main').innerHTML=`<div class="top"><span class="chip red">${esc(q.label)}</span><span class="xs mu">Question ${n} of ${Q.length} · ${S.score} pts</span></div>
+    <div class="progress"><i style="width:${(n-1)/Q.length*100}%"></i></div>
+    <div class="timer"><i id="tb" style="width:100%"></i></div>
+    <p class="q">${esc(q.q)}</p>${body}<div id="fb"></div>`;
+  if(q.type==='slider')$('#sl').addEventListener('input',e=>{S.sel=+e.target.value;$('#sv').textContent=S.sel});
+  if(q.type==='text'){$('#ta').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});setTimeout(()=>$('#ta').focus(),50)}
+  S.timer=setInterval(()=>{S.left=Math.max(0,LIMIT-(Date.now()-S.t0)/1000);const tb=$('#tb');if(tb)tb.style.width=(S.left/LIMIT*100)+'%';if(S.left<=0){clearInterval(S.timer);if(!S.locked)grade(null)}},100);
+}
+/* Grading: a fraction from 0 to 1. Points = 100 x fraction, plus up to 50 for speed x fraction. */
+function grade(v){
+  if(S.locked)return;S.locked=true;clearInterval(S.timer);
+  const q=Q[S.i];let f=0,right='';
+  if(['mc','odd','emoji','color'].includes(q.type)){f=v===q.a?1:0;right=q.type==='color'?'Avalanche red, #E6212F':q.opts[q.a]}
+  if(q.type==='tf'){f=v===q.a?1:0;right=q.a?'True':'False'}
+  if(q.type==='multi'){const s=v||new Set(),A=new Set(q.a);let hit=0,miss=0;s.forEach(x=>A.has(x)?hit++:miss++);f=Math.max(0,(hit-miss)/A.size);right=q.a.map(i=>q.opts[i]).join(', ')}
+  if(q.type==='order'){const s=v||[];let ok=0;q.a.forEach((x,i)=>{if(s[i]===x)ok++});f=ok/q.a.length;right=q.a.map(i=>q.opts[i]).join(' → ')}
+  if(q.type==='slider'){const d=Math.abs((v??-99)-q.a);f=d<=q.tol?1:d<=1?.5:0;right=String(q.a)}
+  if(q.type==='text'){const s=String(v||'').trim().toLowerCase().replace(/[^a-z]/g,'');f=q.a.includes(s)?1:0;right=q.show}
+  if(q.type==='match'){const p=(v&&v.pairs)||{};let ok=0;q.a.forEach((r,l)=>{if(p[l]===r)ok++});f=ok/q.a.length;right=q.left.map((t,i)=>`${t} = ${q.right[q.a[i]]}`).join(' · ')}
+  const speed=v===null?0:Math.round(50*f*(S.left/LIMIT)),pts=Math.round(100*f)+speed;
+  S.score+=pts;if(f===1)S.correct++;
+  document.querySelectorAll('[data-act=pick],[data-act=toggle]').forEach(b=>{
+    const x=q.type==='tf'?b.dataset.v==='1':+b.dataset.v;
+    const isRight=Array.isArray(q.a)?q.a.includes(x):x===q.a;
+    const chosen=v instanceof Set?v.has(x):x===v;
+    if(isRight)b.classList.add('ok');else if(chosen)b.classList.add('bad');b.disabled=true});
+  document.querySelectorAll('[data-act=submit],[data-act=seq],[data-act=ml],[data-act=mr]').forEach(b=>b.disabled=true);
+  const msg=v===null?'Time’s up.':f===1?'Correct!':f>0?'Partly right.':'Not quite.';
+  $('#fb').innerHTML=`<div class="feedback ${f>0?'ok':'bad'}"><b style="font-weight:500">${msg}</b> +${pts} pts${speed?` (${speed} for speed)`:''}<br><span class="mu">Answer: ${esc(right)}</span></div><button class="btn" data-act="next" style="margin-top:12px">${S.i+1<Q.length?'Next question':'See my result'}</button>`;
+}
+function submit(){const q=Q[S.i];if(q.type==='text')return grade($('#ta').value);grade(S.sel)}
+function result(){
+  clearInterval(S.timer);
+  const t=Math.round((Date.now()-S.started)/1000),me={n:S.name,s:S.score,t};addLB(me);
+  const rank=lb().findIndex(e=>e.n===me.n&&e.s===me.s&&e.t===me.t)+1;
+  $('#main').innerHTML=`<p class="kick">Quiz complete</p>
+    <div class="done"><div class="big">DONE</div><p style="font-weight:500">${esc(S.name)}</p><p class="sm mu">Show this screen to the booth staff for your pack.</p></div>
+    <div class="row"><div class="card" style="text-align:center"><span class="xs mu">Score</span><span class="big" style="font-size:36px">${S.score}</span></div><div class="card" style="text-align:center"><span class="xs mu">Correct</span><span class="big" style="font-size:36px">${S.correct}/${Q.length}</span></div><div class="card" style="text-align:center"><span class="xs mu">Rank</span><span class="big" style="font-size:36px">#${rank}</span></div></div>
+    <div class="card"><h3>Leaderboard</h3>${lbTable(me)}</div>
+    <div class="row"><button class="btn ghost" data-act="home">Home</button><button class="btn" data-act="name">Play again</button></div>
+    <p class="note">Mock-up: the leaderboard is stored on this phone only. In the real version it’s shared by everyone, ideally also shown on the booth screen.</p>`;
+}
+function board(){
+  clearInterval(S.timer);
+  $('#main').innerHTML=`<p class="kick">Tonight</p><h2>Leaderboard</h2><div class="card">${lbTable()}</div>
+    <p class="xs mu">Highest score first. Ties go to the faster player. Each question: 100 for a right answer plus up to 50 for speed. Partly right answers score partly.</p>
+    <button class="btn ghost" data-act="home">Back</button>`;
+}
+function types(){
+  clearInterval(S.timer);
+  $('#main').innerHTML=`<p class="kick">For Quark</p><h2>Question types</h2>
+    <p class="sm mu">The first ten are in this mock-up, one per question. The last five are also buildable, but need images, sound, a shared server or staff.</p>
+    <div class="card types">${TYPES.map(([a,b],i)=>`<div><b>${i+1}. ${esc(a)}</b><span class="mu">${esc(b)}</span></div>`).join('')}</div>
+    <button class="btn ghost" data-act="home">Back</button>`;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el||el.disabled)return;const a=el.dataset.act,v=el.dataset.v,q=Q[S.i];
+  switch(a){
+    case 'home':home();break;
+    case 'name':nameScreen();break;
+    case 'go':start();break;
+    case 'board':board();break;
+    case 'types':types();break;
+    case 'pick':grade(q.type==='tf'?v==='1':+v);break;
+    case 'toggle':{const x=+v;S.sel.has(x)?S.sel.delete(x):S.sel.add(x);el.setAttribute('aria-pressed',S.sel.has(x));break}
+    case 'seq':{const x=+v,k=S.sel.indexOf(x);if(k>=0)S.sel.splice(k,1);else S.sel.push(x);
+      document.querySelectorAll('[data-act=seq]').forEach(b=>{const p=S.sel.indexOf(+b.dataset.v),n=b.querySelector('.ordn');n.style.visibility=p>=0?'visible':'hidden';n.textContent=p+1;b.setAttribute('aria-pressed',p>=0)});
+      document.querySelector('[data-act=submit]').disabled=S.sel.length!==q.opts.length;break}
+    case 'ml':S.sel.pick=+v;document.querySelectorAll('[data-act=ml]').forEach(b=>b.setAttribute('aria-pressed',b===el));break;
+    case 'mr':{if(S.sel.pick===null)break;const r=+v;for(const k in S.sel.pairs)if(S.sel.pairs[k]===r)delete S.sel.pairs[k];S.sel.pairs[S.sel.pick]=r;S.sel.pick=null;
+      document.querySelectorAll('[data-act=ml],[data-act=mr]').forEach(b=>{b.className='mi';b.setAttribute('aria-pressed','false')});
+      Object.entries(S.sel.pairs).forEach(([l,rr])=>{document.querySelector(`[data-act=ml][data-v="${l}"]`).classList.add('p'+l);document.querySelector(`[data-act=mr][data-v="${rr}"]`).classList.add('p'+l)});
+      document.querySelector('[data-act=submit]').disabled=Object.keys(S.sel.pairs).length!==q.left.length;break}
+    case 'submit':submit();break;
+    case 'next':S.i++;if(S.i<Q.length)question();else result();break;
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('#nm')&&document.activeElement===$('#nm'))start()});
+if(location.search.includes('play'))nameScreen();else home();
+})();
+</script>
+</body>
+</html>
