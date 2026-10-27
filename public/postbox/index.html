@@ -446,6 +446,7 @@
       </div>
       <div class="hint" id="actionBar" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
         <button class="small" id="addTweet" title="Start the next tweet">＋ Tweet</button>
+        <button class="small" id="addPhoto" title="Attach a photo or video to the tweet your cursor is in" style="display:none">📷 Photo</button>
         <button class="small" id="aiBtn" title="Rewrite with AI">✨ Rewrite</button>
         <button class="small" id="xPost" title="Publish this thread to X" style="display:none">𝕏 Post</button>
         <button class="small ghost m-only" id="togglePreview" title="Preview">👁 Preview</button>
@@ -661,7 +662,7 @@
     </div>
   </div>
 </div>
-<input type="file" id="mediaFile" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime" multiple style="display:none" />
+<input type="file" id="mediaFile" accept="image/*,video/mp4,video/quicktime" multiple style="display:none" />
 <div id="reschedPop" class="rpop" style="display:none"></div>
 <div class="toast" id="toast"></div>
 
@@ -2343,27 +2344,96 @@ $("tweets").addEventListener("dragend", () => {
 });
 
 let pendingSeg = 0;
+let uploading = false;
+
+// Phones and Macs hand over HEIC and 8–12MB originals. X takes JPEG/PNG/GIF/WebP under 5MB,
+// so anything outside that is converted here rather than rejected.
+const IMG_MAX = 5 * 1024 * 1024;
+const loadScript = (src) => new Promise((ok, no) => {
+  const el = document.createElement("script"); el.src = src; el.onload = ok; el.onerror = no;
+  document.head.appendChild(el);
+});
+async function prepImage(f) {
+  const heic = /hei[cf]/i.test(f.type) || /\.hei[cf]$/i.test(f.name);
+  if (f.type === "image/gif") return f;                       // re-encoding would kill the animation
+  if (!heic && f.size <= IMG_MAX) return f;                   // already postable
+  let bmp = await createImageBitmap(f).catch(() => null);     // Safari decodes HEIC itself
+  if (!bmp && heic) {
+    // Chrome and Firefox cannot read HEIC; fetch a converter only when one is actually needed
+    if (!window.heic2any) await loadScript("https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js");
+    const out = await window.heic2any({ blob: f, toType: "image/jpeg", quality: 0.92 });
+    bmp = await createImageBitmap(Array.isArray(out) ? out[0] : out).catch(() => null);
+  }
+  if (!bmp) throw new Error("this image can't be read here — save it as JPEG and try again");
+  const scale = Math.min(1, 4096 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  let q = 0.92, blob;
+  do { blob = await new Promise((r) => c.toBlob(r, "image/jpeg", q)); q -= 0.08; }
+  while (blob && blob.size > IMG_MAX && q > 0.5);
+  return new File([blob], f.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+}
+
+// Which tweet the cursor sits in — the 📷 button attaches there.
+function segAtCursor() {
+  const ta = $("content"), pos = ta.selectionStart ?? ta.value.length;
+  const ranges = segRanges(ta.value);
+  for (let i = 0; i < ranges.length; i++) if (pos <= ranges[i][1]) return i;
+  return Math.max(0, ranges.length - 1);
+}
+// media lives in shared storage, so the button only exists in a team workspace
+$("addPhoto").style.display = TEAM_MODE ? "" : "none";
+$("addPhoto").addEventListener("click", (e) => {
+  e.preventDefault();
+  if (!current) return;
+  if (uploading) { toast("Still uploading — one moment"); return; }
+  pendingSeg = segAtCursor();
+  $("mediaFile").click();
+});
+
 $("mediaFile").addEventListener("change", async () => {
   const files = [...$("mediaFile").files];
   $("mediaFile").value = "";
   if (!files.length || !current || !TEAM_MODE) return;
+  if (uploading) { toast("Still uploading — one moment"); return; }
+  if (current.locked) { toast("This draft is locked — unlock it to add media"); return; }
+  uploading = true;
+  $("addPhoto").disabled = true;
   const seg = pendingSeg;
-  const existing = (current.media || []).filter((m) => m.seg === seg);
-  for (const f of files) {
-    const isVideo = f.type.startsWith("video/");
-    const segNow = (current.media || []).filter((m) => m.seg === seg);
-    if (isVideo && (segNow.length > 0)) { toast("A post can have 1 video OR up to 4 images"); break; }
-    if (!isVideo && (segNow.some((m) => m.type === "video") || segNow.length >= 4)) { toast("A post can have up to 4 images (or 1 video)"); break; }
-    if (isVideo && f.size > 50 * 1024 * 1024) { toast(f.name + " is over 50MB — compress it first"); continue; }
-    if (!isVideo && f.size > 10 * 1024 * 1024) { toast(f.name + " is over 10MB — compress it first"); continue; }
-    const path = `${WS}/${current.id}/${uuid()}-${f.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    toast("Uploading " + f.name + "…");
-    const { error } = await store.sb.storage.from("postbox-media").upload(path, f, { cacheControl: "31536000" });
-    if (error) { toast("Upload failed: " + error.message); continue; }
-    const { data } = store.sb.storage.from("postbox-media").getPublicUrl(path);
-    current.media = [...(current.media || []), { id: path, url: data.publicUrl, seg, type: isVideo ? "video" : "image" }];
+  let added = 0;
+  try {
+    for (let n = 0; n < files.length; n++) {
+      let f = files[n];
+      const isVideo = f.type.startsWith("video/");
+      const segNow = (current.media || []).filter((m) => m.seg === seg);
+      if (isVideo && segNow.length > 0) { toast("A tweet can have 1 video OR up to 4 images"); break; }
+      if (!isVideo && (segNow.some((m) => m.type === "video") || segNow.length >= 4)) { toast("A tweet can have up to 4 images (or 1 video)"); break; }
+      if (isVideo && f.size > 50 * 1024 * 1024) { toast(f.name + " is over 50MB — compress it first"); continue; }
+      const label = files.length > 1 ? ` ${n + 1} of ${files.length}` : "";
+      if (!isVideo) {
+        toast(`Preparing photo${label}…`);
+        try { f = await prepImage(f); } catch (err) { toast(`${files[n].name}: ${err.message}`); continue; }
+      }
+      toast(`Uploading${label}…`);
+      const path = `${WS}/${current.id}/${uuid()}-${f.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      const { error } = await store.sb.storage.from("postbox-media")
+        .upload(path, f, { cacheControl: "31536000", contentType: f.type || undefined });
+      if (error) { toast("Upload failed: " + error.message); continue; }
+      const { data } = store.sb.storage.from("postbox-media").getPublicUrl(path);
+      current.media = [...(current.media || []), { id: path, url: data.publicUrl, seg, type: isVideo ? "video" : "image" }];
+      added++;
+    }
+    if (added) {
+      await save(); renderPreview();
+      const where = segments($("content").value).length > 1 ? ` to tweet ${seg + 1}` : "";
+      const peek = isMobile() && !document.getElementById("app").classList.contains("show-preview") ? " — 👁 Preview to see it" : "";
+      toast(`${added > 1 ? added + " photos" : "Attached"}${where} ✓${peek}`);
+    }
+  } finally {
+    uploading = false;
+    $("addPhoto").disabled = false;
   }
-  await save(); renderPreview();
 });
 $("shareBtn").addEventListener("click", async () => {
   if (!current) return;
