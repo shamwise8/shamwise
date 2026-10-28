@@ -71,6 +71,11 @@ td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
 .contacts div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
 .contacts b{font-family:var(--display);font-size:1.05rem}
 .contacts span{display:block;color:var(--muted);font-size:.9rem}
+.checks{list-style:none;padding:0;display:grid;gap:8px}
+.checks li{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.checks input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--red)}
+.checks label{cursor:pointer;min-width:0}
+.checks input:checked+label{color:var(--muted)}
 footer{margin-top:40px;color:var(--muted);font-size:.85rem}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 </style>
@@ -85,8 +90,19 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem}
 </header>
 
 <nav aria-label="Sections">
-  <a href="#why">Why</a><a href="#game">The game</a><a href="#rules">Rules</a><a href="#night">The night</a><a href="#roles">Who's where</a><a href="#booths">Booths</a><a href="#crew">Hidden crew</a><a href="#merch">Merch</a><a href="#xhelp">X login help</a><a href="#content">Content</a><a href="#contacts">Contacts</a>
+  <a href="#check">Checklist</a><a href="#why">Why</a><a href="#game">The game</a><a href="#rules">Rules</a><a href="#night">The night</a><a href="#roles">Who's where</a><a href="#booths">Booths</a><a href="#crew">Hidden crew</a><a href="#merch">Merch</a><a href="#xhelp">X login help</a><a href="#content">Content</a><a href="#contacts">Contacts</a>
 </nav>
+
+<section id="check">
+  <h2>Before the night</h2>
+  <p class="lead">Do this on your own phone before Friday. Your ticks are saved on your phone only.</p>
+  <ul class="checks">
+    <li><input type="checkbox" id="c1"><label for="c1"><b>Open the app in Safari or Chrome,</b> not inside Telegram, LINE or Instagram. It's built for phones. <a href="https://halloween.blurrylogics.com" target="_blank" rel="noopener">halloween.blurrylogics.com</a></label></li>
+    <li><input type="checkbox" id="c2"><label for="c2"><b>Log in with X.</b> Did anything go wrong? Write down the problem and what fixed it, and post it in the team chat.</label></li>
+    <li><input type="checkbox" id="c3"><label for="c3"><b>Scan your QR to claim a pack.</b> Check the pieces land in the app.</label></li>
+    <li><input type="checkbox" id="c4"><label for="c4"><b>Try Quark's quiz</b> from start to finish.</label></li>
+  </ul>
+</section>
 
 <section id="why">
   <h2>Why we're doing all this</h2>
@@ -260,9 +276,9 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem}
 
 <section id="xhelp">
   <h2>X login help</h2>
-  <div class="note"><b>Before the night:</b> everyone, try the app on your own phone. Write down any problem you hit and what fixed it, and post it in the team chat. We'll add it here.</div>
+  <div class="note">Hit a problem while testing? Post it in the team chat with what fixed it, and we'll add it here.</div>
   <div class="fix">
-    <details><summary>Login fails or loops inside LINE, Instagram or Facebook</summary><p>Those apps open links in their own browser, and X login often breaks there. Open the link in Safari or Chrome instead (tap ··· then "Open in browser").</p></details>
+    <details><summary>Login fails or loops inside Telegram, LINE, Instagram or Facebook</summary><p>Those apps open links in their own browser, and X login often breaks there. Open the link in Safari or Chrome instead (tap ··· then "Open in browser").</p></details>
     <details><summary>The X app opens instead of the login page</summary><p>On iPhone, X links can jump into the X app. Go back, long-press the button and open it in the browser, or log in to x.com in Safari first and try again.</p></details>
     <details><summary>Logged in with the wrong X account</summary><p>Use Disconnect X in the app, switch accounts on X, then connect again.</p></details>
     <details><summary>"X task access is missing or expired"</summary><p>Tap "Refresh X access" and log in to X again. Progress is kept.</p></details>
@@ -294,5 +310,11 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem}
 
 <footer>Avalanche Halloween · hosted by team1 Thailand and Bitkub · Powered by Avalanche</footer>
 </div>
+<script>
+document.querySelectorAll('.checks input').forEach(function(b){
+  try{b.checked=localStorage.getItem('crew-'+b.id)==='1'}catch(e){}
+  b.addEventListener('change',function(){try{localStorage.setItem('crew-'+b.id,b.checked?'1':'0')}catch(e){}});
+});
+</script>
 </body>
 </html>
