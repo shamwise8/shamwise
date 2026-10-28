@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Avalanche Halloween Crew Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Sarabun:wght@400;600;700&display=swap">
+<style>
+/* Layout: one phone-width column, sticky chip nav, each booth a card with "who / gives / condition" rows */
+:root{
+  --bg:#141012; --surface:#1e181b; --line:#3a2e33; --fg:#f3ece6; --muted:#b3a59d;
+  --red:#e6212f; --red-soft:#3a1519; --amber:#f0a23b; --amber-soft:#3a2a14; --ok:#6cc58a;
+  --display:"Kanit",system-ui,sans-serif; --body:"Sarabun",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.55 var(--body);margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:2.1rem;font-weight:700}
+h1 span{color:var(--red)}
+h2{font-size:1.45rem;font-weight:600;scroll-margin-top:72px}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+a{color:var(--amber)}
+.eyebrow{font:600 .75rem/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:.95rem;margin-top:10px}
+header{display:grid;gap:4px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-top:20px;padding-block:10px;border-bottom:1px solid var(--line);display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{flex:none;text-decoration:none;color:var(--fg);font:500 .9rem/1 var(--display);padding:8px 12px;border:1px solid var(--line);border-radius:999px}
+nav a:focus-visible,nav a:hover{border-color:var(--red);outline:none}
+section{display:grid;gap:14px;margin-top:36px}
+.lead{color:var(--muted)}
+ul{margin:0;padding-left:1.2em;display:grid;gap:6px}
+.rules{list-style:none;padding:0;counter-reset:r;gap:10px}
+.rules li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+.rules li::before{counter-increment:r;content:counter(r);font:600 .85rem/28px var(--display);text-align:center;border-radius:50%;background:var(--red-soft);color:#ff8a92}
+.time{display:grid;gap:0;border-left:2px solid var(--line);margin-left:6px}
+.time div{display:grid;grid-template-columns:64px 1fr;gap:10px;padding:8px 0 8px 14px;position:relative}
+.time div::before{content:"";position:absolute;left:-6px;top:15px;width:10px;height:10px;border-radius:50%;background:var(--line)}
+.time div.key::before{background:var(--red)}
+.time b{font:600 .95rem/1.5 var(--display);font-variant-numeric:tabular-nums}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px}
+.card.hard{border-color:#6b2a30}
+.tag{display:inline-block;font:600 .7rem/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:4px;background:var(--amber-soft);color:var(--amber);vertical-align:middle;margin-left:6px}
+.rows{display:grid;gap:8px;margin:0}
+.rows div{display:grid;grid-template-columns:92px 1fr;gap:10px}
+.rows dt{font:600 .8rem/1.6 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.rows dd{margin:0;min-width:0}
+.names{font-weight:600}
+.note{background:var(--amber-soft);border-radius:8px;padding:10px 12px;color:#f6d6a8;font-size:.95rem}
+.ideas{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;list-style:none;padding:0}
+.ideas li{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:.95rem}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 .75rem/1.3 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.fix{display:grid;gap:10px}
+.fix details{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.fix summary{cursor:pointer;padding:12px 14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.fix summary::after{content:"+";color:var(--muted);font-family:var(--display)}
+.fix details[open] summary::after{content:"−"}
+.fix summary:focus-visible{outline:2px solid var(--red);outline-offset:2px;border-radius:8px}
+.fix details p{padding:0 14px 14px;color:var(--muted)}
+.contacts{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.contacts div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.contacts b{font-family:var(--display);font-size:1.05rem}
+.contacts span{display:block;color:var(--muted);font-size:.9rem}
+footer{margin-top:40px;color:var(--muted);font-size:.85rem}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="eyebrow">team1 Thailand · crew only</p>
+  <h1>Avalanche <span>Halloween</span> crew manual</h1>
+  <div class="meta"><span>Fri 30 Oct 2026</span><span>18:00 to 22:00</span><span>Zilla Space, FYI Center 11F</span><span>team1 Thailand × Bitkub</span></div>
+</header>
+
+<nav aria-label="Sections">
+  <a href="#why">Why</a><a href="#game">The game</a><a href="#rules">Rules</a><a href="#night">The night</a><a href="#roles">Who's where</a><a href="#booths">Booths</a><a href="#crew">Hidden crew</a><a href="#merch">Merch</a><a href="#xhelp">X login help</a><a href="#content">Content</a><a href="#contacts">Contacts</a>
+</nav>
+
+<section id="why">
+  <h2>Why we're doing all this</h2>
+  <ul>
+    <li><b>An on-chain activation</b> that gets the event trending on social.</li>
+    <li><b>An app other team1 chapters can reuse,</b> and a normal way for people to earn merch.</li>
+    <li><b>Spread people out</b> across the venue and give them something to work towards all night.</li>
+  </ul>
+  <p class="note">This is the proving moment for team1 Thailand Phase 1. Thank you for giving it everything.</p>
+</section>
+
+<section id="game">
+  <h2>The game in one minute</h2>
+  <p class="lead">So you can answer guests. Your QR page link is below; login details come separately.</p>
+  <div class="note"><b>Your QR page:</b> <span id="qrlink">link coming</span></div>
+  <dl class="rows card">
+    <div><dt>Goal</dt><dd><b>3 puzzles, 4 pieces each.</b> Finish one to win its prize: Avalanche Halloween gets a tote, Team1 Thailand Crew gets an art NFT, Midnight Bangkok gets pants. Midnight Bangkok is the hard one.</dd></div>
+    <div><dt>Packs</dt><dd>Each booth QR opens a pack of 2 or 3 pieces. <b>Once per booth, per guest.</b> Finishing every X task, both posts and one send unlocks a bonus pack by itself.</dd></div>
+    <div><dt>Spins</dt><dd>The first spin is free. X tasks and the costume earn more. A spin gives a piece, points, a potion, a bonus spin, or a Boo (nothing).</dd></div>
+    <div><dt>Points</dt><dd>Earned from tasks and spins, spent in the merch shop.</dd></div>
+    <div><dt>Sending</dt><dd>Guests can send a spare piece to someone else. It's one-way, so the piece is gone. The first send earns 2 points.</dd></div>
+    <div><dt>Potion</dt><dd>Kept in the app, up to 3. Swap it at the drinks counter for a special drink.</dd></div>
+    <div><dt>Bonuses</dt><dd>Finishing Team1 Thailand Crew gives one extra piece. Finishing a puzzle also gives points.</dd></div>
+    <div><dt>The Grotto piece</dt><dd>Only comes from The Grotto pack, and it can't be sent.</dd></div>
+  </dl>
+  <ul>
+    <li><b>"I got a double."</b> Send it to a friend who needs it.</li>
+    <li><b>"Can I get another pack?"</b> No, one per booth. Point them to a booth they haven't done yet, or the hidden crew.</li>
+    <li><b>"Where's the last piece?"</b> Keep spinning, ask friends for a send, or find the hidden crew.</li>
+  </ul>
+</section>
+
+<section id="rules">
+  <h2>Ground rules</h2>
+  <ol class="rules">
+    <li><span><b>Every quest is verified in the app.</b> Check the guest's screen before you show a QR.</span></li>
+    <li><span><b>No free packs.</b> Merch is limited, so we can't be lenient. The only exception is the quiz score later in the night (see the quiz booth).</span></li>
+    <li><span><b>You get one QR:</b> your booth's pack. Some people also get the costume approval QR.</span></li>
+    <li><span><b>2 to 3 people at every booth, at all times.</b> Need a break or backup? Ask Pai, Danny or Jessica.</span></li>
+    <li><span><b>During the stage session, about 19:00 to 20:45, all booths close.</b> Guests can still do their social tasks in the app.</span></li>
+    <li><span><b>Merch is guarded at all times,</b> including during the stage session. When Evelyn and Acre are on stage, Scott holds the merch table with Butter and Shaan.</span></li>
+    <li><span><b>Can't cover your role for any reason?</b> Find an available team1 member to take your place, and tell them what the role needs before you go.</span></li>
+    <li><span><b>App problem?</b> Go to Pai. Danny is on Pai's team and is here for support too.</span></li>
+  </ol>
+</section>
+
+<section id="night">
+  <h2>The night</h2>
+  <div class="time">
+    <div class="key"><b>18:00</b><span>Doors open. <b>Costume QR starts at arrival</b>: scan guests in costume straight away so they get a head start.</span></div>
+    <div class="key"><b>~19:00</b><span><b>Stage session starts: all booths close.</b> Social tasks stay open in the app. Butter and Shaan join Scott at merch. Event review opens.</span></div>
+    <div><b>20:15</b><span>Halloween Quest Hints on stage.</span></div>
+    <div class="key"><b>~20:45</b><span><b>Stage session ends: booths reopen.</b></span></div>
+    <div><b>Later</b><span>Costume contest.</span></div>
+    <div><b>22:00</b><span>Close.</span></div>
+  </div>
+</section>
+
+<section id="roles">
+  <h2>Who's where</h2>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Station</th><th>Crew</th><th>Gives</th></tr></thead>
+    <tbody>
+      <tr><td>Costume QR (arrival)</td><td class="names">Shaan, Ken</td><td>Costume approval</td></tr>
+      <tr><td>Quark's quiz</td><td class="names">Quark, Butter, Shaan</td><td>Quiz pack QR</td></tr>
+      <tr><td>The Grotto</td><td class="names">Niruntz, Tractor, Beere, Ken</td><td>Grotto pack QR, gift boxes</td></tr>
+      <tr><td>Hidden crew (roaming)</td><td class="names">Jessica, Sirada, Meiji, Pai, Danny</td><td>Hidden crew QR</td></tr>
+      <tr><td>Photo booth</td><td class="names">Bitkub staff</td><td>Photo booth pack</td></tr>
+      <tr><td>Merch handout</td><td class="names">Evelyn, Acre, Scott</td><td>Merch, costume QR later on. Scott fills gaps at any booth</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="booths">
+  <h2>Booths</h2>
+
+  <article class="card">
+    <h3>Costume QR</h3>
+    <dl class="rows">
+      <div><dt>Crew</dt><dd class="names">Shaan, Ken at arrival. Merch team after that</dd></div>
+      <div><dt>Condition</dt><dd>Guest is wearing a costume.</dd></div>
+      <div><dt>Gives</dt><dd>2 points + 1 spin.</dd></div>
+    </dl>
+    <p class="note">Start the moment doors open. Early costumes should get a head start.</p>
+  </article>
+
+  <article class="card">
+    <h3>Quark's quiz</h3>
+    <dl class="rows">
+      <div><dt>Crew</dt><dd class="names">Quark, Butter, Shaan</dd></div>
+      <div><dt>Condition</dt><dd><b>6 out of 10 correct</b> on the guest's end screen.</dd></div>
+      <div><dt>Gives</dt><dd>Quiz pack QR: 2 Avalanche Halloween pieces.</dd></div>
+    </dl>
+    <p class="note">We'll relax the score as the night goes on. Quark makes the call.</p>
+  </article>
+
+  <article class="card hard">
+    <h3>The Grotto <span class="tag">Hardest booth</span></h3>
+    <dl class="rows">
+      <div><dt>Crew</dt><dd class="names">Niruntz, Tractor, Beere, Ken</dd></div>
+      <div><dt>Gift box</dt><dd>Guest follows <b>@TheGrottoL1</b> and reposts The Grotto's pinned video. Gives 1 gift box. <b>89 at the booth</b>, 10 more given on stage.</dd></div>
+      <div><dt>Pack QR</dt><dd>Guest plays a Grotto game, on the centre computer or on their own phone. Gives the Grotto pack: 3 pieces.</dd></div>
+    </dl>
+    <p class="note">We need video of people playing. If the queue is long, ask players to post a clip tagging <b>@TheGrottoL1</b>. The "Enter The Grotto" task in the app also asks for a Grotto post, and that doesn't need a gift box or a win.</p>
+  </article>
+
+  <article class="card">
+    <h3>Photo booth</h3>
+    <dl class="rows">
+      <div><dt>Crew</dt><dd class="names">Bitkub staff</dd></div>
+      <div><dt>Condition</dt><dd>Guest takes a photo at the booth. Once per guest.</dd></div>
+      <div><dt>Gives</dt><dd>Photo booth pack: 2 pieces.</dd></div>
+    </dl>
+  </article>
+
+  <article class="card">
+    <h3>Merch handout</h3>
+    <dl class="rows">
+      <div><dt>Crew</dt><dd class="names">Evelyn, Acre, Scott</dd></div>
+      <div><dt>Job</dt><dd>Hand out merch the guest has redeemed in the app, plus puzzle prizes. Costume QR once Shaan and Ken move on. Scott backs up any booth that's short.</dd></div>
+    </dl>
+    <p class="note"><b>Never leave the merch unguarded.</b> When Evelyn and Acre go on stage, Scott stays at the table, and Butter and Shaan join him from the closed quiz booth. First come, first served: when something runs out, it's gone.</p>
+  </article>
+</section>
+
+<section id="crew">
+  <h2>Hidden crew</h2>
+  <p class="lead">Jessica, Sirada, Meiji, Pai and Danny each carry the hidden crew QR. <b>Don't give it away for free.</b> Make the guest earn it, so they leave with a story to tell. Keep it fun and within limits. Once per guest.</p>
+  <ul class="ideas">
+    <li>Follow @Team1TH on Instagram</li>
+    <li>Scan the Cascade QR</li>
+    <li>Tell you a joke</li>
+    <li>Do 5 push-ups</li>
+    <li>Tell you their favourite thing about the event</li>
+    <li>Go compliment someone, and you watch</li>
+    <li>Do their best ghost impression</li>
+    <li>Strike a pose for a photo with you</li>
+    <li>Find someone with the same puzzle piece and introduce them</li>
+    <li>Name three Avalanche projects</li>
+    <li>Teach you a word in their language</li>
+    <li>Rate your costume out of 10, and explain why</li>
+  </ul>
+</section>
+
+<section id="merch">
+  <h2>Merch and prizes</h2>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Shop item</th><th>Points</th><th>Limit</th></tr></thead>
+    <tbody>
+      <tr><td>Pen</td><td class="n">4</td><td>Twice per guest</td></tr>
+      <tr><td>Postcard</td><td class="n">6</td><td>Once</td></tr>
+      <tr><td>Sticker set</td><td class="n">8</td><td>Once</td></tr>
+      <tr><td>Keychain</td><td class="n">15</td><td>Once</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Finished puzzle</th><th>Prize</th></tr></thead>
+    <tbody>
+      <tr><td>Avalanche Halloween</td><td>Tote bag</td></tr>
+      <tr><td>Team1 Thailand Crew</td><td>Collectible art NFT, in the app</td></tr>
+      <tr><td>Midnight Bangkok</td><td>Pants, then T-shirt when pants run out</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="xhelp">
+  <h2>X login help</h2>
+  <div class="note"><b>Before the night:</b> everyone, try the app on your own phone. Write down any problem you hit and what fixed it, and post it in the team chat. We'll add it here.</div>
+  <div class="fix">
+    <details><summary>Login fails or loops inside LINE, Instagram or Facebook</summary><p>Those apps open links in their own browser, and X login often breaks there. Open the link in Safari or Chrome instead (tap ··· then "Open in browser").</p></details>
+    <details><summary>The X app opens instead of the login page</summary><p>On iPhone, X links can jump into the X app. Go back, long-press the button and open it in the browser, or log in to x.com in Safari first and try again.</p></details>
+    <details><summary>Logged in with the wrong X account</summary><p>Use Disconnect X in the app, switch accounts on X, then connect again.</p></details>
+    <details><summary>"X task access is missing or expired"</summary><p>Tap "Refresh X access" and log in to X again. Progress is kept.</p></details>
+    <details><summary>A post task won't verify</summary><p>Check the post has the right tags, the hashtag and a photo or video. Still stuck? Open "Use a post link instead" and paste the post's link.</p></details>
+    <details><summary>Follow or repost doesn't show as done</summary><p>X can take a few seconds to update. Wait, then tap Verify again.</p></details>
+    <details><summary>Anything else</summary><p>Send the guest to Pai or Danny. Don't hand out a QR to make up for an app problem.</p></details>
+  </div>
+</section>
+
+<section id="content">
+  <h2>Content</h2>
+  <ul>
+    <li><b>Everyone:</b> post on X and Instagram through the night and tag <b>@Team1TH</b>.</li>
+    <li>Bitkub brings their own photo and video crew.</li>
+    <li>We've also hired a professional photographer (from the hackathon). Want to guide them around the venue? Tell Sam.</li>
+    <li>Got a laptop? Please bring it.</li>
+  </ul>
+</section>
+
+<section id="contacts">
+  <h2>Who to ask</h2>
+  <div class="contacts">
+    <div><b>Pai</b><span>The app: any bug, login or pack issue</span></div>
+    <div><b>Danny</b><span>Pai's team, app support on the floor</span></div>
+    <div><b>Jessica</b><span>Extra hands at a booth</span></div>
+    <div><b>Scott</b><span>Fills gaps at any booth</span></div>
+  </div>
+</section>
+
+<footer>Avalanche Halloween · hosted by team1 Thailand and Bitkub · Powered by Avalanche</footer>
+</div>
+</body>
+</html>
