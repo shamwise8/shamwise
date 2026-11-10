@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>team1 Thailand at Binance Blockchain Week</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="team1 Thailand at Binance Blockchain Week">
+<meta property="og:description" content="Four events in Bangkok, 26 to 29 November: Spin &amp; Dine, Demo Day, Next Builders and Picnic in the Park. Sponsor one, or several.">
+<meta property="og:image" content="https://www.shamwise.com/bbw/assets/og-image.jpg">
+<meta property="og:url" content="https://www.shamwise.com/bbw">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Four team1 Thailand events during Binance Blockchain Week, Bangkok, 26 to 29 November 2026. Sponsor one or more.">
+<style>
+@font-face{font-family:"Kanit";font-weight:300;font-display:swap;src:url(assets/fonts/kanit-300.woff2) format("woff2")}
+@font-face{font-family:"Kanit";font-weight:400;font-display:swap;src:url(assets/fonts/kanit-400.woff2) format("woff2")}
+@font-face{font-family:"Kanit";font-weight:500;font-display:swap;src:url(assets/fonts/kanit-500.woff2) format("woff2")}
+/* Layout: one column, sticky tab bar, one panel per event; overview first */
+:root{
+  --bg:#0e0d0f; --surface:#18161a; --raised:#211e23; --line:#332e36;
+  --fg:#f4f1ee; --muted:#a69fa8; --red:#e6212f; --red-soft:#2c1215;
+  --todo:#f2c14e; --todo-soft:#2e2611;
+  --font:"Kanit",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:120px}
+body{margin:0;background:var(--bg);color:var(--fg);font:300 16px/1.6 var(--font)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:20;background:var(--bg)}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-weight:500;line-height:1.15;margin:0;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+b,strong{font-weight:500}
+.kicker{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px;flex-wrap:wrap}
+.top img{height:22px;width:auto;display:block}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;text-decoration:none;font-weight:500;padding:10px 16px;border-radius:999px;font-size:.95rem}
+.cta:hover{filter:brightness(1.08)}
+.cta:focus-visible,.tab:focus-visible,.row:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* placeholders */
+.logo-ph{display:inline-flex;align-items:center;justify-content:center;border:1px dashed var(--todo);color:var(--todo);background:var(--todo-soft);border-radius:6px;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;white-space:nowrap}
+.img-ph{display:grid;place-items:center;text-align:center;border:1px dashed var(--todo);background:var(--todo-soft) repeating-linear-gradient(135deg,transparent 0 14px,rgba(242,193,78,.05) 14px 28px);color:var(--todo);border-radius:12px;padding:20px;font-size:.85rem;aspect-ratio:16/9;width:100%;max-width:100%}
+.img-ph b{display:block;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.todo{color:var(--todo);background:var(--todo-soft);border-radius:4px;padding:0 5px}
+
+/* hero */
+.hero{display:grid;gap:18px;padding-block:28px 36px}
+.hero h1{font-size:clamp(2.1rem,6vw,3.6rem);letter-spacing:-.01em}
+.hero h1 span{color:var(--red)}
+.hero .lede{font-size:1.15rem;color:var(--muted);max-width:60ch}
+.bbw{height:56px;width:auto;display:block}
+.plogo{height:20px;width:auto;display:block}
+.plogo.t1{height:17px}
+.withrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;color:var(--muted);font-size:.9rem}
+
+/* tabs */
+.tabs-wrap{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-block:10px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;appearance:none;border:1px solid var(--line);background:transparent;color:var(--fg);font:400 .92rem/1 var(--font);padding:10px 14px;border-radius:999px;cursor:pointer;display:inline-flex;gap:8px;align-items:baseline}
+.tab small{color:var(--muted);font-size:.75rem}
+.tab[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tab[aria-selected="true"] small{color:#5b5560}
+
+.panel{padding-block:32px 56px;display:grid;gap:40px}
+section{display:grid;gap:16px}
+section > h2{font-size:1.6rem}
+.sub{color:var(--muted);max-width:62ch}
+
+/* overview list */
+.week{display:grid;gap:10px}
+.row{display:grid;grid-template-columns:86px 1fr auto;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;text-align:left;color:inherit;font:inherit;cursor:pointer;width:100%}
+.row:hover{border-color:#4a434e}
+.row .date{font-weight:500;font-variant-numeric:tabular-nums;line-height:1.2}
+.row .date small{display:block;color:var(--muted);font-weight:300;font-size:.78rem}
+.row h3{font-size:1.1rem}
+.row .meta{color:var(--muted);font-size:.88rem}
+.row .price{font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+.row .price.ask{color:var(--muted);font-weight:400;font-size:.9rem}
+@media (max-width:560px){.row{grid-template-columns:1fr;gap:6px}.row .price{justify-self:start}}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat b{display:block;font-size:1.9rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.88rem}
+
+/* track record */
+.record{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.card img,.card .img-ph{aspect-ratio:4/3;object-fit:cover;width:100%;display:block;border-radius:0;border-width:0 0 1px}
+.card div{padding:14px 16px;display:grid;gap:4px}
+.card .when{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.card h3{font-size:1.05rem}
+.card p{color:var(--muted);font-size:.9rem}
+.card .num{color:var(--fg);font-size:.88rem;font-weight:400}
+
+.partners{display:flex;flex-wrap:wrap;gap:8px}
+.partners span{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:.88rem;color:var(--muted)}
+
+/* event panel */
+.ev-head{display:grid;gap:12px}
+.ev-head h2{font-size:clamp(1.9rem,5vw,2.8rem)}
+.ev-head .sub{font-size:1.1rem}
+.ev-head .with{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.facts div{background:var(--surface);padding:14px 16px;min-width:0}
+.facts dt{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:2px 0 0;font-weight:400}
+.gallery{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:8px;aspect-ratio:16/8;max-width:100%}
+.gallery img,.gallery video{width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;min-height:0}
+.gallery .big{grid-row:1/3}
+@media (max-width:560px){.gallery{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;aspect-ratio:auto}.gallery .big{grid-row:auto;grid-column:1/3;aspect-ratio:16/10}.gallery img:not(.big){aspect-ratio:1}.gallery video.big{aspect-ratio:16/9}}
+.pair{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pair img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px;display:block}
+.pair figcaption{grid-column:1/-1;color:var(--muted);font-size:.82rem}
+@media (max-width:560px){.pair{grid-template-columns:1fr}}
+.split{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:start}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+.prose{display:grid;gap:12px;min-width:0}
+.prose p{color:#d9d3d6}
+.menu{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:480px){.menu{grid-template-columns:repeat(2,1fr)}}
+.menu div{background:var(--raised);border-radius:8px;padding:10px;text-align:center;font-size:.88rem}
+.menu b{display:block;font-size:1.2rem}
+
+.offer{background:var(--raised);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:14px;position:sticky;top:80px}
+.offer .tier{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.offer .amt{font-size:2.6rem;font-weight:500;line-height:1;font-variant-numeric:tabular-nums}
+.offer .amt small{font-size:1rem;color:var(--muted);font-weight:300}
+.offer ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.offer li{display:grid;grid-template-columns:18px 1fr;gap:8px}
+.offer li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:9px}
+.offer .cta{justify-content:center}
+.offer .fine{font-size:.82rem;color:var(--muted)}
+.offer.private .amt{font-size:1.6rem}
+
+.contact{background:var(--red-soft);border:1px solid #5a1d23;border-radius:14px;padding:24px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.contact h2{font-size:1.4rem}
+.contact p{color:var(--muted)}
+footer{border-top:1px solid var(--line);padding-block:24px 40px;color:var(--muted);font-size:.85rem;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+footer img{height:16px;width:auto}
+@media (prefers-reduced-motion:no-preference){.panel{animation:fade .25s ease}@keyframes fade{from{opacity:.4}to{opacity:1}}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <img src="assets/team1-thailand.svg" alt="team1 Thailand">
+    <a class="cta" href="https://t.me/shamwise8" target="_blank" rel="noopener">Sponsor an event</a>
+  </header>
+
+  <div class="hero">
+    <div class="withrow"><span>Side events around</span><img class="bbw" src="assets/bbw-logo.webp" alt="Binance Blockchain Week, Bangkok 2026, 28–29 November"></div>
+    <h1>Four rooms. <span>One week.</span></h1>
+    <p class="lede">team1 Thailand is running four events around Binance Blockchain Week in Bangkok, from 26 to 29 November. Each one has its own crowd and its own theme. Back one, or several.</p>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Events">
+      <button class="tab" role="tab" id="t-overview" aria-controls="overview" aria-selected="true">Overview</button>
+      <button class="tab" role="tab" id="t-spin" aria-controls="spin" aria-selected="false">Spin &amp; Dine <small>26 Nov</small></button>
+      <button class="tab" role="tab" id="t-demoday" aria-controls="demoday" aria-selected="false">Demo Day <small>28 Nov</small></button>
+      <button class="tab" role="tab" id="t-builders" aria-controls="builders" aria-selected="false">Next Builders <small>28 Nov</small></button>
+      <button class="tab" role="tab" id="t-picnic" aria-controls="picnic" aria-selected="false">Picnic <small>29 Nov</small></button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+<!-- OVERVIEW -->
+<div class="panel" role="tabpanel" id="overview" aria-labelledby="t-overview">
+  <section>
+    <h2>The week</h2>
+    <div class="week">
+      <button class="row" data-go="spin">
+        <span class="date">26 Nov<small>Thursday</small></span>
+        <span><h3>Spin &amp; Dine</h3><span class="meta">Spin class, then dinner · with Tangem · 35 guests</span></span>
+        <span class="price">$500</span>
+      </button>
+      <button class="row" data-go="demoday">
+        <span class="date">28 Nov<small>Saturday</small></span>
+        <span><h3>Demo Day</h3><span class="meta">Joint Mid Demo · ShardLab, Protocol Camp Cohort 10 · District X · 14:00–17:30</span></span>
+        <span class="price ask">By negotiation</span>
+      </button>
+      <button class="row" data-go="builders">
+        <span class="date">28 Nov<small>Saturday</small></span>
+        <span><h3>Next Builders at City Cup</h3><span class="meta">Demo Day afterparty · with Protocol Camp · 18:00–21:00 · 100 guests</span></span>
+        <span class="price">$1,000</span>
+      </button>
+      <button class="row" data-go="picnic">
+        <span class="date">29 Nov<small>Sunday</small></span>
+        <span><h3>Picnic in the Park</h3><span class="meta">Benjakitti Park, next to QNCC · with Catfooding · 50–100 guests</span></span>
+        <span class="price">$300</span>
+      </button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Why team1 Thailand</h2>
+    <p class="sub">We run Bangkok's most curated Web3 rooms: builder bootcamps, invite-only creator nights, university workshops and 200-person flagships. Team1 is the global builder community growing the Avalanche ecosystem, with 600+ members in 60 countries.</p>
+    <div class="stats">
+      <div class="stat"><b>15+</b><span>events in 6 months</span></div>
+      <div class="stat"><b>2,000</b><span>registrations</span></div>
+      <div class="stat"><b>70%</b><span>show-up rate, where most free events sit near half</span></div>
+      <div class="stat"><b>4.9/5</b><span>attendee rating on flagship events</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Rooms people talk about afterwards</h2>
+    <div class="record">
+      <article class="card">
+        <img src="assets/halloween-stage.jpg" alt="The stage at Avalanche Halloween, Zilla Space" loading="lazy">
+        <div><span class="when">Oct 2026 · Zilla Space</span><h3>Avalanche Halloween</h3><p>Co-hosted with Bitkub. A costume night with an on-chain puzzle game running through it.</p></div>
+      </article>
+      <article class="card">
+        <img src="assets/chula-hack.jpg" alt="Teams building and presenting at Team1 Hackathon: Chula Edition" loading="lazy">
+        <div><span class="when">Sep 2026 · Chulalongkorn University</span><h3>Team1 Hackathon: Chula Edition</h3><p>One day to ship on Avalanche. Builders from six universities.</p></div>
+      </article>
+      <article class="card">
+        <img src="assets/cubs-nov.jpg" alt="Group photo from First Steps into Web3 with CUBS" loading="lazy">
+        <div><span class="when">Nov 2026 · Plearn Space</span><h3>First Steps into Web3</h3><p>With CUBS, Chula University Blockchain Society. A beginner session for students.</p></div>
+      </article>
+      <article class="card">
+        <img src="assets/kubc.jpg" alt="Group photo from the team1 workshop with KUBC at Kasetsart University" loading="lazy">
+        <div><span class="when">Sep 2026 · Kasetsart University</span><h3>Intro to Blockchain with KUBC</h3><p>Part of our university tour, run with the Kasetsart University Blockchain Club.</p></div>
+      </article>
+      <article class="card">
+        <img src="assets/padel-rave-bangkok.jpeg" alt="Padel Rave Bangkok crowd" loading="lazy">
+        <div><span class="when">Aug 2026 · Bel Padel</span><h3>Padel Rave Bangkok</h3><p>Padel, live DJ sets and brand activations with Superteam Thailand and Pudgy Penguins.</p><span class="num">200+ attendees</span></div>
+      </article>
+      <article class="card">
+        <img src="assets/money2020.jpg" alt="Money 20/20 side event" loading="lazy">
+        <div><span class="when">Apr 2026 · Bangkok</span><h3>Money 20/20 Side Event</h3><p>270 RSVPs from 370+ requests.</p><span class="num">140+ attendees · 4.86/5</span></div>
+      </article>
+      <article class="card">
+        <img src="assets/padel-group.jpg" alt="Team1 × Pudgy Padel Night group photo" loading="lazy">
+        <div><span class="when">May 2026 · Sterling, SEABW</span><h3>Team1 × Pudgy Padel Night</h3><p>Invite-only creator night with Pudgy Penguins, supported by Bitkub.</p><span class="num">60+ attendees · 4.91/5</span></div>
+      </article>
+      <article class="card">
+        <img src="assets/avalanche-bootcamp.jpg" alt="AVAX Builders Bootcamp session" loading="lazy">
+        <div><span class="when">Mar–Apr 2026 · Bangkok</span><h3>AVAX Builders Bootcamp</h3><p>Three weeks of hands-on builder workshops.</p><span class="num">~45 builders per session</span></div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>Brands we've worked with</h2>
+    <div class="partners">
+      <span>Binance TH</span><span>Bitkub</span><span>Pudgy Penguins</span><span>Tangem</span><span>SEA Blockchain Week</span><span>Superteam Thailand</span><span>Protocol Camp</span><span>Tokenomist</span><span>Jupiter</span><span>TUBC</span><span>KUBC</span><span>CUBS</span>
+    </div>
+  </section>
+</div>
+
+<!-- EVENT 1 -->
+<div class="panel" role="tabpanel" id="spin" aria-labelledby="t-spin" hidden>
+  <div class="ev-head">
+    <span class="kicker">Event 1 · Thursday 26 November</span>
+    <h2>Spin &amp; Dine</h2>
+    <div class="with"><img class="plogo t1" src="assets/team1-thailand.svg" alt="team1 Thailand"><span>×</span> <img class="plogo" src="assets/tangem.png" alt="Tangem"></div>
+  </div>
+  <div class="gallery">
+    <img class="big" src="assets/spin-1.jpg" alt="Riders mid-class at Native Cycle">
+    <img src="assets/spin-2.jpg" alt="A spin class under low red light at Native Cycle" loading="lazy">
+    <img src="assets/fig-lobby.jpg" alt="The colourful lobby at The Fig Lobby" loading="lazy">
+  </div>
+  <dl class="facts">
+    <div><dt>Date</dt><dd>Thu 26 Nov</dd></div>
+    <div><dt>Time</dt><dd>To be confirmed</dd></div>
+    <div><dt>Venue</dt><dd>Native Cycle @ The Fig Lobby</dd></div>
+    <div><dt>Guests</dt><dd>35</dd></div>
+  </dl>
+  <div class="split">
+    <div class="prose">
+      <p>A spin class to open the week, then everyone sits down to dinner together. Sweat first, talk after: by the time the food arrives, the room already knows each other.</p>
+      <p>Every guest gets a four-course dinner.</p>
+      <div class="menu"><div><b>1</b>drink</div><div><b>1</b>appetizer</div><div><b>1</b>main</div><div><b>1</b>dessert</div></div>
+    </div>
+    <aside class="offer">
+      <span class="tier">Ride &amp; Dine Partner</span>
+      <span class="amt">$500</span>
+      <ul>
+        <li>4 spots in the spin class for your guests</li>
+        <li>3 more spots at the dinner</li>
+        <li>A video recap of the night</li>
+        <li>Your logo on the Luma page and event graphics</li>
+        <li>A mention in the recap thread</li>
+      </ul>
+      <a class="cta" href="https://t.me/shamwise8" target="_blank" rel="noopener">Sponsor Spin &amp; Dine</a>
+    </aside>
+  </div>
+</div>
+
+<!-- EVENT 2 -->
+<div class="panel" role="tabpanel" id="demoday" aria-labelledby="t-demoday" hidden>
+  <div class="ev-head">
+    <span class="kicker">Event 2 · Saturday 28 November</span>
+    <h2>Demo Day</h2>
+    <p class="sub">Joint Mid Demo</p>
+    <div class="with"><img class="plogo" src="assets/ShardLab-horizontal-white.svg" alt="ShardLab"><img class="plogo" src="assets/protocol-camp.png" alt="Protocol Camp"><span>×</span><img class="plogo t1" src="assets/team1-thailand.svg" alt="team1 Thailand"></div>
+  </div>
+  <figure class="pair">
+    <img src="assets/pc9-demo.jpg" alt="A founder presenting on stage at Protocol Camp Cohort 9's final demo day">
+    <img src="assets/pc9-group.jpg" alt="Protocol Camp Cohort 9 teams and winners in a group photo" loading="lazy">
+    <figcaption>Protocol Camp Cohort 9, final demo day</figcaption>
+  </figure>
+  <dl class="facts">
+    <div><dt>Date</dt><dd>Sat 28 Nov</dd></div>
+    <div><dt>Time</dt><dd>14:00–17:30, check-in 13:30</dd></div>
+    <div><dt>Venue</dt><dd>District X, FYI Center Tower 1, 3rd floor</dd></div>
+    <div><dt>On stage</dt><dd>17 teams</dd></div>
+  </dl>
+  <div class="split">
+    <div class="prose">
+      <p>Eleven teams from Protocol Camp Cohort 10 and six team1 teams demo their products on stage and take questions from the judges. The six team1 teams were picked from 30 projects that applied to the Avalanche track. An afternoon of founders showing real work, in front of the people who back and build alongside them.</p>
+    </div>
+    <aside class="offer private">
+      <span class="tier">Demo Day Partner</span>
+      <span class="amt">By negotiation</span>
+      <p class="fine">Places in the room are shared with the builders who applied to demo, so a Demo Day presence is agreed one-to-one. Most sponsors start with the afterparty at City Cup and add Demo Day from there.</p>
+      <a class="cta" href="https://t.me/shamwise8" target="_blank" rel="noopener">Ask about Demo Day</a>
+    </aside>
+  </div>
+</div>
+
+<!-- EVENT 3 -->
+<div class="panel" role="tabpanel" id="builders" aria-labelledby="t-builders" hidden>
+  <div class="ev-head">
+    <span class="kicker">Event 3 · Saturday 28 November</span>
+    <h2>Next Builders at City Cup</h2>
+    <p class="sub">Next Builders Bangkok Afterparty</p>
+    <div class="with"><img class="plogo" src="assets/ShardLab-horizontal-white.svg" alt="ShardLab"><img class="plogo" src="assets/protocol-camp.png" alt="Protocol Camp"><span>×</span><img class="plogo t1" src="assets/team1-thailand.svg" alt="team1 Thailand"></div>
+  </div>
+  <div class="gallery">
+    <video class="big" src="assets/citycup.mp4" poster="assets/citycup-poster.jpg" autoplay muted loop playsinline aria-label="A walk through City Cup"></video>
+    <img src="assets/citycup-bar.jpg" alt="The bar at City Cup under a large paper lantern" loading="lazy">
+    <img src="assets/citycup-lounge.jpg" alt="City Cup's lounge, with sofas and floor-to-ceiling windows over the city" loading="lazy">
+  </div>
+  <dl class="facts">
+    <div><dt>Date</dt><dd>Sat 28 Nov</dd></div>
+    <div><dt>Time</dt><dd>18:00–21:00</dd></div>
+    <div><dt>Venue</dt><dd>City Cup</dd></div>
+    <div><dt>Guests</dt><dd>100</dd></div>
+  </dl>
+  <div class="split">
+    <div class="prose">
+      <p>The Demo Day afterparty. It opens with a short welcome from Protocol Camp and team1, then drinks and light bites with the teams who just demoed and Bangkok's builder community.</p>
+      <p>Our biggest room of the week, and the only one with a stage moment for sponsors.</p>
+    </div>
+    <aside class="offer">
+      <span class="tier">Afterparty Partner</span>
+      <span class="amt">$1,000</span>
+      <ul>
+        <li>8 spots for your team and guests</li>
+        <li>Your roll-up banner at the event</li>
+        <li>A 2-minute activation slot on stage</li>
+        <li>A video recap of the night</li>
+        <li>Your logo on the Luma page and event graphics</li>
+        <li>A mention in the recap thread</li>
+      </ul>
+      <a class="cta" href="https://t.me/shamwise8" target="_blank" rel="noopener">Sponsor Next Builders</a>
+    </aside>
+  </div>
+</div>
+
+<!-- EVENT 4 -->
+<div class="panel" role="tabpanel" id="picnic" aria-labelledby="t-picnic" hidden>
+  <div class="ev-head">
+    <span class="kicker">Event 4 · Sunday 29 November</span>
+    <h2>Picnic in the Park</h2>
+    <div class="with"><img class="plogo t1" src="assets/team1-thailand.svg" alt="team1 Thailand"><span>×</span> <span>Catfooding</span></div>
+  </div>
+  <div class="gallery">
+    <img class="big" src="assets/park-sunset.jpg" alt="People on the lawn at Benjakitti Park at sunset">
+    <img src="assets/picnic.jpg" alt="Friends picnicking on mats under the skywalk at Benjakitti Park" loading="lazy">
+    <img src="assets/park-drone.jpg" alt="Benjakitti Park from above, with the city behind" loading="lazy">
+  </div>
+  <dl class="facts">
+    <div><dt>Date</dt><dd>Sun 29 Nov</dd></div>
+    <div><dt>Time</dt><dd>To be confirmed</dd></div>
+    <div><dt>Venue</dt><dd>Benjakitti Park, next to QNCC</dd></div>
+    <div><dt>Guests</dt><dd>50–100</dd></div>
+  </dl>
+  <div class="split">
+    <div class="prose">
+      <p>The week ends outside. A picnic on the lawn right next to the conference centre, so people walk straight over from the halls. No stage, no badges, just blankets, cold drinks and the people you met all week.</p>
+      <p>It's our most experimental event, and the one most likely to produce the content people share.</p>
+    </div>
+    <aside class="offer">
+      <span class="tier">Picnic Partner</span>
+      <span class="amt">$300</span>
+      <ul>
+        <li>2 videos about the event from creators</li>
+        <li>Your brand stickers on the soda cans</li>
+        <li>10 spots for your guests</li>
+        <li>Your logo on the Luma page and event graphics</li>
+      </ul>
+      <a class="cta" href="https://t.me/shamwise8" target="_blank" rel="noopener">Sponsor the Picnic</a>
+    </aside>
+  </div>
+</div>
+
+<div class="contact">
+  <div><h2>Want more than one?</h2><p>Sponsor several events and we'll put a package together.</p></div>
+  <a class="cta" href="https://t.me/shamwise8" target="_blank" rel="noopener">Message @shamwise8 on Telegram</a>
+</div>
+
+<footer>
+  <img src="assets/team1-thailand.svg" alt="team1 Thailand">
+  <span>Bangkok · 26–29 November 2026</span>
+</footer>
+</main>
+
+<script>
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('.tab'));
+  var ids=tabs.map(function(t){return t.getAttribute('aria-controls')});
+  function show(id,push){
+    if(ids.indexOf(id)<0)id='overview';
+    tabs.forEach(function(t){
+      var on=t.getAttribute('aria-controls')===id;
+      t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden=!on;
+      if(on)t.scrollIntoView({block:'nearest',inline:'nearest'});
+    });
+    if(push)history.replaceState(null,'',id==='overview'?location.pathname:'#'+id);
+  }
+  tabs.forEach(function(t,i){
+    t.addEventListener('click',function(){show(t.getAttribute('aria-controls'),true);window.scrollTo({top:document.querySelector('.tabs-wrap').offsetTop})});
+    t.addEventListener('keydown',function(e){
+      var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;
+      var n=tabs[(i+d+tabs.length)%tabs.length];n.focus();n.click();
+    });
+  });
+  document.querySelectorAll('[data-go]').forEach(function(r){
+    r.addEventListener('click',function(){show(r.dataset.go,true);window.scrollTo({top:document.querySelector('.tabs-wrap').offsetTop})});
+  });
+  show(location.hash.slice(1),false);
+  window.addEventListener('hashchange',function(){show(location.hash.slice(1),false)});
+})();
+</script>
+</body>
+</html>
